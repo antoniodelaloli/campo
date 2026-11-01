@@ -1,0 +1,223 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------
+   Campo · paleta "granja pixel"
+   Colores fijos (la app no cambia con el modo oscuro del sistema:
+   el mapa ya tiene su propia luz de día / atardecer / noche).
+   --------------------------------------------------------------- */
+@theme inline {
+  --color-pergamino: #f6e7c1;
+  --color-papel: #fff8e2;
+  --color-borde-papel: #c9a468;
+  --color-tinta: #3b2a1a;
+  --color-tinta-suave: #5e4127;
+  --color-madera: #8a5a2b;
+  --color-madera-clara: #c28a4b;
+  --color-madera-oscura: #5a3a1a;
+  --color-madera-sombra: #3b2412;
+  --color-marco: #7a4f24;
+  --color-marco-sombra: #4d3216;
+  --color-hierba: #86bd5b;
+  --color-hoja: #5f9e3c;
+  --color-hoja-oscura: #2f5a1c;
+  --color-sol: #f6d743;
+  --color-agua: #2f7fb0;
+  --color-agua-oscura: #1d4a80;
+  --color-aviso: #c8473a;
+  --color-alerta: #c98a2a;
+
+  --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Geist Pixel (Square), de Vercel: se carga con next/font en layout.tsx */
+  --font-pixel: var(--font-geist-pixel-square), ui-monospace, "Cascadia Mono",
+    "Consolas", monospace;
+}
+
+html {
+  background: var(--color-pergamino);
+}
+
+body {
+  background: var(--color-pergamino);
+  color: var(--color-tinta);
+  font-family: var(--font-sans);
+}
+
+/* ---------- Piezas reutilizables ---------- */
+@layer components {
+  /* Panel de pergamino con marco de madera */
+  .panel {
+    background: var(--color-pergamino);
+    border: 4px solid var(--color-marco);
+    box-shadow:
+      0 4px 0 var(--color-marco-sombra),
+      inset 0 0 0 2px #e2c98f;
+  }
+
+  /* Tarjeta interior (dentro de un panel) */
+  .ficha {
+    background: var(--color-papel);
+    border: 2px solid var(--color-borde-papel);
+  }
+
+  .ficha-pendiente {
+    background: var(--color-papel);
+    border: 2px dashed var(--color-borde-papel);
+  }
+
+  /* Botón principal verde */
+  .boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0 1rem;
+    background: var(--color-hoja);
+    border: 3px solid var(--color-hoja-oscura);
+    box-shadow: 0 3px 0 var(--color-hoja-oscura);
+    font-family: var(--font-pixel);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 0 var(--color-hoja-oscura);
+    cursor: pointer;
+  }
+  .boton:hover {
+    filter: brightness(1.06);
+  }
+  .boton:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--color-hoja-oscura);
+  }
+  .boton:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+
+  /* Botón de madera (secundario) */
+  .boton-madera {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0 1rem;
+    background: var(--color-madera-clara);
+    border: 3px solid var(--color-madera-oscura);
+    box-shadow: 0 3px 0 var(--color-madera-sombra);
+    font-family: var(--font-pixel);
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff4d6;
+    cursor: pointer;
+  }
+  .boton-madera:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--color-madera-sombra);
+  }
+
+  /* Pestaña seleccionable */
+  .pestana {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 0.9rem;
+    border: 3px solid var(--color-madera-oscura);
+    background: var(--color-madera-clara);
+    color: #fff4d6;
+    font-family: var(--font-pixel);
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+  .pestana[aria-current="page"],
+  .pestana[aria-selected="true"] {
+    background: var(--color-sol);
+    color: var(--color-tinta);
+  }
+
+  /* Campo de texto */
+  .campo {
+    min-height: 44px;
+    width: 100%;
+    padding: 0.5rem 0.65rem;
+    border: 2px solid var(--color-marco);
+    background: #fff;
+    font-size: 1rem;
+    color: var(--color-tinta);
+  }
+  .campo:focus {
+    outline: 3px solid var(--color-sol);
+    outline-offset: 1px;
+  }
+
+  .titulo-pixel {
+    font-family: var(--font-pixel);
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  /* Etiqueta pequeña de color */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+}
+
+/* Foco visible en toda la app */
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--color-sol);
+  outline-offset: 2px;
+}
+
+/* Los dibujos en pixel art no se suavizan */
+.pixel {
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .burbuja-flota {
+    animation: flotar 3s ease-in-out infinite;
+  }
+  @keyframes flotar {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-3px);
+    }
+  }
+}
+
+/* Paneles con scroll pero sin barra visible (se sigue pudiendo desplazar) */
+.sin-barra {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.sin-barra::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tipografía pixel (Geist Pixel): un pelín de aire entre letras, sin ligaduras
+   y sin negrita «inventada» (la fuente tiene un solo grosor y engordarla la emborrona).
+   En la capa base para que clases como tracking-widest sigan pudiendo ampliarlo. */
+@layer base {
+  .font-pixel,
+  .titulo-pixel,
+  .boton,
+  .boton-madera,
+  .pestana,
+  svg text {
+    letter-spacing: 0.03em;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "clig" 0;
+    font-synthesis-weight: none;
+  }
+}

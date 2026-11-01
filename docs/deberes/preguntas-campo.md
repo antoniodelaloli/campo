@@ -1,0 +1,245 @@
+# Campo · Banco de preguntas para Juan Carlos (v1 · 31/10/2026)
+
+Preguntas sobre lo que solo sabe la familia. Van por **bloques de 5** (unos 5-10 minutos cada uno), de más a menos importante.
+Cada pregunta tiene un código (no hace falta leerlo en voz alta), **lo que ya creemos** (para confirmar o corregir) y **qué respuesta nos sirve**.
+Se puede contestar «no lo sé», «más o menos» o «eso lo sabe Pencho». Todo vale.
+
+---
+
+## Bloque 1 · Lobosillo (lo básico)
+
+### LOB-01 · ¿Qué hay plantado en Lobosillo?
+- **Lo que creemos:** nada todavía. Solo sabemos que es nueva y que se describió como ecológica.
+- **Nos sirve:** especie y variedad (o si está sin plantar), número de árboles aproximado y edad.
+
+### LOB-02 · ¿Cuánto mide Lobosillo?
+- **Lo que creemos:** la escritura dice 2 hectáreas, 13 áreas y 70 centiáreas (unas 2,14 ha).
+- **Nos sirve:** confirmar que esa escritura es la de Lobosillo, y si se cultiva toda o hay casa, balsa o terreno sin cultivar.
+
+### LOB-03 · ¿De dónde le viene el agua a Lobosillo?
+- **Lo que creemos:** nada.
+- **Nos sirve:** comunidad de regantes, pozo, trasvase…; si tiene balsa o pantano propio y de qué tamaño; precio del agua si lo sabe.
+
+### LOB-04 · ¿Cómo se riega Lobosillo?
+- **Lo que creemos:** nada.
+- **Nos sirve:** goteo o no; cuántos sectores; si tiene programador y de qué tipo; si hay que arreglar algo del riego.
+
+### LOB-05 · ¿Lobosillo es ecológica certificada?
+- **Lo que creemos:** se dijo «ecológica», sin más.
+- **Nos sirve:** si está certificada o en conversión, con qué entidad certificadora y desde cuándo. (Recordatorio: esto **no** afecta a Valladolises ni a Corvera.)
+
+---
+
+## Bloque 2 · Lobosillo (planes) y papeles
+
+### LOB-06 · ¿Lobosillo tiene trozos con nombre propio?
+- **Lo que creemos:** nada.
+- **Nos sirve:** nombres de las zonas («la de arriba», «la de la casa»…) y, si puede, **foto de un plano** o un dibujo a mano.
+
+### LOB-07 · ¿Qué queréis hacer en Lobosillo este año?
+- **Lo que creemos:** nada.
+- **Nos sirve:** plantar, arreglar el riego, limpiar, certificar… y para cuándo, más o menos.
+
+### LOB-08 · ¿Quién va a llevar Lobosillo en el día a día?
+- **Lo que creemos:** el hermano de Antonio se va a implicar más.
+- **Nos sirve:** quién decide, quién va a trabajar allí (¿Pencho, Salah, otros?) y con qué frecuencia.
+
+### ADM-01 · ¿A nombre de quién está cada finca?
+- **Lo que creemos:** en Drive, Lobosillo aparece a nombre de una comunidad de bienes y la venta de mandarinas de Valladolises la firmaba la sociedad civil familiar.
+- **Nos sirve:** qué sociedad o comunidad lleva cada finca (para separar gastos e ingresos). Sin datos personales.
+
+### ADM-02 · ¿Quién lleva los papeles?
+- **Lo que creemos:** nada.
+- **Nos sirve:** gestoría o contabilidad, si se pide la PAC, quién lleva el cuaderno de campo oficial.
+
+---
+
+## Bloque 3 · Agua (lo que más se usa)
+
+### AGU-01 · ¿Cómo sabes a ojo el nivel del pantano de Valladolises?
+- **Lo que creemos:** unos 30.000 m³ de capacidad, unos 25.000 útiles; se mira a ojo.
+- **Nos sirve:** si hay marcas, escalones o una regla; cuántos metros tiene de hondo; «cuando el agua llega a X, está lleno / a la mitad». Con eso la app podrá calcular los m³.
+
+### AGU-02 · ¿Y el de Corvera?
+- **Lo que creemos:** unos 50.000 m³; capacidad útil sin saber.
+- **Nos sirve:** lo mismo: marcas, profundidad y cuánto se puede usar de verdad.
+
+### AGU-03 · Contadores de Corvera: ¿cuál es el azul y cuál el blanco?
+- **Lo que creemos:** en un control de 2022 había un «contador azul» (126.420) y un «contador blanco» (1.208.075). Creemos que el azul es el de **entrada** (el que se compara con la factura de Pozo Villalba) y el blanco el de **salida**, pero no estamos seguros.
+- **Nos sirve:** confirmarlo y, si puede, una **foto de cada contador** con la lectura de hoy.
+
+### AGU-04 · ¿Cuánto cuesta ahora el agua?
+- **Lo que creemos:** en 2025, unos 0,43 €/m³ el trasvase (Valladolises) y unos 0,85 €/m³ Pozo Villalba (Corvera).
+- **Nos sirve:** precio de 2026 de cada una, aunque sea aproximado.
+
+### AGU-05 · ¿Cuánto cupo de trasvase tiene Valladolises?
+- **Lo que creemos:** se pide por la app de la Comunidad de Regantes, con cupo por superficie.
+- **Nos sirve:** cuántos m³ al año (o por temporada) y cómo va este año: ¿queda mucho, poco?
+
+---
+
+## Bloque 4 · Agua (papeles) y cosecha que viene
+
+### AGU-06 · Desaladora: ¿se contestó a la Confederación?
+- **Lo que creemos:** la CHS pidió documentación el 24/11/2025 (15 días de plazo) para el agua desalada; hacía falta la conformidad de Pozo Villalba S.A.
+- **Nos sirve:** si se contestó, cómo está ahora y quién lo lleva.
+
+### AGU-07 · Parcela 236 y la carta de la CHS
+- **Lo que creemos:** hay una carta de octubre de 2026 sobre la «parcela 236» como fuera de regadío. En Drive hay una parcela 236 (polígono 59, paraje Los Morenos, unas 1,36 ha, «Alejo»), pero no sabemos si es la misma.
+- **Nos sirve:** si esa parcela es vuestra, qué tiene plantado y a qué finca pertenece.
+
+### COS-01 · Analítica de residuos para el primer corte
+- **Lo que creemos:** el primer corte de Valladolises espera a la analítica.
+- **Nos sirve:** si ya se ha hecho, qué laboratorio, cuándo llega el resultado y qué salió.
+
+### COS-02 · ¿Cuándo es el primer corte?
+- **Lo que creemos:** finales de octubre o principios de noviembre; dos cortes en la campaña.
+- **Nos sirve:** fecha prevista (aunque sea «la semana que viene»), qué zonas primero y quién corta (cuadrilla).
+
+### COS-03 · Contrato de esta campaña
+- **Lo que creemos:** precio de la Consejería para «un corte» y luego «todo limón»; 3 % de destrío y 3 % de comisión del corredor; comprador habitual García Aranda.
+- **Nos sirve:** si está firmado, con quién y si las condiciones son esas.
+
+---
+
+## Bloque 5 · Valladolises (zonas)
+
+### VAL-01 · Los Olivos: ¿cuántos mandarinos?
+- **Lo que creemos:** una vez se dijo unos 2.300 (800 nuevos + 1.500 antiguos) y otra vez unos 2.000.
+- **Nos sirve:** el número más fiable, y cuántos son Clemenvilla y cuántos Nova.
+
+### VAL-02 · La Casa: ¿qué hay?
+- **Lo que creemos:** es la zona cercada alrededor de la casa; no sabemos variedad ni árboles.
+- **Nos sirve:** especie y variedad, número de árboles y edad aproximada.
+
+### VAL-03 · Triviño y La Mari
+- **Lo que creemos:** Triviño es pequeña, al fondo, con árboles algo más nuevos. La Mari es una parcela pequeña anexa (no es la balsa).
+- **Nos sirve:** qué hay plantado en cada una y cuántos árboles.
+
+### VAL-04 · ¿Qué riega cada sector en Valladolises?
+- **Lo que creemos:** hay 2 sectores y riegan zonas mezcladas.
+- **Nos sirve:** qué zonas (o trozos de zonas) riega el sector 1 y cuáles el sector 2. Si es más fácil, sobre una **foto del plano**.
+
+### VAL-05 · Del Pozo / Los Nuevos
+- **Lo que creemos:** limoneros de 30 y tantos años sobre bancales («bancas»). Variedad sin confirmar.
+- **Nos sirve:** variedad (¿Fino 49?) y número de árboles.
+
+---
+
+## Bloque 6 · Valladolises y Corvera (superficies)
+
+### VAL-06 · ¿Por qué 22 hectáreas si el catastro da 27?
+- **Lo que creemos:** unas 22 ha productivas; las 14 parcelas del catastro suman unas 27 ha.
+- **Nos sirve:** qué ocupa la diferencia (casa, caminos, balsas, terreno sin cultivar…).
+
+### VAL-07 · ¿Qué es «Los Morenos»?
+- **Lo que creemos:** el contrato de mandarinas de 2024 habla de «Valladolises, finca Los Morenos».
+- **Nos sirve:** si Los Morenos es una zona de Valladolises (¿Los Olivos?) u otra cosa.
+
+### COR-01 · Corvera: ¿cuál es la parcela del panadero?
+- **Lo que creemos:** el catastro tiene 3 parcelas (45, 122 y 123 del polígono 162). Se habla de «dos parcelas» y de «la del panadero» (sector 3).
+- **Nos sirve:** cuál es cada una y cuál es la del panadero.
+
+### COR-02 · Corvera: ¿por qué 22 hectáreas si el catastro da 32?
+- **Lo que creemos:** unas 22 ha productivas; el catastro suma unas 32 ha.
+- **Nos sirve:** qué ocupa el resto (balsa, caminos, monte, sin plantar…).
+
+### COR-03 · Corvera: árboles y sectores
+- **Lo que creemos:** unos 6.000 limoneros Fino 49; los sectores 1 y 2 son bandas a lo largo del rectángulo grande.
+- **Nos sirve:** edad de los árboles; si las bandas van de norte a sur o de este a oeste; cuántas calles tiene cada sector.
+
+---
+
+## Bloque 7 · Riego
+
+### RIE-01 · ¿Qué marca es el programador de riego?
+- **Lo que creemos:** «creo que son Agrónic»; iguales en las dos fincas, sin conexión a internet.
+- **Nos sirve:** **foto de la placa** del programador (marca y modelo).
+
+### RIE-02 · ¿Quién programa el riego y cuánto se riega?
+- **Lo que creemos:** se programa a mano en la caseta.
+- **Nos sirve:** quién lo programa; horario típico en verano y en invierno (minutos u horas por sector y días).
+
+### RIE-03 · ¿Cómo son los goteros?
+- **Lo que creemos:** un gotero por árbol.
+- **Nos sirve:** cuántos goteros por árbol, litros por hora de cada gotero y si hay una o dos tuberías por calle.
+
+### RIE-04 · ¿Se abona por el riego?
+- **Lo que creemos:** nada.
+- **Nos sirve:** si se abona por el goteo, con qué productos, en qué meses y quién lo decide.
+
+### RIE-05 · Fugas y averías del riego
+- **Lo que creemos:** se recorren las calles buscando goteros que pierden.
+- **Nos sirve:** cada cuánto se revisa, quién lo hace, qué se rompe más y cómo se apunta ahora.
+
+---
+
+## Bloque 8 · Tratamientos
+
+### TRA-01 · ¿Se terminó la fumigación de Corvera del 30/10?
+- **Lo que creemos:** Pencho fumigaba contra piojo y araña roja, con cuba de 2.000 L (Suporter, Quassar, Azupec y Acrux Flow); iba lento.
+- **Nos sirve:** si se terminó y qué día, cuántas cubas se gastaron y si se hizo toda la finca.
+
+### TRA-02 · ¿Se ha tratado Valladolises este otoño?
+- **Lo que creemos:** en octubre de 2025 se trató con mojante y Katanga Expres; de este año no sabemos.
+- **Nos sirve:** si se ha tratado o se va a tratar, contra qué y con qué.
+
+### TRA-03 · ¿Quién decide los tratamientos?
+- **Lo que creemos:** Diego Vélez es técnico agrícola vinculado a las fincas.
+- **Nos sirve:** quién recomienda y quién apunta lo que se echa (cuaderno de campo), y cada cuánto viene Diego.
+
+### TRA-04 · Plazos de seguridad
+- **Lo que creemos:** no tenemos los plazos de seguridad de los productos de este año.
+- **Nos sirve:** si los sabe, o dónde están (etiquetas, fichas, Diego). Con eso la app avisará de cuándo se puede cortar.
+
+### TRA-05 · Límite de tres materias activas
+- **Lo que creemos:** en 2025 se habló de un límite de tres materias activas (por el comprador o la analítica).
+- **Nos sirve:** de dónde viene ese límite y si sigue este año.
+
+---
+
+## Bloque 9 · Cosecha pasada (cuadrar números)
+
+### COS-04 · Kilos de la campaña 25/26
+- **Lo que creemos:** la liquidación da 1.854.256 kg y vuestras cuentas 2.032.042 kg (177.786 kg de diferencia).
+- **Nos sirve:** de dónde sale la diferencia (fechas, otro comprador, mandarinas, destrío contado distinto…).
+
+### COS-05 · Destrío y «cítrica»
+- **Lo que creemos:** la liquidación separa «limón comercial», «cítrica» y «rodrejos»; vuestras cuentas, «buenos» y «destrío».
+- **Nos sirve:** si «cítrica» es lo mismo que «destrío» y si se paga igual.
+
+### COS-06 · Mandarinas
+- **Lo que creemos:** en 2024 se vendieron «a limpia» a 0,35 €/kg (10/01-05/02).
+- **Nos sirve:** cómo fue la venta de 2025 y qué se piensa hacer este año.
+
+### COS-07 · Albaranes y pagos
+- **Lo que creemos:** nada.
+- **Nos sirve:** dónde se guardan los albaranes de báscula y cuándo suele pagar el comprador.
+
+### COS-08 · Cuadrillas
+- **Lo que creemos:** nada.
+- **Nos sirve:** quién pone la cuadrilla para cortar (el comprador o vosotros) y cuánta gente viene.
+
+---
+
+## Bloque 10 · Personas y máquinas
+
+### PER-01 · Pencho y Salah
+- **Lo que creemos:** trabajan en las dos fincas.
+- **Nos sirve:** qué días suelen ir, a qué finca y qué hace normalmente cada uno.
+
+### MAQ-01 · Tractores
+- **Lo que creemos:** en Drive hay papeles de un tractor SAME y un John Deere.
+- **Nos sirve:** qué tractores hay, en qué finca están y para qué se usa cada uno.
+
+### MAQ-02 · El atomizador nuevo
+- **Lo que creemos:** se compró en octubre de 2026 (Mañez y Lozano, 2.000 L, serie Twister Top).
+- **Nos sirve:** en qué finca se usa y si sustituye a otro.
+
+### MAQ-03 · ¿Hay dron?
+- **Lo que creemos:** se habló de volar drones para ver problemas, pero no consta que haya.
+- **Nos sirve:** si hay dron (o se quiere), quién lo vuela y qué se busca con él.
+
+### APP-01 · ¿Qué te gustaría que hiciera la app?
+- **Lo que creemos:** que apuntes desde ChatGPT tareas, niveles, lecturas y tratamientos.
+- **Nos sirve:** lo que más te ahorraría tiempo, y lo que más te preocupa olvidar.
