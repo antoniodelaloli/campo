@@ -5,6 +5,10 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Campo",
   description: "Gestión interna de fincas",
+  applicationName: "Campo",
+  // iPhone: al añadirla a la pantalla de inicio se abre como app (necesario para los avisos)
+  appleWebApp: { capable: true, title: "Campo", statusBarStyle: "default" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {

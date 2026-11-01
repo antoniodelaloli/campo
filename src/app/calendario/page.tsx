@@ -4,6 +4,7 @@ import { CabeceraSeccion, Cargando, Panel } from "@/components/ui";
 import { FilaAgenda } from "@/components/LoQueViene";
 import { LineaCampana, type PuntoLinea } from "@/components/LineaCampana";
 import { NuevoHito } from "./NuevoHito";
+import { AvisosMovil } from "@/components/AvisosMovil";
 import { obtenerContexto } from "@/lib/sesion";
 import {
   cargarFincas,
@@ -92,17 +93,22 @@ async function FechasClave() {
       <LineaCampana puntos={puntos} campana={campana} hoy={hoy} />
 
       <div className="grid gap-5 lg:grid-cols-[380px_1fr] lg:items-start">
-        {puedeEditar && !falta ? (
-          <NuevoHito lugares={lugaresDe(fincas)} hoy={hoy} />
-        ) : (
-          <Panel>
-            <p className="text-sm text-tinta-suave">
-              {falta
-                ? "Cuando exista la tabla de fechas clave, aquí podrás apuntarlas."
-                : "Tu usuario puede consultar las fechas clave, pero no apuntarlas."}
-            </p>
+        <div className="flex flex-col gap-5">
+          {puedeEditar && !falta ? (
+            <NuevoHito lugares={lugaresDe(fincas)} hoy={hoy} />
+          ) : (
+            <Panel>
+              <p className="text-sm text-tinta-suave">
+                {falta
+                  ? "Cuando exista la tabla de fechas clave, aquí podrás apuntarlas."
+                  : "Tu usuario puede consultar las fechas clave, pero no apuntarlas."}
+              </p>
+            </Panel>
+          )}
+          <Panel titulo="Avisos en este móvil">
+            <AvisosMovil />
           </Panel>
-        )}
+        </div>
 
         <div className="flex flex-col gap-5">
           {agenda.atrasados.length > 0 && (

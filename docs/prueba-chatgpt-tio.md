@@ -226,7 +226,7 @@ Objetivo: que Carlos vea **al entrar** qué viene y en cuánto tiempo, y que **e
 > - Una tarea puede **colgar de una fecha clave** (migración `0004_tareas_de_fecha_clave.sql`): la fecha clave muestra «1 de 3 tareas» y la tarea, de qué fecha clave es.
 > - **Línea de la campaña** (octubre → septiembre) arriba de la Agenda: hoy, fechas clave por tipo, hechas en gris, aproximadas difuminadas.
 > - SQL: `0003_hitos.sql` + `datos_0003.sql` (aplicados el 31/10) y `pendiente_0004.sql`.
-> Pendiente: notificaciones (punto 4, tras publicar), Google Calendar, ChatGPT y repaso de los lunes.
+> **Hecho (1/11/2026):** app publicada en Vercel (`campo-lac.vercel.app`, repositorio privado `antoniodelaloli/campo`) y avisos en el móvil (punto 4): migración `0005_avisos_push.sql`, botón «Avisarme en este móvil» en la Agenda, aviso de prueba, aviso diario por cron de Vercel a las 6:00 UTC (7-8 h en invierno, 8-9 h en verano) y repaso los lunes. Pendiente: botones «Hecho/Mañana» en el propio aviso, Google Calendar, ChatGPT y repaso de los lunes con Claude.
 
 1. **Fechas clave en Campo** (tabla `hitos`, migración `0003_hitos.sql`): finca (opcional), tipo (corte/cosecha, tratamiento, plazo de papeles —CHS, desaladora, seguros, contratos—, agua/riego, compra, otro), título, fecha (y hora si la hay), cuándo avisar (por defecto **7 días antes, el día antes y el mismo día**, se puede cambiar), repetir cada año (opcional) y estado (pendiente / hecho / anulado; nada se borra).
 2. **Hitos que salen solos** (calculados, no se apuntan a mano):
@@ -261,7 +261,7 @@ Qué mandar (pegar en el proyecto Campo):
 Qué hace Claude con eso: redibujar Corvera, Valladolises y Lobosillo (contorno, orientación de las filas, caminos, pantanos y edificios en su sitio), ajustar sus superficies y los planos de cada finca (`PlanoFinca`), y comprobar que todo cuadra con las zonas y sectores de la base de datos.
 
 ### Fase 2 · Consultar desde ChatGPT
-- Migración 0005: claves personales (una por persona, revocable, ligada a su usuario).
+- Migración 0006: claves personales (una por persona, revocable, ligada a su usuario).
 - Acciones de **consulta**: resumen del día, tareas, pantanos, avisos, buscar un sitio («Los Nuevos», «sector 2 de Corvera»).
 - GPT **«Campo»** en su cuenta (privado), con instrucciones y frases reales de la visita.
 
@@ -274,7 +274,7 @@ Qué hace Claude con eso: redibujar Corvera, Valladolises y Lobosillo (contorno,
 
 ### Fase 4 · Mejoras
 - Foto del contador → lectura apuntada.
-- Cosecha y liquidaciones en la base de datos (migración 0006). Ya hay KPIs y pestaña de estimación 2026/27 en Cosecha con datos de documentos; faltan los albaranes (hoja de Valladolises 25/26 analizada) y los costes reales (agua, abono, tratamientos: hay uno de 16.131 € de julio de 2022).
+- Cosecha y liquidaciones en la base de datos (migración 0007). Ya hay KPIs y pestaña de estimación 2026/27 en Cosecha con datos de documentos; faltan los albaranes (hoja de Valladolises 25/26 analizada) y los costes reales (agua, abono, tratamientos: hay uno de 16.131 € de julio de 2022).
 - **Parte del día** (como la hoja «control AGUA» de 2022): contadores propio y de la Comunidad, cupo restante, riego por sector, trabajos, incidencias y tiempo en una pantalla; aviso si los dos contadores se separan.
 - Copias de seguridad automáticas.
 - Otros usuarios (tu hermano para Lobosillo, quizá Pencho para avisar de tareas).
