@@ -5,7 +5,7 @@ import { Marco } from "@/components/Marco";
 import { CabeceraSeccion, Cargando, Chip, Dato, Panel, PorConfirmar } from "@/components/ui";
 import { FilaTarea } from "@/components/FilaTarea";
 import { BarraPantano } from "@/components/BarraPantano";
-import { PlanoFinca, tienePlano } from "@/components/PlanoFinca";
+import { COLOR_SECTOR, notaPlano, PlanoFinca, tienePlano, zonasSinSituar } from "@/components/PlanoFinca";
 import { obtenerContexto } from "@/lib/sesion";
 import {
   cargarFincas,
@@ -148,12 +148,36 @@ async function FincaDetalle({
                 vista={vista}
                 zonaSector={zonaSector}
                 base={base}
+                piscina={avisos.some((a) => a.tipo === "piscina")}
               />
               <p className="bg-pergamino/90 px-2 py-1 text-xs text-tinta-suave">
                 {vista === "zonas"
-                  ? "Pulsa una zona para ver su ficha. Las formas son orientativas."
-                  : "Colores = sector que riega cada trozo. Rayado = reparto por confirmar. Formas orientativas."}
+                  ? zonas.length > zonasSinSituar(finca).length
+                    ? "Pulsa una zona para ver su ficha. "
+                    : ""
+                  : "Colores = sector que riega cada trozo. "}
+                {notaPlano(finca)}
               </p>
+              {vista === "zonas" && zonasSinSituar(finca).length > 0 && (
+                <div className="flex flex-col gap-1.5 bg-pergamino/90 px-2 py-2">
+                  <p className="text-xs font-bold text-tinta-suave">Zonas aún sin situar en el plano:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {zonasSinSituar(finca)
+                      .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"))
+                      .map((z) => (
+                        <Link
+                          key={z.id}
+                          href={`${base}?zona=${z.id}`}
+                          scroll={false}
+                          aria-current={zonaSel?.id === z.id ? "true" : undefined}
+                          className={`chip ${zonaSel?.id === z.id ? "bg-sol!" : ""}`}
+                        >
+                          {z.nombre}
+                        </Link>
+                      ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
           {tienePlano(finca) && vista === "zonas" ? null : vista === "zonas" ? (
@@ -197,7 +221,7 @@ async function FincaDetalle({
                           <span
                             aria-hidden="true"
                             className="h-4 w-4 border-2 border-tinta"
-                            style={{ background: ["#2f7fb0", "#c98a2a", "#8e44ad", "#16a085"][sectores.indexOf(s) % 4], opacity: 0.75 }}
+                            style={{ background: COLOR_SECTOR[sectores.indexOf(s) % COLOR_SECTOR.length], opacity: 0.75 }}
                           />
                         )}
                         Sector {s.numero}

@@ -248,7 +248,7 @@ Objetivo: que Carlos vea **al entrar** qué viene y en cuánto tiempo, y que **e
 **Para la visita:** ¿iPhone o Android y qué versión del sistema? ¿Qué le gustaría que le recordara, con cuánta antelación y a qué hora le viene bien el aviso?
 
 ### Fase 1 quater · Fincas dibujadas a imagen y semejanza
-> **Hecho (31/10/2026):** Corvera, Valladolises (trozo de la casa, con pista de tenis y piscina) y Lobosillo (con pista de fútbol) redibujadas sobre capturas de Google Earth; vista 3D tipo dron en escritorio. Pendiente: confirmar la superficie de Corvera (¿35 o 22 ha?), la posición de sus sectores y la casa de Lobosillo; dibujar el resto de zonas de Valladolises en su módulo.
+> **Hecho (31/10/2026):** Corvera, Valladolises (trozo de la casa, con pista de tenis y piscina) y Lobosillo (con pista de fútbol) redibujadas sobre capturas de Google Earth; vista 3D tipo dron en escritorio. **1/11:** la página de cada finca usa ya ese mismo dibujo real, con zonas pulsables, sectores de riego en colores, escala y norte (datos en `PLANOS` de `geografia.ts`); lo no situado sale como «sin situar». Pendiente: confirmar la superficie de Corvera (¿35 o 22 ha?), la posición de sus sectores y la casa de Lobosillo; dibujar el resto de zonas de Valladolises en su módulo.
 
 Pendiente de Antonio (hecho): pasar vistas aéreas de las tres fincas para que Claude redibuje cada una en el mapa (mismo estilo pixel 2D, pero con la forma y distribución reales).
 

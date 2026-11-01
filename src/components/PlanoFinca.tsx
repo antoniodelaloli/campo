@@ -1,71 +1,89 @@
 import type { Finca, ZonaSector } from "@/lib/datos";
-import { normalizar } from "@/lib/texto";
-import { HUECOS_VALLADOLISES } from "@/lib/geografia";
+import { claveDeFinca, FORMAS, GEO, metrosPorUnidad, PLANOS, type ClaveFinca } from "@/lib/geografia";
+import { formatoNumero, normalizar } from "@/lib/texto";
+import { DibujoCorvera, DibujoLobosillo, DibujoValladolises, Patrones } from "@/components/DibujosFincas";
 
 /*
- * Plano ilustrado de una finca, con las zonas pulsables.
- * Solo existe para las fincas cuyo dibujo conocemos (Valladolises y Corvera);
- * para el resto, la página usa un mosaico de zonas.
- * Las formas son orientativas: el plano real se dibujará sobre la ortofoto del PNOA.
+ * Plano de una finca con su forma real: el mismo dibujo calcado de Google Earth que
+ * el mapa de inicio, más encima las zonas (pulsables) o los sectores de riego.
+ * Dónde cae cada zona y sector está en PLANOS (geografia.ts); lo que aún no está
+ * situado sale debajo como «sin situar», para ir completándolo con la familia.
  */
 
-const COLOR_SECTOR = ["#2f7fb0", "#c98a2a", "#8e44ad", "#16a085"];
+export const COLOR_SECTOR = ["#2f7fb0", "#c98a2a", "#8e44ad", "#16a085"];
 
-function Defs() {
+const MARGEN = 24;
+
+function Cartel({ x, y, texto, activa }: { x: number; y: number; texto: string; activa?: boolean }) {
+  const ancho = Math.max(50, texto.length * 8 + 16);
   return (
-    <defs>
-      <pattern id="pf-limonero" width="28" height="24" patternUnits="userSpaceOnUse">
-        <rect width="28" height="24" fill="#b98c5a" />
-        <rect x="5" y="4" width="18" height="14" fill="#2f7a34" />
-        <rect x="8" y="5" width="12" height="9" fill="#46a047" />
-        <rect x="10" y="7" width="2" height="2" fill="#f6d743" />
-        <rect x="16" y="10" width="2" height="2" fill="#f6d743" />
-        <rect x="13" y="13" width="2" height="2" fill="#f6d743" />
-        <rect x="12" y="20" width="4" height="3" fill="#5e3b1c" />
-      </pattern>
-      <pattern id="pf-mandarino" width="28" height="24" patternUnits="userSpaceOnUse">
-        <rect width="28" height="24" fill="#b98c5a" />
-        <rect x="5" y="4" width="18" height="14" fill="#37803a" />
-        <rect x="8" y="5" width="12" height="9" fill="#4fa54a" />
-        <rect x="10" y="7" width="3" height="3" fill="#ef8a22" />
-        <rect x="16" y="10" width="3" height="3" fill="#ef8a22" />
-        <rect x="12" y="20" width="4" height="3" fill="#5e3b1c" />
-      </pattern>
-      <pattern id="pf-arbol" width="28" height="24" patternUnits="userSpaceOnUse">
-        <rect width="28" height="24" fill="#b98c5a" />
-        <rect x="5" y="4" width="18" height="14" fill="#3d7a3a" />
-        <rect x="8" y="5" width="12" height="9" fill="#5a9a50" />
-        <rect x="12" y="20" width="4" height="3" fill="#5e3b1c" />
-      </pattern>
-      <pattern id="pf-rayado" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-        <rect width="4" height="10" fill="#ffffff" opacity="0.45" />
-      </pattern>
-    </defs>
-  );
-}
-
-function patron(especie: string | null) {
-  const e = normalizar(especie ?? "");
-  if (e.startsWith("mandarin")) return "url(#pf-mandarino)";
-  if (e.startsWith("limon")) return "url(#pf-limonero)";
-  return "url(#pf-arbol)";
-}
-
-function Etiqueta({ x, y, texto, activa }: { x: number; y: number; texto: string; activa: boolean }) {
-  const ancho = Math.max(44, texto.length * 6.4 + 12);
-  return (
-    <g pointerEvents="none">
-      <rect x={x - ancho / 2} y={y - 12} width={ancho} height={17} fill={activa ? "#f6d743" : "#f6e7c1"} stroke="#3b2a1a" strokeWidth={1.5} />
-      <text x={x} y={y + 1} textAnchor="middle" fontSize={10.5} fontWeight={700} fill="#3b2a1a">
+    <g>
+      <rect
+        x={x - ancho / 2}
+        y={y - 16}
+        width={ancho}
+        height={22}
+        rx={3}
+        fill={activa ? "#f6d743" : "#f6e7c1"}
+        stroke="#3b2a1a"
+        strokeWidth={2}
+      />
+      <text x={x} y={y} textAnchor="middle" fontSize={13} fontWeight={700} fill="#3b2a1a">
         {texto}
       </text>
     </g>
   );
 }
 
+/** Barra de escala con una medida redonda (10, 20, 50, 100… m). */
+function Escala({ x, y, mpu }: { x: number; y: number; mpu: number }) {
+  const objetivo = 90 * mpu; // ~90 unidades de dibujo
+  const metros = [10, 20, 25, 50, 100, 200, 250, 500].reduce((m, c) => (c <= objetivo ? c : m), 10);
+  const largo = metros / mpu;
+  return (
+    <g pointerEvents="none">
+      <rect x={x - 4} y={y - 18} width={largo + 8} height={28} rx={3} fill="#f6e7c1" stroke="#3b2a1a" strokeWidth={1.5} opacity={0.92} />
+      <rect x={x} y={y} width={largo} height={5} fill="#3b2a1a" />
+      <rect x={x} y={y} width={largo / 2} height={5} fill="#f6e7c1" stroke="#3b2a1a" strokeWidth={1} />
+      <text x={x + largo / 2} y={y - 5} textAnchor="middle" fontSize={11} fontWeight={700} fill="#3b2a1a">
+        {metros} m
+      </text>
+    </g>
+  );
+}
+
+function Norte({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x},${y})`} pointerEvents="none">
+      <circle r={15} fill="#f6e7c1" stroke="#3b2a1a" strokeWidth={1.5} opacity={0.92} />
+      <polygon points="0,-11 5,3 0,0 -5,3" fill="#c0392b" />
+      <text y={12} textAnchor="middle" fontSize={9} fontWeight={700} fill="#3b2a1a">
+        N
+      </text>
+    </g>
+  );
+}
+
 export function tienePlano(finca: Finca) {
-  const n = normalizar(finca.nombre);
-  return n === "valladolises" || n === "corvera";
+  return claveDeFinca(finca.nombre) !== null;
+}
+
+/** Zonas de la finca que todavía no están situadas en el plano. */
+export function zonasSinSituar(finca: Finca) {
+  const clave = claveDeFinca(finca.nombre);
+  if (!clave) return finca.zonas;
+  return finca.zonas.filter((z) => !PLANOS[clave].zonas[normalizar(z.nombre)]);
+}
+
+export function notaPlano(finca: Finca) {
+  const clave = claveDeFinca(finca.nombre);
+  return clave ? PLANOS[clave].nota : null;
+}
+
+function Dibujo({ clave, pantano, piscina }: { clave: ClaveFinca; pantano: string | null; piscina: boolean }) {
+  if (clave === "corvera") return <DibujoCorvera pantano={pantano} detalle />;
+  if (clave === "valladolises") return <DibujoValladolises pantano={pantano} piscina={piscina} detalle />;
+  return <DibujoLobosillo detalle />;
 }
 
 export function PlanoFinca({
@@ -74,134 +92,138 @@ export function PlanoFinca({
   vista,
   zonaSector,
   base,
+  piscina = false,
 }: {
   finca: Finca;
   zonaSel: string | null;
   vista: "zonas" | "sectores";
   zonaSector: ZonaSector[];
   base: string;
+  piscina?: boolean;
 }) {
-  const nombre = normalizar(finca.nombre);
+  const clave = claveDeFinca(finca.nombre);
+  if (!clave) return null;
+
+  const forma = FORMAS[clave];
+  const plano = PLANOS[clave];
+  const { x, y, w, h } = forma.caja;
+  // sitio extra abajo para el cartel del pantano, la escala y el norte
+  const vb = { x: x - MARGEN, y: y - MARGEN, w: w + MARGEN * 2, h: h + MARGEN * 2 + 40 };
+
+  const areaHa = finca.superficie_ha != null ? Number(finca.superficie_ha) : GEO[clave].areaHaPorDefecto;
+  const mpu = metrosPorUnidad(clave, areaHa);
+  const pantano = finca.pantanos[0]?.capacidad_m3 != null ? formatoNumero(Number(finca.pantanos[0].capacidad_m3)) : null;
+
   const sectores = [...finca.sectores_riego].sort((a, b) => a.numero - b.numero);
-  const colorDe = (sectorId: string) => {
-    const i = sectores.findIndex((s) => s.id === sectorId);
-    return COLOR_SECTOR[i % COLOR_SECTOR.length];
+  const colorSector = (numero: number) => {
+    const i = sectores.findIndex((s) => s.numero === numero);
+    return COLOR_SECTOR[(i < 0 ? numero - 1 : i) % COLOR_SECTOR.length];
   };
-  const sectoresDeZona = (zid: string) => zonaSector.filter((zs) => zs.zona_id === zid).map((zs) => zs.sector_id);
+  const sectoresDeZona = (zid: string) =>
+    zonaSector
+      .filter((zs) => zs.zona_id === zid)
+      .map((zs) => sectores.find((s) => s.id === zs.sector_id)?.numero)
+      .filter((n): n is number => n != null);
 
-  if (nombre === "valladolises") {
-    return (
-      <svg viewBox="-8 -8 276 246" className="pixel mx-auto block max-h-[62vh] w-full" role="img" aria-label={`Plano de ${finca.nombre}`} style={{ fontFamily: "var(--font-pixel)" }}>
-        <Defs />
-        <rect x={-8} y={-8} width={276} height={246} fill="#86bd5b" />
-        <rect x={-4} y={-4} width={268} height={238} fill="#7a5230" />
-        <rect x={0} y={0} width={260} height={230} fill="#a9b86a" />
-        {finca.zonas.map((z) => {
-          const h = HUECOS_VALLADOLISES[normalizar(z.nombre)];
-          if (!h) return null;
-          const activa = vista === "zonas" && zonaSel === z.id;
-          const sz = sectoresDeZona(z.id);
+  const zonasSituadas = finca.zonas
+    .map((z) => ({ z, trozo: plano.zonas[normalizar(z.nombre)] }))
+    .filter((t) => t.trozo);
+
+  return (
+    <svg
+      viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
+      className="pixel mx-auto block max-h-[68vh] w-full"
+      role="img"
+      aria-label={`Plano de ${finca.nombre}`}
+      style={{ fontFamily: "var(--font-pixel)" }}
+    >
+      <Patrones />
+      <defs>
+        <pattern id="pf-rayado" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="4" height="10" fill="#ffffff" opacity="0.5" />
+        </pattern>
+      </defs>
+      <rect x={vb.x} y={vb.y} width={vb.w} height={vb.h} fill="#86bd5b" />
+
+      <Dibujo clave={clave} pantano={pantano} piscina={piscina} />
+
+      {/* Zonas: trozos pulsables */}
+      {vista === "zonas" &&
+        zonasSituadas.map(({ z, trozo }) => {
+          const activa = zonaSel === z.id;
           return (
             <a key={z.id} href={`${base}?zona=${z.id}`} aria-label={`Zona ${z.nombre}`}>
-              <rect x={h.x} y={h.y} width={h.w} height={h.h} fill={patron(z.especie)} />
-              {h.bancales && (
-                <g fill="#8d6238" pointerEvents="none">
-                  <rect x={h.x} y={h.y + 18} width={h.w} height={3} />
-                  <rect x={h.x} y={h.y + 44} width={h.w} height={3} />
-                  <rect x={h.x} y={h.y + 70} width={h.w} height={3} />
-                </g>
+              {trozo!.poligono && (
+                <polygon
+                  points={trozo!.poligono}
+                  fill={activa ? "#f6d743" : "#ffffff"}
+                  fillOpacity={activa ? 0.28 : 0.001}
+                  stroke={activa ? "#f6d743" : "#fff4d6"}
+                  strokeOpacity={activa ? 1 : 0.7}
+                  strokeWidth={activa ? 4 : 2}
+                  strokeDasharray={activa ? undefined : "6 5"}
+                  strokeLinejoin="round"
+                />
               )}
-              {vista === "sectores" &&
-                (sz.length ? (
-                  sz.map((sid, i) => (
-                    <rect key={sid} x={h.x + (h.w / sz.length) * i} y={h.y} width={h.w / sz.length} height={h.h} fill={colorDe(sid)} opacity={0.4} />
-                  ))
-                ) : (
-                  <rect x={h.x} y={h.y} width={h.w} height={h.h} fill="url(#pf-rayado)" />
-                ))}
-              {activa && <rect x={h.x + 1.5} y={h.y + 1.5} width={h.w - 3} height={h.h - 3} fill="none" stroke="#f6d743" strokeWidth={3} />}
+              <Cartel x={trozo!.etiqueta.x} y={trozo!.etiqueta.y} texto={z.nombre} activa={activa} />
             </a>
           );
         })}
-        {/* casa y piscina */}
-        <g pointerEvents="none">
-          <rect x={14} y={12} width={46} height={34} fill="#f3e6c8" stroke="#3b2a1a" strokeWidth={2} />
-          <polygon points="10,14 37,0 64,14" fill="#c0563a" stroke="#3b2a1a" strokeWidth={2} />
-          <rect x={32} y={28} width={10} height={18} fill="#6b4423" />
-          <rect x={64} y={56} width={44} height={30} fill="#f3f3f3" stroke="#3b2a1a" strokeWidth={2} />
-          <rect x={68} y={60} width={36} height={22} fill="#4ac0e8" />
-        </g>
-        {finca.zonas.map((z) => {
-          const h = HUECOS_VALLADOLISES[normalizar(z.nombre)];
-          if (!h) return null;
-          return <Etiqueta key={`e-${z.id}`} x={h.ex} y={h.ey} texto={z.nombre} activa={vista === "zonas" && zonaSel === z.id} />;
-        })}
-      </svg>
-    );
-  }
 
-  if (nombre === "corvera") {
-    // Formas: rectángulo grande (2 bandas = sectores 1 y 2) y parcela del panadero (sector 3)
-    const formas: Record<string, { x: number; y: number; w: number; h: number; ex: number; ey: number }> = {
-      "rectangulo grande": { x: 0, y: 0, w: 228, h: 240, ex: 114, ey: 200 },
-      "parcela del panadero": { x: 236, y: 150, w: 64, h: 90, ex: 268, ey: 230 },
-    };
-    const sectorPorNumero = new Map(sectores.map((s) => [s.numero, s]));
-    const bandas = [
-      { n: 1, x: 0, y: 0, w: 108, h: 240 },
-      { n: 2, x: 120, y: 0, w: 108, h: 240 },
-      { n: 3, x: 236, y: 150, w: 64, h: 90 },
-    ];
-    return (
-      <svg viewBox="-8 -8 320 260" className="pixel mx-auto block max-h-[62vh] w-full" role="img" aria-label={`Plano de ${finca.nombre}`} style={{ fontFamily: "var(--font-pixel)" }}>
-        <Defs />
-        <rect x={-8} y={-8} width={320} height={260} fill="#86bd5b" />
-        <rect x={-4} y={-4} width={236} height={248} fill="#7a5230" />
-        <rect x={232} y={146} width={72} height={98} fill="#7a5230" />
-        {finca.zonas.map((z) => {
-          const f = formas[normalizar(z.nombre)];
-          if (!f) return null;
-          const activa = vista === "zonas" && zonaSel === z.id;
+      {/* Sectores de riego: colores por sector */}
+      {vista === "sectores" &&
+        sectores.map((s) => {
+          const trozo = plano.sectores[s.numero];
+          if (!trozo) return null;
           return (
-            <a key={z.id} href={`${base}?zona=${z.id}`} aria-label={`Zona ${z.nombre}`}>
-              <rect x={f.x} y={f.y} width={f.w} height={f.h} fill={patron(z.especie)} />
-              {activa && <rect x={f.x + 1.5} y={f.y + 1.5} width={f.w - 3} height={f.h - 3} fill="none" stroke="#f6d743" strokeWidth={3} />}
-            </a>
+            <g key={s.id} pointerEvents="none">
+              {trozo.poligono && (
+                <polygon
+                  points={trozo.poligono}
+                  fill={colorSector(s.numero)}
+                  fillOpacity={0.42}
+                  stroke={colorSector(s.numero)}
+                  strokeWidth={2}
+                  strokeLinejoin="round"
+                />
+              )}
+              <rect x={trozo.etiqueta.x - 17} y={trozo.etiqueta.y - 15} width={34} height={22} rx={4} fill="#ffffff" stroke="#3b2a1a" strokeWidth={2} />
+              <text x={trozo.etiqueta.x} y={trozo.etiqueta.y + 1} textAnchor="middle" fontSize={14} fontWeight={700} fill="#3b2a1a">
+                S{s.numero}
+              </text>
+            </g>
           );
         })}
-        {/* caminos en cruz */}
-        <rect x={108} y={0} width={12} height={240} fill="#e0bd80" pointerEvents="none" />
-        <rect x={0} y={114} width={232} height={12} fill="#e0bd80" pointerEvents="none" />
-        {/* pantano */}
-        <rect x={236} y={4} width={62} height={104} rx={10} fill="#8b6b3d" />
-        <rect x={240} y={8} width={54} height={96} rx={8} fill="#4aa3d9" />
-        {vista === "sectores" &&
-          bandas.map((b) => {
-            const s = sectorPorNumero.get(b.n);
-            if (!s) return null;
-            return (
-              <g key={b.n} pointerEvents="none">
-                <rect x={b.x} y={b.y} width={b.w} height={b.h} fill={colorDe(s.id)} opacity={0.38} />
-                <rect x={b.x + b.w / 2 - 15} y={b.y + 10} width={30} height={18} fill="#ffffff" stroke="#3b2a1a" strokeWidth={1.5} />
-                <text x={b.x + b.w / 2} y={b.y + 23} textAnchor="middle" fontSize={11} fontWeight={700} fill="#3b2a1a">
-                  S{b.n}
-                </text>
-              </g>
-            );
-          })}
-        {finca.zonas.map((z) => {
-          const f = formas[normalizar(z.nombre)];
-          if (!f) return null;
-          // nombres largos: se usa el alias corto ("panadero") para que quepa
-          const corto =
-            z.nombre.length > 14 && z.alias[0]
-              ? z.alias[0].charAt(0).toUpperCase() + z.alias[0].slice(1)
-              : z.nombre;
-          return <Etiqueta key={`e-${z.id}`} x={f.ex} y={f.ey} texto={corto} activa={vista === "zonas" && zonaSel === z.id} />;
-        })}
-      </svg>
-    );
-  }
 
-  return null;
+      {/* Sectores sin situar: la finca entera rayada */}
+      {vista === "sectores" && sectores.length > 0 && sectores.every((s) => !plano.sectores[s.numero]) && forma.contorno && (
+        <polygon points={forma.contorno} fill="url(#pf-rayado)" pointerEvents="none" />
+      )}
+
+      {/* zona seleccionada con sus sectores, como pista en la vista de zonas */}
+      {vista === "zonas" &&
+        zonasSituadas
+          .filter(({ z }) => z.id === zonaSel && sectoresDeZona(z.id).length > 0)
+          .map(({ z, trozo }) => (
+            <text
+              key={`s-${z.id}`}
+              x={trozo!.etiqueta.x}
+              y={trozo!.etiqueta.y + 20}
+              textAnchor="middle"
+              fontSize={11}
+              fontWeight={700}
+              fill="#fff4d6"
+              stroke="#3b2a1a"
+              strokeWidth={3}
+              paintOrder="stroke"
+              pointerEvents="none"
+            >
+              Riega: {sectoresDeZona(z.id).map((n) => `S${n}`).join(", ")}
+            </text>
+          ))}
+
+      <Escala x={vb.x + 16} y={vb.y + vb.h - 16} mpu={mpu} />
+      <Norte x={vb.x + 26} y={vb.y + 26} />
+    </svg>
+  );
 }

@@ -169,23 +169,74 @@ export function metrosPorUnidad(clave: ClaveFinca, areaHa: number) {
   return forma.metrosPorUnidadFijo ?? Math.sqrt((areaHa * 10000) / forma.areaDibujada);
 }
 
-// Huecos de las zonas de Valladolises dentro de su dibujo (x, y, ancho, alto, etiqueta)
-export const HUECOS_VALLADOLISES: Record<
-  string,
-  { x: number; y: number; w: number; h: number; ex: number; ey: number; bancales?: boolean }
-> = {
-  "la casa": { x: 0, y: 0, w: 115, h: 135, ex: 45, ey: 109 },
-  "los olivos": { x: 120, y: 0, w: 140, h: 95, ex: 190, ey: 50 },
-  "del pozo": { x: 120, y: 100, w: 140, h: 75, ex: 190, ey: 146, bancales: true },
-  abajo: { x: 0, y: 142, w: 115, h: 88, ex: 57, ey: 197 },
-  trivino: { x: 120, y: 182, w: 80, h: 48, ex: 160, ey: 211 },
-  "la mari": { x: 206, y: 182, w: 54, h: 48, ex: 233, ey: 211 },
-};
-
 // Insignias de sector de Corvera según su número
 // (orientativo: falta confirmar qué riega cada sector)
 export const SECTORES_CORVERA: Record<number, { x: number; y: number }> = {
   1: { x: 153, y: 128 },
   2: { x: 113, y: 300 },
   3: { x: 366, y: 62 },
+};
+
+/** Clave de dibujo a partir del nombre de la finca en la base de datos. */
+export function claveDeFinca(nombre: string): ClaveFinca | null {
+  const n = nombre
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+  return n === "corvera" || n === "valladolises" || n === "lobosillo" ? n : null;
+}
+
+/*
+ * Plano de cada finca (página /fincas/[id]): dónde cae cada zona y cada sector de riego
+ * dentro del dibujo calcado (mismas unidades que FORMAS). Es la base para ir mapeando
+ * zonas y sectores con la familia: lo que no está aquí sale como «sin situar».
+ * Las claves de zona son el nombre normalizado (minúsculas, sin tildes).
+ */
+export type TrozoPlano = {
+  /** polígono en unidades de dibujo; sin él, solo se pone el cartel */
+  poligono?: string;
+  /** dónde va el cartel */
+  etiqueta: { x: number; y: number };
+};
+
+export type PlanoDeFinca = {
+  zonas: Record<string, TrozoPlano>;
+  sectores: Record<number, TrozoPlano>;
+  /** qué es seguro y qué falta, para el pie del plano */
+  nota: string;
+};
+
+// Corvera: el saliente del noreste (calcado) se separa del cuerpo principal en 347,73 → 320,0.
+const CORVERA_PANADERO = "320,0 337,10 351,19 385,44 414,76 416,91 404,105 347,73";
+const CORVERA_PRINCIPAL = "320,0 347,73 359,132 298,241 275,249 152,347 96,366 0,234";
+
+export const PLANOS: Record<ClaveFinca, PlanoDeFinca> = {
+  corvera: {
+    zonas: {
+      "rectangulo grande": { poligono: CORVERA_PRINCIPAL, etiqueta: { x: 130, y: 232 } },
+      "parcela del panadero": { poligono: CORVERA_PANADERO, etiqueta: { x: 330, y: -12 } },
+    },
+    sectores: {
+      // Sectores 1 y 2 separados por el camino diagonal largo; 3 = parcela del panadero
+      1: { poligono: "320,0 0,234 29,273 346,69", etiqueta: { x: 165, y: 152 } },
+      2: { poligono: "96,366 152,347 275,249 298,241 359,132 347,73 346,69 29,273", etiqueta: { x: 130, y: 300 } },
+      3: { poligono: CORVERA_PANADERO, etiqueta: { x: 376, y: 66 } },
+    },
+    nota:
+      "Contorno, caminos y pantano calcados de Google Earth. Por confirmar: que la parcela del panadero sea el saliente del noreste y que el camino diagonal separe los sectores 1 y 2.",
+  },
+  valladolises: {
+    zonas: {
+      "la casa": { poligono: "118,88 150,74 220,122 206,152 160,170 136,160 112,124", etiqueta: { x: 146, y: 64 } },
+    },
+    sectores: {},
+    nota:
+      "De momento solo está dibujado el trozo de la casa, la pista de tenis y el pantano (unas 4,9 ha de las ~22). El resto de trozos se dibujará con una vista aérea que los marque.",
+  },
+  lobosillo: {
+    zonas: {},
+    sectores: {},
+    nota: "Contorno, balsa, casa y pista de fútbol calcados de Google Earth. Faltan sus zonas y sectores de riego.",
+  },
 };
