@@ -537,7 +537,7 @@ export function MapaInteractivo({
       onKeyDown={alTeclear}
     >
       {/* cielo y sierra al fondo (solo se ven con el mapa inclinado) */}
-      {fraccion3d > 0 && <Horizonte opacidad={fraccion3d} />}
+      {fraccion3d > 0 && <Horizonte opacidad={fraccion3d} yBase={yHorizonte} />}
 
       {/* plano del mapa: se inclina entero, como una mesa vista desde un dron */}
       <div
@@ -639,14 +639,20 @@ export function MapaInteractivo({
       </svg>
       </div>
 
-      {/* bruma hacia el horizonte (da profundidad a la vista inclinada) */}
+      {/* bruma hacia el horizonte: funde la sierra con el campo (sin corte brusco) y da profundidad */}
       {fraccion3d > 0 && (
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0"
           style={{
             opacity: fraccion3d,
-            background: "linear-gradient(180deg, rgba(226,232,226,.9) 0%, rgba(232,226,206,.55) 18%, rgba(232,226,206,0) 42%)",
+            background: `linear-gradient(180deg,
+              rgba(214,200,168,0) 0px,
+              rgba(214,200,168,0) ${Math.max(0, yHorizonte - 70)}px,
+              rgba(206,192,156,.92) ${yHorizonte + 4}px,
+              rgba(214,204,174,.55) ${yHorizonte + 60}px,
+              rgba(226,220,198,.18) ${yHorizonte + 170}px,
+              rgba(226,220,198,0) ${yHorizonte + 300}px)`,
           }}
         />
       )}
@@ -662,7 +668,8 @@ export function MapaInteractivo({
       {puede3d && (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 z-[4] h-[26%] overflow-hidden [container-type:inline-size]"
+          className="pointer-events-none absolute inset-x-0 top-0 z-[4] overflow-hidden [container-type:inline-size]"
+          style={{ height: Math.max(90, yHorizonte) }}
         >
           <Avioneta activa={inclinacion >= ANGULO_3D - 0.5} />
         </div>
@@ -811,22 +818,114 @@ export function MapaInteractivo({
 }
 
 /**
- * Cielo y silueta de la Sierra de Carrascoy al fondo (al norte de las fincas),
- * que asoman por encima del plano inclinado. Estilo pixel, apagado.
+ * Cielo y Sierra de Carrascoy al fondo (al norte de las fincas), que asoman por
+ * encima del plano inclinado. Tres capas de sierra (la lejana más azulada por la
+ * distancia), barrancos, pinos sueltos y un pie de monte que se funde con el campo.
+ * `yBase` = altura (px) a la que empieza el mapa inclinado.
  */
-function Horizonte({ opacidad }: { opacidad: number }) {
+function Horizonte({ opacidad, yBase }: { opacidad: number; yBase: number }) {
+  const alto = Math.max(60, yBase + 70);
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[26%]" style={{ opacity: opacidad }}>
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,#bcd6df_0%,#d9e4dc_55%,#e6e0c9_100%)]" />
-      <svg className="pixel absolute inset-x-0 bottom-0 h-[70%] w-full" viewBox="0 0 400 60" preserveAspectRatio="none">
-        <polygon
-          fill="#a9b2a0"
-          points="0,60 0,40 18,36 30,30 44,32 58,24 72,26 86,18 98,22 112,16 126,20 140,14 156,22 170,20 186,28 200,24 216,30 232,26 248,32 262,28 280,34 296,30 312,36 330,32 346,38 362,34 380,40 400,38 400,60"
-        />
-        <polygon
-          fill="#bcc3ad"
-          points="0,60 0,48 24,44 40,40 60,44 80,38 100,42 124,36 146,42 168,38 190,44 214,40 236,46 258,42 282,48 306,44 330,48 356,46 380,50 400,48 400,60"
-        />
+    <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0" style={{ opacity: opacidad, height: alto }}>
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,#a9c9dc_0%,#c9dbe0_45%,#e8dcc0_100%)]" />
+      <svg
+        className="pixel absolute inset-x-0 bottom-0 w-full"
+        style={{ height: Math.max(40, alto * 0.62) }}
+        viewBox="0 0 400 70"
+        preserveAspectRatio="none"
+        shapeRendering="crispEdges"
+      >
+        {/* sierra lejana: azulada por la distancia */}
+        <polygon fill="#a39889" points="0,39 4,37 8,37 12,34 16,34 20,33 24,30 28,30 32,27 36,27 40,24 44,22 48,22 52,22 56,19 60,18 64,18 68,18 72,16 76,15 80,16 84,13 88,15 92,13 96,12 100,11 104,12 108,13 112,10 116,11 120,11 124,10 128,10 132,8 136,8 140,9 144,10 148,10 152,10 156,11 160,11 164,11 168,13 172,14 176,13 180,15 184,15 188,17 192,17 196,16 200,18 204,16 208,17 212,18 216,17 220,18 224,17 228,19 232,20 236,20 240,21 244,20 248,22 252,23 256,24 260,24 264,26 268,27 272,26 276,28 280,26 284,29 288,29 292,30 296,29 300,28 304,28 308,29 312,27 316,29 320,28 324,28 328,28 332,31 336,30 340,31 344,32 348,34 352,33 356,35 360,36 364,38 368,39 372,40 376,39 380,40 384,40 388,43 392,44 396,42 400,42 400,70 0,70" />
+        {/* sierra media: la cresta de Carrascoy */}
+        <polygon fill="#97704b" points="0,43 4,41 8,41 12,40 16,37 20,35 24,36 28,35 32,35 36,36 40,34 44,34 48,34 52,35 56,32 60,36 64,36 68,37 72,37 76,35 80,35 84,33 88,34 92,31 96,29 100,29 104,27 108,27 112,25 116,24 120,24 124,24 128,25 132,24 136,28 140,28 144,27 148,28 152,29 156,29 160,29 164,32 168,33 172,30 176,30 180,29 184,29 188,30 192,30 196,32 200,30 204,31 208,35 212,34 216,34 220,36 224,35 228,37 232,39 236,39 240,38 244,36 248,36 252,35 256,36 260,35 264,36 268,34 272,34 276,36 280,38 284,38 288,39 292,40 296,40 300,39 304,41 308,42 312,41 316,41 320,42 324,42 328,44 332,45 336,43 340,44 344,44 348,44 352,41 356,41 360,41 364,41 368,41 372,43 376,45 380,45 384,44 388,45 392,47 396,44 400,47 400,70 0,70" />
+        <g fill="#7e5b3b" opacity="0.8">
+          <polygon points="55,34 58,34 56,66 53,66" />
+          <polygon points="105,29 108,29 106,66 103,66" />
+          <polygon points="140,30 143,30 141,66 138,66" />
+          <polygon points="175,32 178,32 176,66 173,66" />
+          <polygon points="215,36 218,36 216,66 213,66" />
+          <polygon points="255,38 258,38 256,66 253,66" />
+          <polygon points="300,41 303,41 301,66 298,66" />
+          <polygon points="345,46 348,46 346,66 343,66" />
+          <polygon points="380,47 383,47 381,66 378,66" />
+        </g>
+        {/* lomas cercanas */}
+        <polygon fill="#ad8758" points="0,54 4,53 8,52 12,50 16,49 20,51 24,49 28,51 32,52 36,51 40,51 44,53 48,52 52,51 56,50 60,50 64,51 68,50 72,47 76,49 80,48 84,47 88,46 92,46 96,45 100,45 104,49 108,49 112,49 116,51 120,51 124,52 128,52 132,51 136,50 140,50 144,49 148,50 152,48 156,49 160,48 164,50 168,49 172,50 176,51 180,53 184,52 188,54 192,53 196,54 200,54 204,52 208,52 212,51 216,49 220,51 224,48 228,48 232,48 236,47 240,46 244,47 248,48 252,49 256,48 260,50 264,50 268,51 272,53 276,53 280,54 284,55 288,55 292,54 296,54 300,53 304,53 308,53 312,52 316,52 320,51 324,52 328,52 332,52 336,52 340,51 344,52 348,54 352,54 356,52 360,53 364,54 368,54 372,55 376,55 380,57 384,58 388,58 392,56 396,58 400,58 400,70 0,70" />
+        <g fill="#5f6b3c" opacity="0.85">
+          <rect x="75" y="45" width="2" height="2" />
+          <rect x="72" y="53" width="2" height="2" />
+          <rect x="114" y="33" width="2" height="2" />
+          <rect x="205" y="64" width="2" height="2" />
+          <rect x="85" y="49" width="2" height="2" />
+          <rect x="84" y="62" width="2" height="2" />
+          <rect x="265" y="50" width="2" height="2" />
+          <rect x="175" y="58" width="2" height="2" />
+          <rect x="102" y="53" width="2" height="2" />
+          <rect x="165" y="39" width="2" height="2" />
+          <rect x="371" y="56" width="2" height="2" />
+          <rect x="11" y="52" width="2" height="2" />
+          <rect x="285" y="54" width="2" height="2" />
+          <rect x="227" y="61" width="2" height="2" />
+          <rect x="11" y="54" width="2" height="2" />
+          <rect x="171" y="65" width="2" height="2" />
+          <rect x="321" y="53" width="2" height="2" />
+          <rect x="264" y="40" width="2" height="2" />
+          <rect x="59" y="63" width="2" height="2" />
+          <rect x="119" y="32" width="2" height="2" />
+          <rect x="45" y="44" width="2" height="2" />
+          <rect x="141" y="32" width="2" height="2" />
+          <rect x="94" y="50" width="2" height="2" />
+          <rect x="388" y="51" width="2" height="2" />
+          <rect x="218" y="63" width="2" height="2" />
+          <rect x="348" y="54" width="2" height="2" />
+          <rect x="209" y="41" width="2" height="2" />
+          <rect x="276" y="54" width="2" height="2" />
+          <rect x="294" y="57" width="2" height="2" />
+          <rect x="360" y="53" width="2" height="2" />
+          <rect x="47" y="44" width="2" height="2" />
+          <rect x="31" y="62" width="2" height="2" />
+          <rect x="354" y="48" width="2" height="2" />
+          <rect x="219" y="66" width="2" height="2" />
+          <rect x="39" y="44" width="2" height="2" />
+          <rect x="10" y="63" width="2" height="2" />
+          <rect x="47" y="61" width="2" height="2" />
+          <rect x="135" y="35" width="2" height="2" />
+          <rect x="313" y="50" width="2" height="2" />
+          <rect x="36" y="46" width="2" height="2" />
+          <rect x="64" y="52" width="2" height="2" />
+          <rect x="7" y="53" width="2" height="2" />
+          <rect x="285" y="53" width="2" height="2" />
+          <rect x="139" y="38" width="2" height="2" />
+          <rect x="24" y="54" width="2" height="2" />
+          <rect x="365" y="50" width="2" height="2" />
+          <rect x="58" y="44" width="2" height="2" />
+          <rect x="136" y="33" width="2" height="2" />
+          <rect x="94" y="45" width="2" height="2" />
+          <rect x="161" y="50" width="2" height="2" />
+          <rect x="273" y="60" width="2" height="2" />
+          <rect x="107" y="47" width="2" height="2" />
+          <rect x="230" y="55" width="2" height="2" />
+          <rect x="346" y="51" width="2" height="2" />
+          <rect x="140" y="52" width="2" height="2" />
+          <rect x="11" y="50" width="2" height="2" />
+          <rect x="20" y="37" width="2" height="2" />
+          <rect x="11" y="65" width="2" height="2" />
+          <rect x="260" y="54" width="2" height="2" />
+          <rect x="99" y="63" width="2" height="2" />
+          <rect x="245" y="45" width="2" height="2" />
+          <rect x="230" y="42" width="2" height="2" />
+          <rect x="339" y="66" width="2" height="2" />
+          <rect x="223" y="58" width="2" height="2" />
+          <rect x="255" y="55" width="2" height="2" />
+          <rect x="203" y="65" width="2" height="2" />
+          <rect x="159" y="44" width="2" height="2" />
+          <rect x="119" y="47" width="2" height="2" />
+          <rect x="103" y="37" width="2" height="2" />
+          <rect x="209" y="48" width="2" height="2" />
+        </g>
+        {/* pie de monte: se funde con el color del campo */}
+        <rect x="0" y="62" width="400" height="8" fill="#bba67a" />
       </svg>
     </div>
   );

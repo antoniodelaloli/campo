@@ -93,6 +93,9 @@ export function PlanoFinca({
   zonaSector,
   base,
   piscina = false,
+  zonaSobre = null,
+  onElegir,
+  onSobre,
 }: {
   finca: Finca;
   zonaSel: string | null;
@@ -100,6 +103,11 @@ export function PlanoFinca({
   zonaSector: ZonaSector[];
   base: string;
   piscina?: boolean;
+  /** zona bajo el ratón (se resalta sin elegirla) */
+  zonaSobre?: string | null;
+  /** si se pasa, pulsar una zona la elige sin recargar la página */
+  onElegir?: (zonaId: string) => void;
+  onSobre?: (zonaId: string | null) => void;
 }) {
   const clave = claveDeFinca(finca.nombre);
   if (!clave) return null;
@@ -151,21 +159,37 @@ export function PlanoFinca({
       {vista === "zonas" &&
         zonasSituadas.map(({ z, trozo }) => {
           const activa = zonaSel === z.id;
+          const encima = zonaSobre === z.id && !activa;
           return (
-            <a key={z.id} href={`${base}?zona=${z.id}`} aria-label={`Zona ${z.nombre}`}>
+            <a
+              key={z.id}
+              href={`${base}?zona=${z.id}`}
+              aria-label={`Zona ${z.nombre}`}
+              aria-current={activa ? "true" : undefined}
+              className="cursor-pointer outline-none"
+              onClick={(e) => {
+                if (!onElegir) return;
+                e.preventDefault();
+                onElegir(z.id);
+              }}
+              onMouseEnter={() => onSobre?.(z.id)}
+              onMouseLeave={() => onSobre?.(null)}
+              onFocus={() => onSobre?.(z.id)}
+              onBlur={() => onSobre?.(null)}
+            >
               {trozo!.poligono && (
                 <polygon
                   points={trozo!.poligono}
                   fill={activa ? "#f6d743" : "#ffffff"}
-                  fillOpacity={activa ? 0.28 : 0.001}
-                  stroke={activa ? "#f6d743" : "#fff4d6"}
-                  strokeOpacity={activa ? 1 : 0.7}
-                  strokeWidth={activa ? 4 : 2}
+                  fillOpacity={activa ? 0.28 : encima ? 0.16 : 0.001}
+                  stroke={activa || encima ? "#f6d743" : "#fff4d6"}
+                  strokeOpacity={activa || encima ? 1 : 0.7}
+                  strokeWidth={activa ? 4 : encima ? 3 : 2}
                   strokeDasharray={activa ? undefined : "6 5"}
                   strokeLinejoin="round"
                 />
               )}
-              <Cartel x={trozo!.etiqueta.x} y={trozo!.etiqueta.y} texto={z.nombre} activa={activa} />
+              <Cartel x={trozo!.etiqueta.x} y={trozo!.etiqueta.y} texto={z.nombre} activa={activa || encima} />
             </a>
           );
         })}

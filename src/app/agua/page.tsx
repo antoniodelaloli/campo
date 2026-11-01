@@ -85,7 +85,7 @@ async function Agua() {
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-5">
-      <CabeceraSeccion titulo="Agua" subtitulo="Pantanos, contadores y lo que se compra" />
+      <CabeceraSeccion titulo="Agua y lecturas" subtitulo="Pantanos, contadores, lo que se compra y, pronto, todo lo que se lee o se mide en las fincas" />
 
       {error && (
         <p role="alert" className="border-2 border-aviso bg-papel p-3 text-sm">
