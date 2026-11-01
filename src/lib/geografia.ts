@@ -65,7 +65,18 @@ export function aMapaReal(e: number, n: number) {
  * multiplicando las distancias por COMPRESION. Se respetan la dirección
  * (quién queda al norte, al este…) y el TAMAÑO real de cada finca.
  */
-export const COMPRESION = 0.25;
+export const COMPRESION = 0.22;
+
+/*
+ * En el mapa de inicio las fincas se dibujan AGRANDADAS para que se vean bien al
+ * entrar (no están a escala entre sí). Lobosillo, que es muy pequeña, se agranda más.
+ * El plano de cada finca (/fincas/[id]) sí va a su tamaño real, con escala en metros.
+ */
+export const AUMENTO_MAPA: Record<ClaveFinca, number> = {
+  corvera: 1.8,
+  valladolises: 2.4,
+  lobosillo: 3.5,
+};
 // Punto fijo hacia el que se acercan las distancias (zona de Valladolises).
 // No se mueve aunque se afinen las fincas: el paisaje está dibujado respecto a él.
 export const REFERENCIA = aMapaReal(667250, 4182300);
