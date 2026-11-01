@@ -208,6 +208,71 @@ body {
       transform: translateY(-3px);
     }
   }
+
+  /* Avioneta con la lona: cruza el cielo de izquierda a derecha (inicio, vista 3D) */
+  .avioneta-cruza {
+    animation-name: avioneta-cruza;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+  }
+  @keyframes avioneta-cruza {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100cqw);
+    }
+  }
+  .avioneta-balanceo {
+    animation: avioneta-balanceo 2.6s ease-in-out infinite;
+  }
+  @keyframes avioneta-balanceo {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-5px) rotate(-1.2deg);
+    }
+  }
+  .avioneta-ondea {
+    transform-origin: right center;
+    animation: avioneta-ondea 0.9s ease-in-out infinite;
+  }
+  @keyframes avioneta-ondea {
+    0%,
+    100% {
+      transform: skewY(0deg);
+    }
+    50% {
+      transform: skewY(-1.5deg);
+    }
+  }
+  .avioneta-helice {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: avioneta-helice 0.12s steps(2) infinite;
+  }
+  @keyframes avioneta-helice {
+    from {
+      transform: scaleY(1);
+    }
+    to {
+      transform: scaleY(0.25);
+    }
+  }
+  .avioneta-humo {
+    animation: avioneta-humo 0.8s steps(3) infinite;
+  }
+  @keyframes avioneta-humo {
+    0%,
+    100% {
+      opacity: 0.9;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
 }
 
 /* Paneles con scroll pero sin barra visible (se sigue pudiendo desplazar) */

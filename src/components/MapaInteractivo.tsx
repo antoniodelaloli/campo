@@ -6,6 +6,8 @@ import { aMapa, FORMAS, GEO, metrosPorUnidad, type ClaveFinca } from "@/lib/geog
 import { DibujoCorvera, DibujoLobosillo, DibujoValladolises, Patrones } from "@/components/DibujosFincas";
 import { LUGARES, Paisaje } from "@/components/Paisaje";
 import { BotonTiempo } from "@/components/Tiempo";
+import { Avioneta } from "@/components/Avioneta";
+import { useRouter } from "next/navigation";
 
 /*
  * Mapa de las fincas a escala real, con zoom y arrastre (ratón, rueda, dedos y teclado).
@@ -55,6 +57,10 @@ const limitar = (mpp: number) => Math.min(MPP_MAX, Math.max(MPP_MIN, mpp));
  * el botón «3D» la vuelve a poner.
  */
 const ANGULO_3D = 40; // grados
+// Salvapantallas (escritorio): tras 1 minuto sin tocar nada, vuelve a la vista 3D
+// con todas las fincas y la avioneta en bucle. Mientras dura, los datos se refrescan solos.
+const INACTIVIDAD_MS = 60_000;
+const REFRESCO_SALVAPANTALLAS_MS = 10 * 60_000;
 const DUR_3D = 700; // ms
 /** Distancia de la cámara (perspectiva) y punto de giro, según el alto del mapa. */
 const camara = (tam: { w: number; h: number }) => ({ p: tam.h * 1.7, ox: tam.w / 2, oy: tam.h * 0.62 });
@@ -214,6 +220,10 @@ export function MapaInteractivo({
     mq.addEventListener("change", aplicar);
     return () => mq.removeEventListener("change", aplicar);
   }, [inclinarA]);
+
+  // ---------- salvapantallas ----------
+  const [salvapantallas, setSalvapantallas] = useState(false);
+  const router = useRouter();
 
   // Tamaño del contenedor
   useEffect(() => {
@@ -438,6 +448,39 @@ export function MapaInteractivo({
     if (t) zoomEn(t.w / 2, t.h / 2, factor, true);
   };
 
+  // Salvapantallas: 1 minuto sin ratón, teclado ni dedos → todas las fincas en 3D.
+  // Cualquier movimiento lo quita (el mapa se queda como está; el primer gesto lo aplana).
+  useEffect(() => {
+    if (!puede3d) return;
+    let temporizador: number | undefined;
+    const activar = () => {
+      const t = tamRef.current;
+      tocado.current = false;
+      if (t) animarA(encuadrar(cajaTodas, t.w, t.h));
+      inclinarA(ANGULO_3D);
+      setSalvapantallas(true);
+    };
+    const reiniciar = () => {
+      setSalvapantallas(false);
+      window.clearTimeout(temporizador);
+      temporizador = window.setTimeout(activar, INACTIVIDAD_MS);
+    };
+    const eventos = ["pointermove", "pointerdown", "keydown", "wheel", "touchstart", "scroll"] as const;
+    for (const e of eventos) window.addEventListener(e, reiniciar, { passive: true, capture: true });
+    reiniciar();
+    return () => {
+      window.clearTimeout(temporizador);
+      for (const e of eventos) window.removeEventListener(e, reiniciar, { capture: true });
+    };
+  }, [puede3d, animarA, inclinarA, cajaTodas]);
+
+  // Con el salvapantallas puesto (p. ej. toda la mañana en la oficina), los datos se refrescan solos
+  useEffect(() => {
+    if (!salvapantallas) return;
+    const id = window.setInterval(() => router.refresh(), REFRESCO_SALVAPANTALLAS_MS);
+    return () => window.clearInterval(id);
+  }, [salvapantallas, router]);
+
   // ---------- proyección mundo → pantalla ----------
   const rad = (inclinacion * Math.PI) / 180;
   const cam = tam ? camara(tam) : null;
@@ -615,6 +658,16 @@ export function MapaInteractivo({
         style={{ background: luz.color, opacity: luz.opacidad }}
       />
 
+      {/* avioneta con la lona, por encima de la sierra (solo en vista 3D) */}
+      {puede3d && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 z-[4] h-[26%] overflow-hidden [container-type:inline-size]"
+        >
+          <Avioneta activa={inclinacion >= ANGULO_3D - 0.5} />
+        </div>
+      )}
+
       {/* carteles y bocadillos (tamaño fijo en pantalla) */}
       {vista && tam && (
         <>
@@ -701,7 +754,9 @@ export function MapaInteractivo({
       )}
 
       {/* controles: atajos a cada finca, zoom y escala */}
-      <div className="absolute right-3 bottom-3 z-20 flex flex-col items-end gap-2 lg:right-5 lg:bottom-6">
+      <div
+        className={`absolute right-3 bottom-3 z-20 flex flex-col items-end gap-2 transition-opacity duration-700 lg:right-5 lg:bottom-6 ${salvapantallas ? "opacity-30" : ""}`}
+      >
         <div className="flex items-center gap-2">
           {puede3d && (
             <button
