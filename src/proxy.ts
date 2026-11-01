@@ -8,7 +8,8 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     // Todo menos estáticos, imágenes, favicon, el service worker, el manifiesto
-    // de la app y el aviso diario (lo llama el cron de Vercel, sin sesión).
-    "/((?!_next/static|_next/image|favicon.ico|sw\\.js|manifest\\.webmanifest|api/avisos/diario|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // de la app, el aviso diario (lo llama el cron de Vercel, sin sesión) y el conector
+    // para ChatGPT/Claude (/api/mcp y /.well-known: van con su propio token).
+    "/((?!_next/static|_next/image|favicon.ico|sw\\.js|manifest\\.webmanifest|api/avisos/diario|api/mcp|\\.well-known|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

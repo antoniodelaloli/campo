@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { destinoSeguro } from "@/lib/supabase/proxy";
 
 export type LoginState = { error: string | null };
 
@@ -23,5 +24,5 @@ export async function iniciarSesion(
     return { error: "Email o contraseña incorrectos." };
   }
 
-  redirect("/");
+  redirect(destinoSeguro(String(formData.get("siguiente") ?? "")));
 }

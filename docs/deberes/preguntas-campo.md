@@ -1,4 +1,4 @@
-# Campo · Banco de preguntas para Juan Carlos (v1 · 31/10/2026)
+# Campo · Banco de preguntas para Juan Carlos (v1.1 · 1/11/2026)
 
 Preguntas sobre lo que solo sabe la familia. Van por **bloques de 5** (unos 5-10 minutos cada uno), de más a menos importante.
 Cada pregunta tiene un código (no hace falta leerlo en voz alta), **lo que ya creemos** (para confirmar o corregir) y **qué respuesta nos sirve**.
@@ -243,3 +243,34 @@ Se puede contestar «no lo sé», «más o menos» o «eso lo sabe Pencho». Tod
 ### APP-01 · ¿Qué te gustaría que hiciera la app?
 - **Lo que creemos:** que apuntes desde ChatGPT tareas, niveles, lecturas y tratamientos.
 - **Nos sirve:** lo que más te ahorraría tiempo, y lo que más te preocupa olvidar.
+
+---
+
+## Bloque 11 · Lecturas (contadores, pantanos, cubetas…)
+
+Para montar en Campo la lista de **«Lecturas de hoy»**: qué hay que mirar en cada finca, cómo y cada cuánto. Así cualquiera de la familia puede ir al campo, hacer las lecturas y apuntarlas.
+
+### LEC-01 · ¿Qué cosas se leen o se miran en cada finca?
+- **Lo que creemos:** en Valladolises, el contador vuestro y el de la Comunidad de Regantes, y el nivel del pantano a ojo. En Corvera, los contadores azul y blanco, uno del pozo y el pantano. En 2022 había una hoja con todo eso cada día.
+- **Nos sirve:** la lista completa por finca, aunque sea de memoria: contadores, pantanos, cubetas o depósitos de abono, manómetros o filtros, programador, pluviómetro, gasoil… Lo que tú mires aunque no lo apuntes.
+
+### LEC-02 · Las cubetas del riego: ¿qué son y qué se mira en ellas?
+- **Lo que creemos:** nada seguro. Pueden ser los depósitos del abono que va por el riego.
+- **Nos sirve:** cuántas hay, en qué finca y dónde (¿en la caseta?), qué llevan, cuántos litros caben y qué se mira: el nivel, lo que se ha gastado, si hay que rellenar…
+
+### LEC-03 · ¿Cada cuánto se lee cada cosa?
+- **Lo que creemos:** los contadores, cada día que se riega o una vez por semana. El pantano, cuando se va a pedir agua.
+- **Nos sirve:** para cada cosa de la lista: a diario, cada semana, cada vez que se riega, antes y después de un turno de agua, a principio de mes… y si cambia en verano y en invierno.
+
+### LEC-04 · ¿Cómo se hace cada lectura?
+- **Lo que creemos:** el contador es apuntar el número que marca (en m³). El pantano, a ojo.
+- **Nos sirve:** qué número se apunta exactamente (¿todas las cifras?, ¿también las rojas?), en qué unidad, si hay marcas o una regla, dónde está cada cosa y si hace falta llave para llegar. Si puedes, **una foto de cada contador y de cada cubeta** tal como se ven.
+
+### LEC-05 · ¿Para qué sirve cada lectura y qué te haría saltar la alarma?
+- **Lo que creemos:** el contador vuestro se compara con el de la Comunidad. En agosto de 2022 apuntaste «ojo» porque el vuestro marcaba casi 1.000 m³ más en una semana.
+- **Nos sirve:** con qué se compara cada lectura (factura, cupo, la semana anterior) y qué diferencia ya es preocupante. Con eso la app avisará sola.
+
+### LEC-06 · ¿Podemos hacer nosotros las lecturas?
+- **Lo que creemos:** cualquiera de la familia podría ir al campo, hacer la ronda y apuntarla en Campo.
+- **Nos sirve:** si te parece bien, qué hay que tener en cuenta (horas, llaves, qué no tocar) y si hay algo que prefieres mirar siempre tú.
+

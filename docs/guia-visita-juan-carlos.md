@@ -249,6 +249,8 @@ Después dile: «Mándale esto a Antonio por WhatsApp (pulsa en copiar). ¡Graci
 - [ ] ¿El acta recoge bien lo que dijo?
 - [ ] ¿Ha funcionado mandar una foto (plano, placa, contador)?
 
+**Si da tiempo, el bloque 11 (Lecturas) mejor en persona y en la caseta:** que te enseñe qué mira (contadores, pantano, cubetas del riego…), cómo lo lee y cada cuánto. Haz **una foto de cada contador y de cada cubeta** con la lectura de hoy: serán las primeras lecturas en Campo y la base de la lista «Lecturas de hoy».
+
 ### Para explicárselo (cómo será cada vez)
 
 1. Abre **Campo · Preguntas** en el móvil y pulsa la **voz**.

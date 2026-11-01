@@ -260,7 +260,11 @@ Qué mandar (pegar en el proyecto Campo):
 
 Qué hace Claude con eso: redibujar Corvera, Valladolises y Lobosillo (contorno, orientación de las filas, caminos, pantanos y edificios en su sitio), ajustar sus superficies y los planos de cada finca (`PlanoFinca`), y comprobar que todo cuadra con las zonas y sectores de la base de datos.
 
-### Fase 2 · Consultar desde ChatGPT
+### Fase 2 y 3 · Conector de Campo para ChatGPT y Claude (hecho el 1/11/2026, falta probar)
+> **Cambio de plan:** OpenAI retira los GPT personalizados y sus acciones el 11/12/2026. En su lugar, un **conector MCP** (`/api/mcp`) que sirve para ChatGPT (apps/modo desarrollador, plan Plus o superior; de momento solo web y escritorio) y para Claude (también en el móvil). Inicio de sesión con el usuario de Campo (servidor OAuth de Supabase + pantalla «Permitir» en `/oauth/consent`); permisos = los del usuario (RLS). 14 herramientas: 6 de consulta y 8 para apuntar (tareas, niveles, lecturas de contador —también leyendo una foto—, fechas clave, incidencias, diario), con origen «conector». Migración `0006_conector.sql`. Guía: `docs/conector-campo.md`. Lo de abajo queda como referencia del plan anterior.
+> Pendiente: guardar la foto en Campo (hoy solo llega el número); recordatorios con hora desde el asistente.
+
+### (Plan anterior) Fase 2 · Consultar desde ChatGPT
 - Migración 0006: claves personales (una por persona, revocable, ligada a su usuario).
 - Acciones de **consulta**: resumen del día, tareas, pantanos, avisos, buscar un sitio («Los Nuevos», «sector 2 de Corvera»).
 - GPT **«Campo»** en su cuenta (privado), con instrucciones y frases reales de la visita.
@@ -275,6 +279,7 @@ Qué hace Claude con eso: redibujar Corvera, Valladolises y Lobosillo (contorno,
 ### Fase 4 · Mejoras
 - Foto del contador → lectura apuntada.
 - Cosecha y liquidaciones en la base de datos (migración 0007). Ya hay KPIs y pestaña de estimación 2026/27 en Cosecha con datos de documentos; faltan los albaranes (hoja de Valladolises 25/26 analizada) y los costes reales (agua, abono, tratamientos: hay uno de 16.131 € de julio de 2022).
+- **Lecturas de hoy** en la sección Agua (título «Agua y lecturas»; en el menú sigue «Agua»): lista de puntos de lectura por finca (contadores propio y de la Comunidad, pantanos, cubetas de abono…) con su frecuencia, última lectura y estado (toca hoy / atrasada); apuntar con un toque; aviso por la mañana si una se pasa; comprobaciones (contador que baja, diferencia con el de la Comunidad). Cualquiera de la familia puede hacer la ronda. Tabla nueva `puntos_lectura`. Preguntas en el bloque 11 (LEC-01 a LEC-06).
 - **Parte del día** (como la hoja «control AGUA» de 2022): contadores propio y de la Comunidad, cupo restante, riego por sector, trabajos, incidencias y tiempo en una pantalla; aviso si los dos contadores se separan.
 - Copias de seguridad automáticas.
 - Otros usuarios (tu hermano para Lobosillo, quizá Pencho para avisar de tareas).

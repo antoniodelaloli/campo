@@ -36,17 +36,22 @@ export async function updateSession(request: NextRequest) {
 
   if (!autenticado && !esLogin) {
     const url = request.nextUrl.clone();
+    // Se recuerda adónde iba (p. ej. la pantalla de permiso de ChatGPT/Claude)
+    const destino = request.nextUrl.pathname + request.nextUrl.search;
     url.pathname = "/login";
-    url.search = "";
+    url.search = destino !== "/" ? `?siguiente=${encodeURIComponent(destino)}` : "";
     return NextResponse.redirect(url);
   }
 
   if (autenticado && esLogin) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    url.search = "";
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(new URL(destinoSeguro(request.nextUrl.searchParams.get("siguiente")), request.url));
   }
 
   return response;
+}
+
+/** Solo rutas internas de la app (evita redirecciones a otras webs). */
+export function destinoSeguro(siguiente: string | null | undefined) {
+  if (!siguiente || !siguiente.startsWith("/") || siguiente.startsWith("//") || siguiente.startsWith("/\\")) return "/";
+  return siguiente;
 }

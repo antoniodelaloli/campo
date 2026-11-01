@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { iniciarSesion, type LoginState } from "./actions";
 
 const estadoInicial: LoginState = { error: null };
@@ -10,6 +10,13 @@ export default function LoginPage() {
     iniciarSesion,
     estadoInicial,
   );
+  // Adónde volver después de entrar (p. ej. el permiso para ChatGPT o Claude)
+  const [siguiente, setSiguiente] = useState("");
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- se lee una vez de la dirección
+    setSiguiente(new URLSearchParams(window.location.search).get("siguiente") ?? "");
+  }, []);
+  const vieneDeAsistente = siguiente.startsWith("/oauth/");
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-hierba px-4">
@@ -26,6 +33,13 @@ export default function LoginPage() {
             <p className="text-sm text-tinta-suave">Gestión interna de fincas</p>
           </div>
         </div>
+
+        <input type="hidden" name="siguiente" value={siguiente} />
+        {vieneDeAsistente && (
+          <p className="ficha-pendiente p-3 text-sm">
+            Entra con tu usuario de Campo para conectarlo con tu asistente (ChatGPT o Claude).
+          </p>
+        )}
 
         <label className="block space-y-1">
           <span className="text-sm font-bold">Email</span>
