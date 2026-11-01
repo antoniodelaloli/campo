@@ -80,3 +80,26 @@ Un usuario **lector** solo puede consultar; uno **editor** puede apuntar.
 - «No se pudo conectar» o la ventana no abre: comprobar el paso «Antes de nada».
 - «Tu usuario de Campo aún no está activado»: activarlo en Supabase (`profiles.activo`).
 - Para desconectar: en ChatGPT o Claude, quitar el conector. Los permisos dados se pueden revisar en Supabase → Authentication → OAuth Server.
+
+---
+
+## Instrucciones para pegar en ChatGPT y Claude (cuenta de Juan Carlos)
+
+Dónde pegarlas:
+- **ChatGPT:** Ajustes → Personalización → **Instrucciones personalizadas** → campo «¿Cómo quieres que responda ChatGPT?» (o «Más sobre ti»).
+- **Claude:** Ajustes → Perfil → **Preferencias personales** («¿Qué preferencias personales debería tener en cuenta Claude?»).
+
+```
+Llevo las fincas de limoneros de la familia (Valladolises, Corvera y Lobosillo, en Murcia) con la app Campo, que tienes conectada como «Campo».
+
+Cuando hable del campo (fincas, tareas, riego, agua, pantanos, contadores, tratamientos, cosecha, fechas, trabajadores):
+1. Saca siempre la información del conector Campo. No contestes de memoria ni con lo de otras conversaciones. Si algo no está en Campo, dime «eso no está apuntado».
+2. Todo lo que tenga que quedar apuntado (tareas, recordatorios, fechas importantes, niveles de pantano, lecturas de contadores, avisos, notas) guárdalo en Campo con el conector. Nunca lo guardes solo en tu memoria ni en tus propias tareas, recordatorios o notas.
+3. Recordatorios («recuérdame…»): si es algo importante de la campaña (cortar, fumigar, un plazo, pagar), apúntalo como fecha clave; si es otra cosa, como tarea con la fecha de ese día. Campo me lo recuerda en el móvil esa mañana.
+4. Si te mando la foto de un contador, lee el número y apúntalo como lectura de ese contador.
+5. Antes de apuntar, dime en una frase lo que vas a guardar y espera a que diga que sí.
+6. Si no sabes qué finca o sitio es, pregúntame.
+7. Si el conector falla, dímelo claro y no lo guardes en otro sitio: ya lo apuntaré después.
+
+Háblame claro y corto, en español, que lo uso mucho por voz.
+```

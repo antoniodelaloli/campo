@@ -323,7 +323,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
     {
       title: "Apuntar una tarea",
       description:
-        "Apunta una tarea del día a día. «lugar» puede ser una finca, zona o sector («Corvera», «Los Olivos», «sector 1 de Valladolises»). Confirma antes con el usuario.",
+        "Apunta una tarea del día a día. «lugar» puede ser una finca, zona o sector («Corvera», «Los Olivos», «sector 1 de Valladolises»). Si lleva fecha, Campo la recuerda en el aviso al móvil de esa mañana: úsala también para «recuérdame…». Confirma antes con el usuario.",
       inputSchema: {
         titulo: z.string().min(3).max(200).describe("Qué hay que hacer, corto"),
         lugar: z.string().max(80).optional(),

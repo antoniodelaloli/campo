@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { cargarHitos, cargarTratamientos } from "@/lib/datos";
+import { cargarHitos, cargarTareasAbiertas, cargarTratamientos } from "@/lib/datos";
 import { enviarAUsuario } from "@/lib/push";
 import { resumenDelDia } from "@/lib/resumen-avisos";
 import { hoyISO, sumarDias } from "@/lib/texto";
@@ -68,11 +68,12 @@ export async function enviarPrueba(): Promise<Resultado> {
     let titulo = "Campo · aviso de prueba";
     let cuerpo = "¡Funciona! Así te llegarán las fechas clave: una semana antes, el día antes y el mismo día.";
     let url = "/calendario";
-    const [{ hitos }, { tratamientos }] = await Promise.all([
+    const [{ hitos }, { tratamientos }, { tareas }] = await Promise.all([
       cargarHitos(admin, sumarDias(hoy, 60)),
       cargarTratamientos(admin),
+      cargarTareasAbiertas(admin),
     ]);
-    const resumen = resumenDelDia({ hitos, tratamientos, hoy });
+    const resumen = resumenDelDia({ hitos, tratamientos, tareas, hoy });
     if (resumen) {
       titulo = `${resumen.titulo} (prueba)`;
       cuerpo = resumen.cuerpo;

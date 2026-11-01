@@ -1,6 +1,6 @@
 import { connection } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { cargarHitos, cargarTratamientos } from "@/lib/datos";
+import { cargarHitos, cargarTareasAbiertas, cargarTratamientos } from "@/lib/datos";
 import { enviarAUsuario } from "@/lib/push";
 import { resumenDelDia } from "@/lib/resumen-avisos";
 import { hoyISO, sumarDias } from "@/lib/texto";
@@ -25,13 +25,12 @@ export async function GET(request: Request) {
     const admin = createAdminClient();
     const hoy = hoyISO();
 
-    const [{ hitos, error: errorHitos }, { tratamientos, error: errorTrat }] = await Promise.all([
-      cargarHitos(admin, sumarDias(hoy, 60)),
-      cargarTratamientos(admin),
-    ]);
-    if (errorHitos || errorTrat) throw new Error(errorHitos ?? errorTrat ?? "Error al leer datos");
+    const [{ hitos, error: errorHitos }, { tratamientos, error: errorTrat }, { tareas, error: errorTareas }] =
+      await Promise.all([cargarHitos(admin, sumarDias(hoy, 60)), cargarTratamientos(admin), cargarTareasAbiertas(admin)]);
+    if (errorHitos || errorTrat || errorTareas)
+      throw new Error(errorHitos ?? errorTrat ?? errorTareas ?? "Error al leer datos");
 
-    const resumen = resumenDelDia({ hitos, tratamientos, hoy });
+    const resumen = resumenDelDia({ hitos, tratamientos, tareas, hoy });
     if (!resumen) return Response.json({ hoy, enviado: false, motivo: "Nada que avisar hoy" });
 
     // Personas activas con algún móvil apuntado
