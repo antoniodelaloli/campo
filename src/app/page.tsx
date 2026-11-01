@@ -49,10 +49,19 @@ async function Inicio() {
     (t) => t.estado === "en_curso" || (t.fecha_prevista === hoy && t.tareas_personas.length > 0),
   );
   const tareasHoy = tareas.filter((t) => !t.fecha_prevista || t.fecha_prevista <= hoy);
-  const visibles = (tareasHoy.length ? tareasHoy : tareas)
-    .slice()
-    .sort((a, b) => Number(b.estado === "en_curso") - Number(a.estado === "en_curso"))
-    .slice(0, 5);
+  // Orden: primero las de hoy (las que están en curso, arriba), luego las atrasadas
+  // (la más reciente primero) y al final las que no tienen fecha.
+  const grupo = (t: (typeof tareas)[number]) =>
+    t.fecha_prevista === hoy ? 0 : t.fecha_prevista && t.fecha_prevista < hoy ? 1 : t.fecha_prevista ? 3 : 2;
+  const ordenadas = (tareasHoy.length ? tareasHoy : tareas).slice().sort(
+    (a, b) =>
+      grupo(a) - grupo(b) ||
+      Number(b.estado === "en_curso") - Number(a.estado === "en_curso") ||
+      (grupo(a) === 1 ? (b.fecha_prevista ?? "").localeCompare(a.fecha_prevista ?? "") : (a.fecha_prevista ?? "").localeCompare(b.fecha_prevista ?? "")),
+  );
+  const MAX_TAREAS = 5;
+  const visibles = ordenadas.slice(0, MAX_TAREAS);
+  const ocultas = ordenadas.length - visibles.length;
   const pantanos = fincas.flatMap((f) => f.pantanos.map((p) => ({ ...p, finca: f.nombre })));
   const totalAvisos = avisos.length + incidencias.length;
 
@@ -91,6 +100,14 @@ async function Inicio() {
                 </li>
               ))}
             </ul>
+          )}
+          {ocultas > 0 && (
+            <Link
+              href="/tareas"
+              className="block rounded-[3px] border-2 border-dashed border-borde-papel px-3 py-2 text-center text-sm font-bold text-tinta hover:bg-[#fff2c4]"
+            >
+              Ver {ocultas} tarea{ocultas === 1 ? "" : "s"} más →
+            </Link>
           )}
           <Link href="/tareas" className="boton">
             {puedeEditar ? "+ Nueva tarea" : "Ver tareas"}
