@@ -83,7 +83,7 @@ export const AUMENTO_MAPA: Record<ClaveFinca, number> = {
  * inicio, para que las fincas agrandadas no se solapen ni se peguen a la sierra.
  */
 export const DESPLAZAMIENTO_MAPA: Record<ClaveFinca, { x: number; y: number }> = {
-  corvera: { x: -500, y: 750 },
+  corvera: { x: -350, y: 1850 },
   valladolises: { x: 0, y: 0 },
   lobosillo: { x: -300, y: -150 },
 };
