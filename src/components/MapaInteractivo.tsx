@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { aMapa, AUMENTO_MAPA, FORMAS, GEO, metrosPorUnidad, type ClaveFinca } from "@/lib/geografia";
+import { aMapa, AUMENTO_MAPA, DESPLAZAMIENTO_MAPA, FORMAS, GEO, metrosPorUnidad, type ClaveFinca } from "@/lib/geografia";
 import { DibujoCorvera, DibujoLobosillo, DibujoValladolises, Patrones } from "@/components/DibujosFincas";
 import { LUGARES, Paisaje } from "@/components/Paisaje";
 import { BotonTiempo } from "@/components/Tiempo";
@@ -81,7 +81,9 @@ function colocar(f: FincaEnMapa): Colocada {
   const forma = FORMAS[f.clave];
   // agrandada para que se vea bien al entrar (ver AUMENTO_MAPA)
   const k = metrosPorUnidad(f.clave, f.areaHa) * AUMENTO_MAPA[f.clave];
-  const { x, y } = aMapa(geo.e, geo.n);
+  const base = aMapa(geo.e, geo.n);
+  const x = base.x + DESPLAZAMIENTO_MAPA[f.clave].x;
+  const y = base.y + DESPLAZAMIENTO_MAPA[f.clave].y;
   const tx = x - forma.centro.x * k;
   const ty = y - forma.centro.y * k;
   return {
@@ -131,7 +133,7 @@ function encuadrar(caja: Caja, w: number, h: number): Vista {
  * Encuadre de todas las fincas. En escritorio (vista 3D) se acerca más: con el plano
  * inclinado lo de arriba se aleja y encoge, así que sobra sitio para agrandarlas.
  */
-const ACERCAR_3D = 0.68;
+const ACERCAR_3D = 0.78;
 function encuadrarTodas(caja: Caja, w: number, h: number): Vista {
   const v = encuadrar(caja, w, h);
   if (w < 1024) return v;

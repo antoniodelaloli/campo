@@ -77,6 +77,16 @@ export const AUMENTO_MAPA: Record<ClaveFinca, number> = {
   valladolises: 2.4,
   lobosillo: 3.5,
 };
+
+/**
+ * Pequeño desplazamiento (metros del mapa; x = este, y = sur) solo para el mapa de
+ * inicio, para que las fincas agrandadas no se solapen ni se peguen a la sierra.
+ */
+export const DESPLAZAMIENTO_MAPA: Record<ClaveFinca, { x: number; y: number }> = {
+  corvera: { x: -500, y: 750 },
+  valladolises: { x: 0, y: 0 },
+  lobosillo: { x: -300, y: -150 },
+};
 // Punto fijo hacia el que se acercan las distancias (zona de Valladolises).
 // No se mueve aunque se afinen las fincas: el paisaje está dibujado respecto a él.
 export const REFERENCIA = aMapaReal(667250, 4182300);
