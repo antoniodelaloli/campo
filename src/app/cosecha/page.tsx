@@ -8,6 +8,7 @@ import { ListaAvisos } from "@/components/ListaAvisos";
 import Link from "next/link";
 import {
   CONTRATO_MANDARINAS_2024,
+  CUENTAS_FAMILIA_2425,
   CUENTAS_TIO_2526,
   ESTIMACION_2627,
   LIQUIDACION_2526,
@@ -27,6 +28,7 @@ export default function CosechaPage({ searchParams }: PageProps<"/cosecha">) {
 }
 
 const CAMPANAS = [
+  { id: "2024-25", label: "2024/25" },
   { id: "2025-26", label: "2025/26" },
   { id: "2026-27", label: "2026/27 · estimación" },
 ] as const;
@@ -58,11 +60,107 @@ const COLORES = {
   rodrejos: "#6b4a2a",
 };
 
+const pct = (parte: number, total: number) => `${formatoNumero((parte / total) * 100, 2)} %`;
+
+/** Campaña 2024/25: cuentas de la familia (buenos / destrío, venta y seguro). */
+function Campana2425() {
+  const c = CUENTAS_FAMILIA_2425;
+  const total = c.filas.reduce((s, f) => s + f.kgTotal, 0);
+  const destrio = c.filas.reduce((s, f) => s + f.kgDestrio, 0);
+  const maximo = Math.max(...c.filas.map((f) => f.kgTotal));
+  const corvera = c.filas.find((f) => f.finca === "Corvera")!;
+  const ingresoCorvera = (corvera.ventaBuenosEur ?? 0) + (corvera.seguroEur ?? 0);
+
+  return (
+    <>
+      <p className="ficha-pendiente px-3 py-2 text-[13px]">
+        <b>Cifras copiadas de documentos.</b> {c.fuente}. No hay liquidación del comprador de esta campaña.
+      </p>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        {[
+          { k: "Cosecha total", v: kg(total), s: "Corvera y Valladolises" },
+          { k: "Destrío (cítrica)", v: kg(destrio), s: `${pct(destrio, total)} de la cosecha` },
+          {
+            k: "Ingresos de Corvera",
+            v: eur(ingresoCorvera),
+            s: `Venta + seguro · ${formatoNumero(ingresoCorvera / corvera.kgTotal, 3)} €/kg de media`,
+          },
+        ].map((x) => (
+          <div key={x.k} className="panel flex flex-col gap-1 px-4 py-3.5">
+            <span className="text-[13px] font-bold text-tinta-suave">{x.k}</span>
+            <span className="titulo-pixel text-[28px] sm:text-[30px]">{x.v}</span>
+            <span className="text-[13px] text-tinta-suave">{x.s}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr] lg:items-start">
+        <Panel titulo="Por finca">
+          <div className="flex flex-wrap gap-4 text-[13px] font-bold">
+            <span className="flex items-center gap-1.5">
+              <span className="h-3.5 w-3.5 border-2 border-tinta" style={{ background: COLORES.comercial }} />
+              Buenos
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3.5 w-3.5 border-2 border-tinta" style={{ background: COLORES.citrica }} />
+              Destrío (cítrica)
+            </span>
+          </div>
+          {c.filas.map((f) => (
+            <div key={f.finca} className="flex flex-col gap-1.5">
+              <div className="flex flex-wrap justify-between gap-2 text-[15px]">
+                <b>{f.finca}</b>
+                <span>{kg(f.kgTotal)}</span>
+              </div>
+              <div
+                className="flex h-8 border-[3px] border-tinta bg-white"
+                style={{ width: `${(f.kgTotal / maximo) * 100}%` }}
+                role="img"
+                aria-label={`${f.finca}: ${kg(f.kgBuenos)} buenos, ${kg(f.kgDestrio)} de destrío`}
+              >
+                <div style={{ width: `${(f.kgBuenos / f.kgTotal) * 100}%`, background: COLORES.comercial }} className="border-r-2 border-white" />
+                <div style={{ width: `${(f.kgDestrio / f.kgTotal) * 100}%`, background: COLORES.citrica }} />
+              </div>
+              <div className="flex flex-wrap gap-x-4 text-[13px] text-tinta-suave">
+                <span>
+                  {formatoNumero(f.kgBuenos)} buenos ({pct(f.kgBuenos, f.kgTotal)})
+                </span>
+                <span>
+                  {formatoNumero(f.kgDestrio)} destrío ({pct(f.kgDestrio, f.kgTotal)})
+                </span>
+              </div>
+            </div>
+          ))}
+          <p className="text-xs text-tinta-suave">Fuente: {c.fuente}.</p>
+        </Panel>
+
+        <div className="flex flex-col gap-5">
+          <Panel titulo="Corvera: venta y seguro">
+            <Dato k="Precio de los buenos" v={`${formatoNumero(corvera.precioBuenosEurKg ?? 0, 2)} €/kg + IVA`} />
+            <Dato k="Venta de los buenos" v={eur(corvera.ventaBuenosEur ?? 0)} />
+            <Dato k="Seguro agrícola cobrado" v={eur(corvera.seguroEur ?? 0)} />
+            <Dato k="Total" v={eur(ingresoCorvera)} />
+            <Dato k="Media sobre toda la cosecha" v={`${formatoNumero(ingresoCorvera / corvera.kgTotal, 3)} €/kg`} />
+          </Panel>
+          <Panel titulo="Notas">
+            <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-snug">
+              {c.notas.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
+          </Panel>
+        </div>
+      </div>
+    </>
+  );
+}
+
 async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["searchParams"] }) {
   // Las cifras de esta pantalla vienen de documentos; los avisos, de la base de datos.
   const { supabase, puedeEditar } = await obtenerContexto();
   const sp = await searchParams;
-  const campana = sp.campana === "2026-27" ? "2026-27" : "2025-26";
+  const campana = sp.campana === "2026-27" ? "2026-27" : sp.campana === "2024-25" ? "2024-25" : "2025-26";
   const [avisos, { fincas }] = await Promise.all([cargarAvisos(supabase, "cosecha"), cargarFincas(supabase)]);
   const hoy = hoyISO();
 
@@ -72,6 +170,17 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
   const importe = liq.filas.reduce((s, f) => s + f.importeEur, 0);
   const maximo = Math.max(...liq.filas.map((f) => f.kgTotal));
   const totalTio = CUENTAS_TIO_2526.filas.reduce((s, f) => s + f.kgTotal, 0);
+
+  if (campana === "2024-25") {
+    return (
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5">
+        <CabeceraSeccion titulo="Cosecha" subtitulo={`Campaña ${CUENTAS_FAMILIA_2425.campana}`}>
+          <Pestanas actual={campana} />
+        </CabeceraSeccion>
+        <Campana2425 />
+      </main>
+    );
+  }
 
   if (campana === "2026-27") {
     const est = ESTIMACION_2627;
@@ -255,6 +364,12 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
             </table>
             <p className="text-[13px] leading-snug">
               Seguramente se cuentan con criterios o fechas distintas. {CUENTAS_TIO_2526.nota}
+            </p>
+            <p className="text-[13px] leading-snug font-bold">
+              {CUENTAS_TIO_2526.sospecha}{" "}
+              <Link href="/cosecha?campana=2024-25" className="underline">
+                Ver 2024/25
+              </Link>
             </p>
           </section>
 

@@ -1,6 +1,5 @@
 /*
- * Cifras de cosecha COPIADAS DE DOCUMENTOS (todavía no hay tabla de cosecha en la base de datos;
- * llegará con la migración 0002). No se corrige ninguna cifra: si dos fuentes no cuadran,
+ * Cifras de cosecha COPIADAS DE DOCUMENTOS (todavía no hay tabla de cosecha en la base de datos). No se corrige ninguna cifra: si dos fuentes no cuadran,
  * se enseñan las dos con su origen.
  */
 
@@ -43,6 +42,54 @@ export const LIQUIDACION_2526 = {
   ] satisfies FilaCosecha[],
 };
 
+/*
+ * Campaña 2024/25: informe de producción de la familia (lo preparó Juan Carlos con ChatGPT
+ * y lo reenvió el 2/11/2026). En el informe pone «Valladolid»: es Valladolises.
+ */
+export type FilaFamilia = {
+  finca: string;
+  kgTotal: number;
+  kgBuenos: number;
+  kgDestrio: number;
+  /** precio de los limones buenos, sin IVA */
+  precioBuenosEurKg: number | null;
+  /** venta de los limones buenos (kg buenos × precio) */
+  ventaBuenosEur: number | null;
+  /** seguro agrícola cobrado esa campaña */
+  seguroEur: number | null;
+};
+
+export const CUENTAS_FAMILIA_2425 = {
+  campana: "2024/25",
+  fuente: "Informe de producción de la familia (ChatGPT de Juan Carlos), reenviado el 2/11/2026",
+  filas: [
+    {
+      finca: "Corvera",
+      kgTotal: 1_270_517,
+      kgBuenos: 814_486,
+      kgDestrio: 456_031,
+      precioBuenosEurKg: 0.36,
+      ventaBuenosEur: 293_215,
+      seguroEur: 314_000,
+    },
+    {
+      finca: "Valladolises",
+      kgTotal: 746_362,
+      kgBuenos: 660_340,
+      kgDestrio: 86_022,
+      precioBuenosEurKg: null,
+      ventaBuenosEur: null,
+      seguroEur: null,
+    },
+  ] satisfies FilaFamilia[],
+  notas: [
+    "Precio de los limones buenos de Corvera: 0,36 €/kg más 10 % de IVA (según el informe).",
+    "El destrío («cítrica») no aparece cobrado en el informe.",
+    "Corvera cobró 314.000 € de seguro agrícola: con la venta, 607.215 €, unos 0,478 €/kg sobre toda la cosecha.",
+    "De Valladolises no hay precio, importe ni seguro en el informe.",
+  ],
+};
+
 export const CUENTAS_TIO_2526 = {
   fuente: "Documento de la familia (cifras cerradas el 10/08/2026)",
   filas: [
@@ -50,6 +97,9 @@ export const CUENTAS_TIO_2526 = {
     { finca: "Valladolises", kgTotal: 761_525, kgBuenos: 652_582, kgDestrio: 108_003 },
   ],
   nota: "Usa «buenos / destrío», que no tiene por qué equivaler a «comercial / cítrica» de la liquidación.",
+  /** Las cifras de Corvera son idénticas a las de la campaña 2024/25: seguramente son de esa campaña. */
+  sospecha:
+    "Ojo: las cifras de Corvera de estas cuentas son idénticas, kilo a kilo, a las de la campaña 2024/25. Seguramente son de 2024/25 y no de 2025/26 (falta que lo confirme Juan Carlos).",
 };
 
 export const CONTRATO_MANDARINAS_2024 = {

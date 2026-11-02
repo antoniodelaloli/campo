@@ -30,12 +30,12 @@ export const INSTRUCCIONES = `Campo es la app interna de las fincas de limoneros
 Cómo usar estas herramientas:
 - Habla en español, claro y breve: quien pregunta es agricultor, no informático. Usa los nombres de las fincas y zonas tal como los dice él.
 - Para saber qué pasa hoy, empieza por «resumen_del_dia».
-- ANTES de apuntar nada (tareas, niveles, lecturas, fechas clave, incidencias, notas), repite en una frase lo que vas a guardar y espera a que diga que sí.
+- ANTES de apuntar nada (tareas, niveles, lecturas, fechas clave, incidencias, notas), repite en una frase lo que vas a guardar y espera a que diga que sí. La única excepción son las ideas (ver abajo).
 - Si un sitio es ambiguo (por ejemplo «el sector 2», que existe en dos fincas), pregunta cuál, o usa «buscar_lugar».
 - Las fechas van en formato AAAA-MM-DD y en hora de España. «Hoy» es la fecha que devuelve resumen_del_dia.
 - No inventes datos: si algo no está en Campo, dilo («eso no está apuntado»).
 - Nada se borra: si algo está mal, se marca como anulado o se corrige apuntándolo de nuevo.
-- Si cuenta una idea, reflexión, duda o plan sobre el campo SIN fecha ni trabajo concreto, guárdala con «apuntar_idea» (resumen corto + lo que dijo completo). Si en la misma charla sale una tarea o una fecha, sepáralas y pregunta. Solo lo del campo: nada personal ni familiar.
+- IDEAS: está atento a lo que cuenta aunque divague. Si suelta una idea, reflexión, duda, plan o algo aprendido sobre el campo que merezca la pena recordar (sin fecha ni trabajo concreto), guárdala tú con «apuntar_idea» SIN preguntar y con detectada=true; al final de tu respuesta dile en una línea «📝 Apuntado en la libreta de ideas: …». No guardes saludos, quejas sueltas ni cosas que ya estén apuntadas (si dudas, mira «buscar_ideas»). Si es una tarea o una fecha, eso sí pregúntalo antes. Solo lo del campo: nada personal ni familiar.
 - Si preguntan qué día se puede fumigar, si hace viento o si va a granizar, usa «tiempo_para_fumigar». Con viento no se fumiga: el caldo se lo lleva el aire. Si van a apuntar un tratamiento para un día con viento, avísalo antes de guardarlo.`;
 
 type Resultado = { content: { type: "text"; text: string }[]; isError?: boolean };
@@ -732,7 +732,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
     {
       title: "Guardar una idea o reflexión",
       description:
-        "Guarda una idea, reflexión, duda, plan o algo aprendido sobre el campo que NO es una tarea ni una fecha («habría que probar a soltar bichos contra el cotonet», «Los Olivos rinden menos desde que cambiamos el riego»). «texto» = lo que dijo, completo y con sus palabras; «titulo» = resumen de una línea. Léele el resumen y guárdala cuando diga que sí.",
+        "Guarda una idea, reflexión, duda, plan o algo aprendido sobre el campo que NO es una tarea ni una fecha («habría que probar a soltar bichos contra el cotonet», «Los Olivos rinden menos desde que cambiamos el riego»). «texto» = lo que dijo, completo y con sus palabras; «titulo» = resumen de una línea. Si la idea la has detectado tú en la conversación, guárdala sin preguntar con detectada=true y avísale después en una línea; si te la ha pedido él, detectada=false.",
       inputSchema: {
         titulo: z.string().min(3).max(200).describe("Resumen en una línea"),
         texto: z.string().min(3).max(8000).describe("Lo que dijo, completo"),
@@ -743,10 +743,14 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
           .max(6)
           .default([])
           .describe("Palabras clave en minúscula: riego, plagas, cosecha, abono, dinero, maquinaria, personal, agua, poda…"),
+        detectada: z
+          .boolean()
+          .default(false)
+          .describe("true si la has sacado tú de la conversación sin que él pidiera guardarla"),
       },
       annotations: ESCRITURA,
     },
-    async ({ titulo, texto, tipo, finca, temas }) => {
+    async ({ titulo, texto, tipo, finca, temas, detectada }) => {
       const p = sinPermiso(ctx);
       if (p) return p;
       let fincaId: string | null = null;
@@ -761,7 +765,8 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
         texto,
         tipo,
         finca_id: fincaId,
-        temas: [...new Set(temas.map((t) => normalizar(t)))],
+        // «detectada» = la apuntó el asistente por su cuenta, para revisarla en la libreta
+        temas: [...new Set([...temas.map((t) => normalizar(t)), ...(detectada ? ["detectada"] : [])])],
         origen: ORIGEN,
       });
       if (error) {
