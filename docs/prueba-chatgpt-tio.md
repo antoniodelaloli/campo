@@ -278,7 +278,8 @@ Qué hace Claude con eso: redibujar Corvera, Valladolises y Lobosillo (contorno,
 
 ### Fase 4 · Mejoras
 - Foto del contador → lectura apuntada.
-- Cosecha y liquidaciones en la base de datos (migración 0007). Ya hay KPIs y pestaña de estimación 2026/27 en Cosecha con datos de documentos; faltan los albaranes (hoja de Valladolises 25/26 analizada) y los costes reales (agua, abono, tratamientos: hay uno de 16.131 € de julio de 2022).
+- Cosecha y liquidaciones en la base de datos (migración 0008). Ya hay KPIs y pestaña de estimación 2026/27 en Cosecha con datos de documentos; faltan los albaranes (hoja de Valladolises 25/26 analizada) y los costes reales (agua, abono, tratamientos: hay uno de 16.131 € de julio de 2022).
+- **Libreta de ideas y reflexiones** (hecho el 1/11/2026, migración `0007_ideas.sql`): lo que Carlos piensa sin fecha ni obligación, sobre todo por voz desde el coche. Herramientas `apuntar_idea` y `buscar_ideas` en el conector; página discreta `/ideas` (enlace pequeño al final de Tareas). Antonio pedirá de vez en cuando a Claude que repase las ideas nuevas y actualice el contexto del proyecto (`campo-contexto-fincas.md`) o se las liste.
 - **Lecturas de hoy** en la sección Agua (título «Agua y lecturas»; en el menú sigue «Agua»): lista de puntos de lectura por finca (contadores propio y de la Comunidad, pantanos, cubetas de abono…) con su frecuencia, última lectura y estado (toca hoy / atrasada); apuntar con un toque; aviso por la mañana si una se pasa; comprobaciones (contador que baja, diferencia con el de la Comunidad). Cualquiera de la familia puede hacer la ronda. Tabla nueva `puntos_lectura`. Preguntas en el bloque 11 (LEC-01 a LEC-06).
 - **Parte del día** (como la hoja «control AGUA» de 2022): contadores propio y de la Comunidad, cupo restante, riego por sector, trabajos, incidencias y tiempo en una pantalla; aviso si los dos contadores se separan.
 - Copias de seguridad automáticas.

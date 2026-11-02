@@ -13,6 +13,8 @@ export type CargaAviso = {
   url: string;
   /** avisos con la misma etiqueta se sustituyen en vez de amontonarse */
   etiqueta?: string;
+  /** granizo, tormenta…: se queda en pantalla hasta que se toca y llega con prioridad alta */
+  importante?: boolean;
 };
 
 type Suscripcion = { id: string; endpoint: string; p256dh: string; auth: string; fallos: number };
@@ -50,6 +52,7 @@ export async function enviarAUsuario(admin: SupabaseClient, userId: string, carg
     body: carga.cuerpo,
     url: carga.url,
     tag: carga.etiqueta ?? "campo",
+    importante: !!carga.importante,
   });
 
   let enviados = 0;
@@ -60,7 +63,7 @@ export async function enviarAUsuario(admin: SupabaseClient, userId: string, carg
         await webpush.sendNotification(
           { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
           cuerpo,
-          { TTL: 60 * 60 * 12, urgency: "normal" },
+          { TTL: 60 * 60 * 12, urgency: carga.importante ? "high" : "normal" },
         );
         enviados++;
         await admin

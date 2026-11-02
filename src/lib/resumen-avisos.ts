@@ -6,6 +6,10 @@
 // - Tratamientos previstos y fin del plazo de seguridad: el día antes y el mismo día.
 // - Tareas con fecha: el mismo día (sirven de recordatorio). Las que se pasaron
 //   sin hacer se cuentan en una línea.
+// - Granizo o tormenta previstos en los próximos días: SIEMPRE, arriba y como
+//   «MUY IMPORTANTE» (el aviso se queda en pantalla hasta que se toca).
+// - Tratamiento previsto en los próximos días con viento ese día: aviso de que no
+//   es buen día para fumigar y cuál es el siguiente día tranquilo.
 // - Lunes: repaso de la semana (los próximos 7 días), aunque no haya nada.
 // - Resto de días: si no toca avisar de nada, no se manda aviso.
 import type { Hito, Tarea, Tratamiento } from "@/lib/datos";
@@ -17,7 +21,60 @@ export type ResumenAviso = {
   titulo: string;
   cuerpo: string;
   url: string;
+  /** hay granizo o tormenta a la vista: el aviso no se quita solo */
+  importante?: boolean;
 };
+
+/** Granizo o tormenta previstos para un día (ver lib/alertas-tiempo.ts). */
+export type AlertaTiempo = { fecha: string; tipo: "granizo" | "tormenta"; fincas: string[] };
+
+/** Viento previsto en una finca en las horas de fumigar (ver lib/alertas-tiempo.ts). */
+export type VientoDia = { fecha: string; finca: string; kmh: number; rachas: number; apto: boolean };
+
+/** Hasta cuántos días antes se avisa de viento para un tratamiento previsto. */
+const DIAS_AVISO_VIENTO = 3;
+
+function lineasViento(tratamientos: Tratamiento[], viento: VientoDia[], hoy: string) {
+  const limite = sumarDias(hoy, DIAS_AVISO_VIENTO);
+  const lineas: string[] = [];
+  const vistos = new Set<string>();
+  for (const t of tratamientos) {
+    if (t.estado !== "prevista" && t.estado !== "en_curso") continue;
+    // En curso: lo que importa es hoy. Previsto: el día que está puesto.
+    const fecha = t.estado === "en_curso" ? hoy : t.fecha;
+    const finca = t.fincas?.nombre;
+    if (!finca || fecha < hoy || fecha > limite) continue;
+    const clave = `${finca}|${fecha}`;
+    if (vistos.has(clave)) continue;
+    const dia = viento.find((v) => v.finca === finca && v.fecha === fecha);
+    if (!dia || dia.apto) continue;
+    vistos.add(clave);
+    // El siguiente día tranquilo después del previsto; si no hay, el más cercano antes
+    const tranquilos = viento.filter((v) => v.finca === finca && v.fecha >= hoy && v.fecha !== fecha && v.apto);
+    const mejor = tranquilos.find((v) => v.fecha > fecha) ?? tranquilos.findLast((v) => v.fecha < fecha);
+    lineas.push(
+      `💨 Viento ${cuandoAlerta(fecha, hoy)} en ${finca} (${dia.kmh} km/h, rachas de ${dia.rachas}): no es buen día para fumigar` +
+        (mejor ? ` · mejor ${cuandoAlerta(mejor.fecha, hoy).toLowerCase()}` : " · y los próximos días tampoco pinta bien"),
+    );
+  }
+  return lineas;
+}
+
+const DIA_SEMANA = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+
+function cuandoAlerta(fecha: string, hoy: string) {
+  const d = diasEntre(hoy, fecha);
+  if (d === 0) return "HOY";
+  if (d === 1) return "MAÑANA";
+  return `el ${DIA_SEMANA[diaSemana(fecha)]} ${Number(fecha.slice(8, 10))}`;
+}
+
+function lineaAlerta(a: AlertaTiempo, hoy: string) {
+  const fincas = a.fincas.length === 3 ? "en las tres fincas" : `en ${a.fincas.join(" y ")}`;
+  return a.tipo === "granizo"
+    ? `⚠️ MUY IMPORTANTE: posible GRANIZO ${cuandoAlerta(a.fecha, hoy)} ${fincas}`
+    : `⚠️ Tormenta ${cuandoAlerta(a.fecha, hoy)} ${fincas}: vigilar si trae granizo`;
+}
 
 const MAX_LINEAS = 5;
 
@@ -56,12 +113,18 @@ export function resumenDelDia({
   hitos,
   tratamientos,
   tareas = [],
+  alertas = [],
+  viento = [],
   hoy,
 }: {
   hitos: Hito[];
   tratamientos: Tratamiento[];
   /** tareas abiertas (prevista, en curso, aplazada) */
   tareas?: Tarea[];
+  /** granizo y tormentas previstos (próximos días) */
+  alertas?: AlertaTiempo[];
+  /** viento en horas de fumigar por finca y día */
+  viento?: VientoDia[];
   hoy: string;
 }): ResumenAviso | null {
   const agenda = construirAgenda({ hitos, tratamientos, hoy, hasta: sumarDias(hoy, 60) });
@@ -90,8 +153,11 @@ export function resumenDelDia({
   // «en curso» empezadas antes no cuentan como atrasadas: ya se están haciendo
   const tareasAtrasadas = conFecha.filter((t) => t.fecha_prevista! < hoy && t.estado !== "en_curso");
 
+  const alertasVigentes = alertas.filter((a) => a.fecha >= hoy).slice(0, 3);
+  const granizo = alertasVigentes.filter((a) => a.tipo === "granizo");
   const hayAlgo = lista.length > 0 || tareasAviso.length > 0;
-  if (!esLunes && !hayAlgo) return null;
+  const avisosViento = lineasViento(tratamientos, viento, hoy);
+  if (!esLunes && !hayAlgo && alertasVigentes.length === 0 && avisosViento.length === 0) return null;
 
   const todas = [...lista.map((e) => linea(e, hoy)), ...tareasAviso.map((t) => lineaTarea(t, hoy))];
   const lineas = todas.slice(0, MAX_LINEAS);
@@ -113,10 +179,16 @@ export function resumenDelDia({
   if (esLunes && !hayAlgo) {
     lineas.unshift("Semana tranquila: nada apuntado para los próximos 7 días.");
   }
+  // El tiempo, siempre lo primero: granizo y tormentas, luego el viento para fumigar
+  lineas.unshift(...alertasVigentes.map((a) => lineaAlerta(a, hoy)), ...avisosViento);
 
   const claveHoy = lista.find((e) => e.fecha === hoy);
   const tareasHoy = tareasAviso.filter((t) => t.fecha_prevista === hoy);
-  const titulo = esLunes
+  const titulo = granizo.length
+    ? `⚠️ Campo · posible GRANIZO ${cuandoAlerta(granizo[0].fecha, hoy).toLowerCase()}`
+    : avisosViento.length
+    ? "Campo · viento: no es día de fumigar"
+    : esLunes
     ? "Campo · la semana"
     : claveHoy
       ? `Campo · hoy: ${claveHoy.titulo}`
@@ -128,7 +200,9 @@ export function resumenDelDia({
 
   // Adónde lleva el aviso: a esa fecha clave si es la única, a Tareas si solo hay tareas
   const url =
-    lista.length === 1 && tareasAviso.length === 0 && atrasadas.length === 0
+    avisosViento.length && alertasVigentes.length === 0
+      ? "/tratamientos"
+      : lista.length === 1 && tareasAviso.length === 0 && atrasadas.length === 0
       ? lista[0].href
       : lista.length === 0 && tareasAviso.length > 0
         ? "/tareas"
@@ -139,5 +213,6 @@ export function resumenDelDia({
     titulo: titulo.length > 60 ? `${titulo.slice(0, 57)}…` : titulo,
     cuerpo: lineas.join("\n"),
     url,
+    importante: alertasVigentes.length > 0,
   };
 }

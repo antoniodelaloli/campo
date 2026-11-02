@@ -18,7 +18,9 @@ self.addEventListener("push", (event) => {
     badge: "/badge-96.png",
     tag: datos.tag || "campo",
     renotify: true,
-    vibrate: [120, 60, 120],
+    // granizo y avisos muy importantes: no se quitan solos y vibran más
+    requireInteraction: !!datos.importante,
+    vibrate: datos.importante ? [300, 120, 300, 120, 300] : [120, 60, 120],
     data: { url: datos.url || "/calendario" },
   };
   event.waitUntil(self.registration.showNotification(titulo, opciones));

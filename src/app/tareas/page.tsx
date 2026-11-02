@@ -121,6 +121,9 @@ async function Tareas({ searchParams }: { searchParams: PageProps<"/tareas">["se
             Cada tarea guarda también cómo se dijo el sitio («finca 4», «Los Nuevos»), para poder
             resolverlo más tarde si aún no es un nombre conocido.
           </p>
+          <Link href="/ideas" className="self-start text-xs font-bold text-tinta-suave underline-offset-2 hover:underline">
+            Libreta de ideas y reflexiones →
+          </Link>
         </section>
       </div>
     </main>

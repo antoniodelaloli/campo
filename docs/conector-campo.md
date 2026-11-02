@@ -51,6 +51,7 @@ Vale en cualquier plan (el gratuito admite un conector propio) y funciona tambi�
 - «¿Cuánta agua queda en el pantano de Corvera?»
 - «¿Qué tareas hay pendientes en Valladolises?»
 - «¿Cuándo se fumigó Corvera la última vez y con qué?»
+- «¿Qué día de esta semana se puede fumigar en Valladolises?» / «¿Va a granizar?»
 
 **Apuntar** (siempre confirma antes)
 - «Apunta que hay que limpiar los filtros de Corvera el jueves.»
@@ -60,6 +61,7 @@ Vale en cualquier plan (el gratuito admite un conector propio) y funciona tambi�
 - «Ya está hecha la fecha clave del precio de referencia.»
 - «Hay una fuga en el sector 2 de Corvera.»
 - «Apunta en el diario: ha venido Diego y dice que hay algo de cotonet en Valladolises.»
+- «Apunta una idea: en Lobosillo plantaría almendros en la parte de arriba.» / «¿Qué ideas tenía yo sobre el riego?»
 
 > La foto en sí no se guarda en Campo (al conector solo le llega el número). Guardar la foto será una mejora futura.
 
@@ -73,6 +75,8 @@ Vale en cualquier plan (el gratuito admite un conector propio) y funciona tambi�
 | `agua` | `apuntar_lectura_contador` |
 | `tratamientos` | `crear_fecha_clave` / `marcar_fecha_clave` |
 | `buscar_lugar` | `apuntar_incidencia` / `nota_diario` |
+| `buscar_ideas` | `apuntar_idea` (libreta de ideas y reflexiones) |
+| `tiempo_para_fumigar` (viento y granizo, 6 días) | |
 
 Un usuario **lector** solo puede consultar; uno **editor** puede apuntar.
 
@@ -99,7 +103,8 @@ Cuando hable del campo (fincas, tareas, riego, agua, pantanos, contadores, trata
 4. Si te mando la foto de un contador, lee el número y apúntalo como lectura de ese contador.
 5. Antes de apuntar, dime en una frase lo que vas a guardar y espera a que diga que sí.
 6. Si no sabes qué finca o sitio es, pregúntame.
-7. Si el conector falla, dímelo claro y no lo guardes en otro sitio: ya lo apuntaré después.
+7. Si te cuento una idea, reflexión, duda o plan sobre el campo que no es una tarea ni tiene fecha, guárdala en la libreta de ideas de Campo, con un resumen corto y lo que dije completo. Solo lo del campo, nada personal.
+8. Si el conector falla, dímelo claro y no lo guardes en otro sitio: ya lo apuntaré después.
 
 Háblame claro y corto, en español, que lo uso mucho por voz.
 ```

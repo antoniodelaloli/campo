@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { cargarHitos, cargarTareasAbiertas, cargarTratamientos } from "@/lib/datos";
 import { enviarAUsuario } from "@/lib/push";
 import { resumenDelDia } from "@/lib/resumen-avisos";
+import { previsionFincas } from "@/lib/alertas-tiempo";
 import { hoyISO, sumarDias } from "@/lib/texto";
 
 // Aviso de cada mañana. Lo llama el cron de Vercel (vercel.json) con la
@@ -30,7 +31,8 @@ export async function GET(request: Request) {
     if (errorHitos || errorTrat || errorTareas)
       throw new Error(errorHitos ?? errorTrat ?? errorTareas ?? "Error al leer datos");
 
-    const resumen = resumenDelDia({ hitos, tratamientos, tareas, hoy });
+    const { alertas, viento } = await previsionFincas();
+    const resumen = resumenDelDia({ hitos, tratamientos, tareas, alertas, viento, hoy });
     if (!resumen) return Response.json({ hoy, enviado: false, motivo: "Nada que avisar hoy" });
 
     // Personas activas con algún móvil apuntado
@@ -63,6 +65,7 @@ export async function GET(request: Request) {
         cuerpo: resumen.cuerpo,
         url: resumen.url,
         etiqueta: `campo-${hoy}`,
+        importante: resumen.importante,
       });
       await admin.from("envios_push").update({ enviados: r.enviados, fallidos: r.fallidos }).eq("id", envio.id);
       resultado.push({ userId, ...r });

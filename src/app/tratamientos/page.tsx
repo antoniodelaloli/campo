@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Marco } from "@/components/Marco";
 import { CabeceraSeccion, Cargando, Chip, ChipFinca, Panel } from "@/components/ui";
 import { NuevoTratamiento } from "./NuevoTratamiento";
+import { PrevisionFumigar } from "./PrevisionFumigar";
 import { ListaAvisos } from "@/components/ListaAvisos";
 import { cambiarEstadoTratamiento } from "./actions";
 import { obtenerContexto } from "@/lib/sesion";
@@ -193,6 +194,9 @@ async function Tratamientos() {
         </div>
 
         <div className="flex flex-col gap-5">
+          <Suspense fallback={<Panel titulo="¿Se puede fumigar?"><p className="text-sm text-tinta-suave">Mirando el viento…</p></Panel>}>
+            <PrevisionFumigar hoy={hoy} />
+          </Suspense>
           {avisos.length > 0 && (
             <section className="flex flex-col gap-2 border-[3px] border-aviso bg-[#fbe1dc] p-4 shadow-[0_3px_0_#7d1a10]">
               <h2 className="titulo-pixel text-lg text-[#7d1a10]">Antes de cortar</h2>

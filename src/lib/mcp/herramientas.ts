@@ -15,6 +15,7 @@ import {
   ultimoNivel,
   type Finca,
 } from "@/lib/datos";
+import { previsionFincas, RACHA_MAX_KMH, VIENTO_MAX_KMH } from "@/lib/alertas-tiempo";
 import { construirAgenda, cuentaAtras, NOMBRE_TIPO_HITO, TIPOS_HITO } from "@/lib/agenda";
 import { esFechaISO, hoyISO, normalizar, sumarDias } from "@/lib/texto";
 
@@ -33,7 +34,9 @@ Cómo usar estas herramientas:
 - Si un sitio es ambiguo (por ejemplo «el sector 2», que existe en dos fincas), pregunta cuál, o usa «buscar_lugar».
 - Las fechas van en formato AAAA-MM-DD y en hora de España. «Hoy» es la fecha que devuelve resumen_del_dia.
 - No inventes datos: si algo no está en Campo, dilo («eso no está apuntado»).
-- Nada se borra: si algo está mal, se marca como anulado o se corrige apuntándolo de nuevo.`;
+- Nada se borra: si algo está mal, se marca como anulado o se corrige apuntándolo de nuevo.
+- Si cuenta una idea, reflexión, duda o plan sobre el campo SIN fecha ni trabajo concreto, guárdala con «apuntar_idea» (resumen corto + lo que dijo completo). Si en la misma charla sale una tarea o una fecha, sepáralas y pregunta. Solo lo del campo: nada personal ni familiar.
+- Si preguntan qué día se puede fumigar, si hace viento o si va a granizar, usa «tiempo_para_fumigar». Con viento no se fumiga: el caldo se lo lleva el aire. Si van a apuntar un tratamiento para un día con viento, avísalo antes de guardarlo.`;
 
 type Resultado = { content: { type: "text"; text: string }[]; isError?: boolean };
 
@@ -293,6 +296,32 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
           })),
         })),
       );
+    },
+  );
+
+  server.registerTool(
+    "tiempo_para_fumigar",
+    {
+      title: "Tiempo para fumigar",
+      description: `Previsión de los próximos 6 días por finca: viento de 7 a 13 h (km/h y rachas), si es buen día para fumigar (viento < ${VIENTO_MAX_KMH} km/h y rachas < ${RACHA_MAX_KMH}) y avisos de tormenta o granizo. Úsala cuando pregunten qué día se puede fumigar, si hace viento o si va a granizar. Es una previsión, no una certeza.`,
+      inputSchema: {},
+      annotations: { ...LECTURA, openWorldHint: true },
+    },
+    async () => {
+      const { viento, alertas } = await previsionFincas();
+      if (viento.length === 0 && alertas.length === 0) return fallo("No se ha podido cargar la previsión del tiempo. Prueba más tarde.");
+      return ok({
+        hoy: hoyISO(),
+        criterio: `Buen día para fumigar: viento por debajo de ${VIENTO_MAX_KMH} km/h y rachas por debajo de ${RACHA_MAX_KMH} km/h entre las 7 y las 13 h.`,
+        dias: viento.map((v) => ({
+          fecha: v.fecha,
+          finca: v.finca,
+          viento_kmh: v.kmh,
+          rachas_kmh: v.rachas,
+          se_puede_fumigar: v.apto && !alertas.some((a) => a.fecha === v.fecha && a.fincas.includes(v.finca)),
+        })),
+        tormentas_y_granizo: alertas,
+      });
     },
   );
 
@@ -690,6 +719,106 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
       const { error } = await supabase.from("diario").insert({ texto, finca_id: fincaId, fecha: fecha ?? hoy, origen: ORIGEN });
       if (error) return fallo(`No se pudo guardar: ${error.message}`);
       return ok({ guardado: true, mensaje: "Nota apuntada en el diario." });
+    },
+  );
+
+  // ------------------------------------------------------------------
+  // Ideas y reflexiones (migración 0007)
+  // ------------------------------------------------------------------
+  const TIPOS_IDEA = ["idea", "reflexion", "duda", "plan", "aprendizaje"] as const;
+
+  server.registerTool(
+    "apuntar_idea",
+    {
+      title: "Guardar una idea o reflexión",
+      description:
+        "Guarda una idea, reflexión, duda, plan o algo aprendido sobre el campo que NO es una tarea ni una fecha («habría que probar a soltar bichos contra el cotonet», «Los Olivos rinden menos desde que cambiamos el riego»). «texto» = lo que dijo, completo y con sus palabras; «titulo» = resumen de una línea. Léele el resumen y guárdala cuando diga que sí.",
+      inputSchema: {
+        titulo: z.string().min(3).max(200).describe("Resumen en una línea"),
+        texto: z.string().min(3).max(8000).describe("Lo que dijo, completo"),
+        tipo: z.enum(TIPOS_IDEA).default("idea"),
+        finca: z.string().optional().describe("Si habla de una finca concreta"),
+        temas: z
+          .array(z.string().min(2).max(30))
+          .max(6)
+          .default([])
+          .describe("Palabras clave en minúscula: riego, plagas, cosecha, abono, dinero, maquinaria, personal, agua, poda…"),
+      },
+      annotations: ESCRITURA,
+    },
+    async ({ titulo, texto, tipo, finca, temas }) => {
+      const p = sinPermiso(ctx);
+      if (p) return p;
+      let fincaId: string | null = null;
+      if (finca) {
+        const { fincas } = await cargarFincas(supabase);
+        const r = buscarFinca(fincas, finca);
+        if (r.error) return fallo(r.error);
+        fincaId = r.finca!.id;
+      }
+      const { error } = await supabase.from("ideas").insert({
+        titulo,
+        texto,
+        tipo,
+        finca_id: fincaId,
+        temas: [...new Set(temas.map((t) => normalizar(t)))],
+        origen: ORIGEN,
+      });
+      if (error) {
+        if (/ideas/.test(error.message) && /exist|schema cache/i.test(error.message))
+          return fallo("La libreta de ideas aún no está creada en Campo (falta la migración 0007).");
+        return fallo(`No se pudo guardar: ${error.message}`);
+      }
+      return ok({ guardado: true, mensaje: `Idea guardada: «${titulo}».` });
+    },
+  );
+
+  server.registerTool(
+    "buscar_ideas",
+    {
+      title: "Buscar ideas y reflexiones",
+      description:
+        "Busca en las ideas y reflexiones guardadas («¿qué pensaba yo del riego de Los Olivos?», «ideas sobre Lobosillo»). Sin texto, devuelve las últimas.",
+      inputSchema: {
+        texto: z.string().max(80).optional().describe("Palabra o tema a buscar"),
+        finca: z.string().optional(),
+        limite: z.number().int().min(1).max(50).default(15),
+      },
+      annotations: LECTURA,
+    },
+    async ({ texto, finca, limite }) => {
+      let q = supabase
+        .from("ideas")
+        .select("id, titulo, texto, tipo, temas, estado, created_at, fincas(nombre), profiles:created_by(nombre)")
+        .neq("estado", "descartada")
+        .order("created_at", { ascending: false })
+        .limit(limite);
+      if (finca) {
+        const { fincas } = await cargarFincas(supabase);
+        const r = buscarFinca(fincas, finca);
+        if (r.error) return fallo(r.error);
+        q = q.eq("finca_id", r.finca!.id);
+      }
+      if (texto) {
+        const t = texto.replace(/[%,()]/g, " ").trim();
+        const tema = normalizar(t);
+        q = q.or(`titulo.ilike.%${t}%,texto.ilike.%${t}%,temas.cs.{${tema}}`);
+      }
+      const { data, error } = await q;
+      if (error) return fallo(`No se pudieron leer las ideas: ${error.message}`);
+      if (!data?.length) return ok(texto ? `No hay ideas guardadas sobre «${texto}».` : "Aún no hay ideas guardadas.");
+      return ok(
+        data.map((i) => ({
+          fecha: String(i.created_at).slice(0, 10),
+          titulo: i.titulo,
+          texto: i.texto,
+          tipo: i.tipo,
+          temas: i.temas,
+          estado: i.estado,
+          finca: (i.fincas as unknown as { nombre: string } | null)?.nombre ?? null,
+          quien: (i.profiles as unknown as { nombre: string | null } | null)?.nombre ?? null,
+        })),
+      );
     },
   );
 }

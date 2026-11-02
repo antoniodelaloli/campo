@@ -1,4 +1,4 @@
-# Campo · Banco de preguntas para Juan Carlos (v1.1 · 1/11/2026)
+# Campo · Banco de preguntas para Juan Carlos (v1.2 · 1/11/2026)
 
 Preguntas sobre lo que solo sabe la familia. Van por **bloques de 5** (unos 5-10 minutos cada uno), de más a menos importante.
 Cada pregunta tiene un código (no hace falta leerlo en voz alta), **lo que ya creemos** (para confirmar o corregir) y **qué respuesta nos sirve**.
@@ -273,4 +273,54 @@ Para montar en Campo la lista de **«Lecturas de hoy»**: qué hay que mirar en 
 ### LEC-06 · ¿Podemos hacer nosotros las lecturas?
 - **Lo que creemos:** cualquiera de la familia podría ir al campo, hacer la ronda y apuntarla en Campo.
 - **Nos sirve:** si te parece bien, qué hay que tener en cuenta (horas, llaves, qué no tocar) y si hay algo que prefieres mirar siempre tú.
+
+---
+
+## Bloque 12 · Números de la campaña (lo que más mueve las cuentas)
+
+Para saber cuánto deja de verdad cada finca y dónde se puede ganar más. Vale con cifras aproximadas: «unos 30.000 al año» sirve.
+
+### NUM-01 · ¿Quién paga la recogida?
+- **Lo que creemos:** se vende «en árbol» y la cuadrilla la pone y la paga el comprador.
+- **Nos sirve:** confirmarlo para limón y para mandarina. Si la pagáis vosotros, cuánto por kilo o por día de cuadrilla.
+
+### NUM-02 · Kilos de 2025/26: ¿qué cifra es la buena?
+- **Lo que creemos:** vuestras cuentas suman 2.032.042 kg y la liquidación 1.854.256 kg: casi 178.000 kg de diferencia (unos 100.000 € a 0,58 €/kg).
+- **Nos sirve:** saber de dónde sale cada cifra y si esa diferencia se reclamó o tiene explicación (destrío, otra campaña, mandarina…).
+
+### NUM-03 · ¿A cuánto se pagó el destrío?
+- **Lo que creemos:** la liquidación parece pagar todo a 0,582 €/kg, también la cítrica. En Corvera el destrío fue del 36 % y en Valladolises del 14 %.
+- **Nos sirve:** el precio real de la fruta de destrío y por qué Corvera tiene tanto más (plagas, agua salina, viento, calibre…).
+
+### NUM-04 · Precio: ¿0,60 o 0,582?
+- **Lo que creemos:** en los albaranes de Valladolises el importe va a 0,60 €/kg y además ×1,12 (parece la compensación del 12 % del régimen agrario); la liquidación habla de 0,582 €/kg.
+- **Nos sirve:** qué precio se cobró al final, si el 12 % se cobra siempre y si hubo un tercer corte o periodo que nos falta. También el albarán 113121, que no cuadra por 25 kg.
+
+### NUM-05 · Gastos de personal
+- **Lo que creemos:** Pencho y Salah trabajan en las dos fincas.
+- **Nos sirve:** cuánto cuesta al año el personal fijo (con seguros sociales) y cuánto la poda o las cuadrillas que vengan aparte.
+
+### NUM-06 · Abonos y tratamientos al año
+- **Lo que creemos:** un tratamiento de julio de 2022 costó 16.131 €.
+- **Nos sirve:** lo que se gasta al año en abonos y en productos de tratamiento, aunque sea aproximado, y a quién se compra.
+
+### NUM-07 · Agua y luz al año
+- **Lo que creemos:** agua del trasvase a ~0,43 €/m³ (Valladolises) y del Pozo Villalba a ~0,85 €/m³ (Corvera); luz de Corvera en agosto: 1.654 €.
+- **Nos sirve:** el gasto anual de agua y de luz de cada finca (las facturas, si las hay).
+
+### NUM-08 · Otros gastos fijos
+- **Lo que creemos:** nada.
+- **Nos sirve:** seguros (de cosecha y otros), impuestos de las fincas, cuotas de la Comunidad de Regantes, gestoría, gasoil y reparaciones de maquinaria.
+
+### NUM-09 · Ayudas
+- **Lo que creemos:** nada.
+- **Nos sirve:** qué ayudas se cobran (PAC, seguro subvencionado, modernización de regadío, ecológico en Lobosillo…) y si alguien os las tramita.
+
+### NUM-10 · Socios y reparto
+- **Lo que creemos:** Maite es socia en algunas fincas.
+- **Nos sirve:** en qué fincas y con qué parte, y si la hoja de albaranes de «MªTeresa» son parcelas suyas o su parte del corte.
+
+### NUM-11 · Venta y comprador
+- **Lo que creemos:** se vende a García Aranda a través de un corredor que cobra el 3 %.
+- **Nos sirve:** si se ha probado a vender directo a otro almacén o con una cooperativa, y si alguna vez se ha pactado un precio mínimo.
 

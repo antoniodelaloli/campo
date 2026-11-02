@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { cargarHitos, cargarTareasAbiertas, cargarTratamientos } from "@/lib/datos";
 import { enviarAUsuario } from "@/lib/push";
 import { resumenDelDia } from "@/lib/resumen-avisos";
+import { previsionFincas } from "@/lib/alertas-tiempo";
 import { hoyISO, sumarDias } from "@/lib/texto";
 
 // Acciones del botón «Avisarme en este móvil» (componente AvisosMovil).
@@ -68,19 +69,22 @@ export async function enviarPrueba(): Promise<Resultado> {
     let titulo = "Campo · aviso de prueba";
     let cuerpo = "¡Funciona! Así te llegarán las fechas clave: una semana antes, el día antes y el mismo día.";
     let url = "/calendario";
+    let importante = false;
     const [{ hitos }, { tratamientos }, { tareas }] = await Promise.all([
       cargarHitos(admin, sumarDias(hoy, 60)),
       cargarTratamientos(admin),
       cargarTareasAbiertas(admin),
     ]);
-    const resumen = resumenDelDia({ hitos, tratamientos, tareas, hoy });
+    const { alertas, viento } = await previsionFincas();
+    const resumen = resumenDelDia({ hitos, tratamientos, tareas, alertas, viento, hoy });
     if (resumen) {
       titulo = `${resumen.titulo} (prueba)`;
       cuerpo = resumen.cuerpo;
       url = resumen.url;
+      importante = !!resumen.importante;
     }
 
-    const r = await enviarAUsuario(admin, userId, { titulo, cuerpo, url, etiqueta: "campo-prueba" });
+    const r = await enviarAUsuario(admin, userId, { titulo, cuerpo, url, etiqueta: "campo-prueba", importante });
     await admin.from("envios_push").insert({
       user_id: userId,
       fecha: hoy,
