@@ -28,25 +28,45 @@ export default function CosechaPage({ searchParams }: PageProps<"/cosecha">) {
 }
 
 const CAMPANAS = [
-  { id: "2024-25", label: "2024/25" },
-  { id: "2025-26", label: "2025/26" },
-  { id: "2026-27", label: "2026/27 · estimación" },
+  { id: "2024-25", label: "2024/25", marca: null },
+  { id: "2025-26", label: "2025/26", marca: "cuadrando cuentas" },
+  { id: "2026-27", label: "2026/27", marca: "en curso" },
 ] as const;
 
+type IdCampana = (typeof CAMPANAS)[number]["id"];
+
+/** Al entrar sin elegir: hasta fin de año se cuadran las cuentas de 2025/26 (año fiscal); desde 2027, la campaña en curso. */
+function campanaPorDefecto(hoy: string): IdCampana {
+  return hoy < "2027-01-01" ? "2025-26" : "2026-27";
+}
+
 /** Pestañas de campaña, arriba a la derecha */
-function Pestanas({ actual }: { actual: string }) {
+function Pestanas({ actual }: { actual: IdCampana }) {
   return (
     <nav aria-label="Campaña" className="flex flex-wrap gap-1.5">
-      {CAMPANAS.map((c) => (
-        <Link
-          key={c.id}
-          href={c.id === "2025-26" ? "/cosecha" : `/cosecha?campana=${c.id}`}
-          aria-current={actual === c.id ? "page" : undefined}
-          className="pestana whitespace-nowrap"
-        >
-          {c.label}
-        </Link>
-      ))}
+      {CAMPANAS.map((c) => {
+        const enCurso = c.marca === "en curso";
+        return (
+          <Link
+            key={c.id}
+            href={`/cosecha?campana=${c.id}`}
+            aria-current={actual === c.id ? "page" : undefined}
+            className={`pestana gap-1.5 whitespace-nowrap ${enCurso ? "ring-2 ring-hoja ring-offset-1" : ""}`}
+          >
+            {enCurso && <span aria-hidden className="inline-block h-2.5 w-2.5 rounded-full bg-hoja" />}
+            {c.label}
+            {c.marca && (
+              <span
+                className={`px-1.5 py-0.5 text-[11px] font-bold uppercase leading-none ${
+                  enCurso ? "bg-hoja text-white" : "bg-[#ece0c0] text-tinta-suave"
+                }`}
+              >
+                {c.marca}
+              </span>
+            )}
+          </Link>
+        );
+      })}
     </nav>
   );
 }
@@ -160,9 +180,11 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
   // Las cifras de esta pantalla vienen de documentos; los avisos, de la base de datos.
   const { supabase, puedeEditar } = await obtenerContexto();
   const sp = await searchParams;
-  const campana = sp.campana === "2026-27" ? "2026-27" : sp.campana === "2024-25" ? "2024-25" : "2025-26";
-  const [avisos, { fincas }] = await Promise.all([cargarAvisos(supabase, "cosecha"), cargarFincas(supabase)]);
   const hoy = hoyISO();
+  const campana: IdCampana = CAMPANAS.some((c) => c.id === sp.campana)
+    ? (sp.campana as IdCampana)
+    : campanaPorDefecto(hoy);
+  const [avisos, { fincas }] = await Promise.all([cargarAvisos(supabase, "cosecha"), cargarFincas(supabase)]);
 
   const liq = LIQUIDACION_2526;
   const total = liq.filas.reduce((s, f) => s + f.kgTotal, 0);
@@ -189,7 +211,7 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
     const alto = 1 + est.margen;
     return (
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5">
-        <CabeceraSeccion titulo="Cosecha" subtitulo={`Campaña ${est.campana} · estimación`}>
+        <CabeceraSeccion titulo="Cosecha" subtitulo={`Campaña ${est.campana} · en curso (estimación)`}>
           <Pestanas actual={campana} />
         </CabeceraSeccion>
 
@@ -254,7 +276,7 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5">
-      <CabeceraSeccion titulo="Cosecha" subtitulo={`Campaña ${liq.campana}`}>
+      <CabeceraSeccion titulo="Cosecha" subtitulo={`Campaña ${liq.campana} · cuadrando las cuentas del año`}>
         <Pestanas actual={campana} />
       </CabeceraSeccion>
 
