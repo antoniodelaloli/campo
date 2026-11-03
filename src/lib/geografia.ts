@@ -50,7 +50,7 @@ export const GEO: Record<ClaveFinca, GeoFinca> = {
     n: 4176311,
     areaHaPorDefecto: 2.137,
     fuente:
-      "Google Earth (familia, 31/10/2026). Catastro: Murcia, polígono 535, parcelas 63 y 64 (1,66 ha). La escritura (2 ha 13 a 70 ca) cita la 536/67: por confirmar si también es de Lobosillo",
+      "Google Earth (familia, 31/10/2026). Catastro: Murcia, polígono 535, parcelas 63 y 64 (1,66 ha) y polígono 536, parcela 67 (2,02 ha), según la escritura",
     lat: 37.718447,
     lon: -1.080597,
   },
@@ -131,6 +131,11 @@ export type FormaDibujo = {
    * (se usa cuando el dibujo es solo un trozo de la finca).
    */
   metrosPorUnidadFijo?: number;
+  /**
+   * Solo en la ficha de la finca (no en el mapa de inicio): caja más grande para
+   * que quepan trozos que están lejos del principal.
+   */
+  cajaFicha?: { x: number; y: number; w: number; h: number };
 };
 
 /*
@@ -194,12 +199,17 @@ export const DETALLES_CASA_VALLADOLISES = {
  * 5.623 + 10.997 m² = 1,66 ha), norte arriba. Dentro, sacados de la ortofoto del
  * PNOA: árboles en filas, balsa con su caseta, explanada con la casa y pista de fútbol.
  * Escala fija: 1 unidad = 0,5866 m; el punto de Google Earth cae en (154, 172).
- * Por confirmar: la escritura cita la parcela 536/67 (2,02 ha, 400 m al norte),
- * que no se dibuja hasta saber si también es de Lobosillo.
+ * La escritura cita además la parcela 536/67 (20.246 m², unos 400 m al nordeste):
+ * es de Lobosillo. Se dibuja solo en la ficha de la finca, no en el mapa de inicio.
+ * Total Catastro: 36.866 m² ≈ 3,69 ha.
  */
 export const LOBOSILLO_MPU = 0.586563;
 const CONTORNO_LOBOSILLO =
   "5,72 150,16 201,107 262,214 264,217 297,278 288,291 275,301 249,311 208,316 172,314 139,319 103,264 83,227 72,212 52,165";
+/** Parcela 536/67 (Catastro), en las mismas unidades que el trozo de la casa */
+export const LOBOSILLO_536_67 =
+  "694,-365 695,-357 694,-343 692,-344 500,-437 495,-439 491,-442 487,-445 483,-449 481,-451 479,-453 477,-457 474,-462 472,-467 388,-663 387,-666 391,-668 423,-671 458,-671 483,-666 510,-659 539,-655 565,-655 581,-656 593,-658 611,-661 618,-663 630,-666 634,-667 638,-648 640,-640 641,-635 643,-630 657,-558 680,-440 688,-405 693,-380";
+
 /** detalles calcados de la ortofoto, en unidades del dibujo */
 export const DETALLES_LOBOSILLO = {
   balsaTalud: "193,209 240,201 260,252 204,262",
@@ -242,6 +252,7 @@ export const FORMAS: Record<ClaveFinca, FormaDibujo> = {
     persona: { x: 170, y: 120 },
     contorno: CONTORNO_LOBOSILLO,
     metrosPorUnidadFijo: LOBOSILLO_MPU,
+    cajaFicha: { x: -4, y: -690, w: 712, h: 1018 },
   },
 };
 
@@ -323,7 +334,7 @@ export const PLANOS: Record<ClaveFinca, PlanoDeFinca> = {
     zonas: {},
     sectores: {},
     nota:
-      "Contorno del Catastro (polígono 535, parcelas 63 y 64: 1,66 ha); balsa, casa y pista de fútbol de la ortofoto. La escritura cita también la parcela 536/67 (2,02 ha, 400 m al norte): por confirmar si es de Lobosillo. Faltan sus zonas y sectores de riego.",
+      "Dos trozos, con los límites del Catastro: el de la casa (polígono 535, parcelas 63 y 64: 1,66 ha), con la balsa y la pista de fútbol de la ortofoto, y la parcela 536/67 de la escritura (2,02 ha), unos 400 m al nordeste. Faltan sus zonas y sectores de riego.",
   },
 };
 

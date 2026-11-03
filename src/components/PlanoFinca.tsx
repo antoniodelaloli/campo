@@ -114,7 +114,7 @@ export function notaPlano(finca: Finca) {
 function Dibujo({ clave, pantano, piscina }: { clave: ClaveFinca; pantano: string | null; piscina: boolean }) {
   if (clave === "corvera") return <DibujoCorvera pantano={pantano} detalle />;
   if (clave === "valladolises") return <DibujoValladolises pantano={pantano} piscina={piscina} detalle />;
-  return <DibujoLobosillo detalle />;
+  return <DibujoLobosillo detalle completa />;
 }
 
 export function PlanoFinca({
@@ -148,7 +148,7 @@ export function PlanoFinca({
 
   const forma = FORMAS[clave];
   const plano = PLANOS[clave];
-  const { x, y, w, h } = forma.caja;
+  const { x, y, w, h } = forma.cajaFicha ?? forma.caja;
   // sitio extra abajo para el cartel del pantano, la escala y el norte
   const vb = { x: x - MARGEN, y: y - MARGEN, w: w + MARGEN * 2, h: h + MARGEN * 2 + 40 };
 

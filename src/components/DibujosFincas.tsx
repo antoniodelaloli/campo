@@ -2,6 +2,7 @@ import {
   BLOQUES_VALLADOLISES,
   DETALLES_CASA_VALLADOLISES,
   DETALLES_LOBOSILLO,
+  LOBOSILLO_536_67,
   FORMAS,
   MANDARINOS_VALLADOLISES,
   SECTORES_CORVERA,
@@ -208,19 +209,27 @@ export function DibujoValladolises({ pantano, piscina, detalle }: PropsDibujo) {
   );
 }
 
-export function DibujoLobosillo({ detalle }: PropsDibujo) {
+export function DibujoLobosillo({ detalle, completa = false }: PropsDibujo & { completa?: boolean }) {
   // Límites del Catastro (parcelas 535/63 y 535/64) y, dentro, lo que se ve en la
   // ortofoto: filas de árboles, balsa con su caseta, explanada con la casa y pista de fútbol.
+  // «completa» (solo en la ficha): también la parcela 536/67, unos 400 m al nordeste.
   const contorno = FORMAS.lobosillo.contorno!;
   const d = DETALLES_LOBOSILLO;
   return (
     <g>
       <defs>
         <pattern id="u-arbol-lobosillo" href="#u-arbol" patternTransform="rotate(68)" />
+        <pattern id="u-arbol-lobosillo-2" href="#u-arbol" patternTransform="rotate(64)" />
         <clipPath id="u-recorte-lobosillo">
           <polygon points={contorno} />
         </clipPath>
       </defs>
+      {completa && (
+        <>
+          <polygon points={LOBOSILLO_536_67} fill="#7a5230" stroke="#7a5230" strokeWidth={8} strokeLinejoin="round" />
+          <polygon points={LOBOSILLO_536_67} fill="url(#u-arbol-lobosillo-2)" />
+        </>
+      )}
       <polygon points={contorno} fill="#7a5230" stroke="#7a5230" strokeWidth={8} strokeLinejoin="round" />
       <polygon points={contorno} fill="url(#u-arbol-lobosillo)" />
 
@@ -255,6 +264,8 @@ export function DibujoLobosillo({ detalle }: PropsDibujo) {
         <>
           <Etiqueta x={250} y={336} texto="Pista de fútbol" />
           <Etiqueta x={226} y={190} texto="Balsa" />
+          {completa && <Etiqueta x={540} y={-330} texto="Parcela 536/67 · 2,02 ha" />}
+          {completa && <Etiqueta x={70} y={345} texto="Casa · 1,66 ha" />}
         </>
       )}
     </g>

@@ -2,7 +2,7 @@
 // Polígonos en grados (lon, lat), sacados de Google Earth:
 // - Valladolises: «Fincas.kml» de Antonio (3/11/2026), bloques y zonas.
 // - Corvera: límites del Catastro (parcelas 45, 122 y 143), como en la hoja impresa de la familia.
-// - Lobosillo: límites del Catastro (Murcia, polígono 535, parcelas 63 y 64).
+// - Lobosillo: límites del Catastro (Murcia, polígono 535, parcelas 63 y 64, y polígono 536, parcela 67).
 // Los dibujos son aproximados: se acepta un margen alrededor de cada zona.
 // Sin dependencias: sirve en servidor y en cliente (funciona sin cobertura).
 import type { ClaveFinca } from "@/lib/geografia";
@@ -59,11 +59,17 @@ const CORVERA: FincaGeo = {
 // Lobosillo: parcelas 63 y 64 del polígono 535 de Murcia, juntas (1,66 ha)
 const L535: Anillo = [[-1.081588, 37.718974], [-1.080623, 37.719271], [-1.080283, 37.718790], [-1.079876, 37.718224], [-1.079864, 37.718207], [-1.079645, 37.717890], [-1.079703, 37.717820], [-1.079793, 37.717765], [-1.079962, 37.717712], [-1.080239, 37.717688], [-1.080478, 37.717695], [-1.080695, 37.717669], [-1.080935, 37.717959], [-1.081067, 37.718155], [-1.081142, 37.718235], [-1.081279, 37.718482]];
 
+// Lobosillo: parcela 67 del polígono 536 de Murcia (2,02 ha), la de la escritura
+const L536: Anillo = [[-1.076998, 37.721281], [-1.076993, 37.721237], [-1.076999, 37.721165], [-1.077015, 37.721171], [-1.078293, 37.721660], [-1.078481, 37.721818], [-1.079036, 37.722854], [-1.079044, 37.722869], [-1.079015, 37.722883], [-1.078808, 37.722898], [-1.078574, 37.722899], [-1.078226, 37.722835], [-1.078030, 37.722812], [-1.077756, 37.722818], [-1.077428, 37.722869], [-1.077399, 37.722876], [-1.077343, 37.722678], [-1.077249, 37.722299], [-1.077091, 37.721677], [-1.077005, 37.721359]];
+
 const LOBOSILLO: FincaGeo = {
   clave: "lobosillo",
   nombre: "Lobosillo",
-  piezas: [L535],
-  zonas: [],
+  piezas: [L535, L536],
+  zonas: [
+    { nombre: "Trozo de la casa", anillo: L535 },
+    { nombre: "Parcela de arriba", anillo: L536 },
+  ],
 };
 
 const FINCAS_GEO: FincaGeo[] = [VALLADOLISES, CORVERA, LOBOSILLO];
