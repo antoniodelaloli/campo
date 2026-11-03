@@ -76,7 +76,7 @@ export const COMPRESION = 0.22;
  */
 export const AUMENTO_MAPA: Record<ClaveFinca, number> = {
   corvera: 1.1,
-  valladolises: 0.9,
+  valladolises: 2.1, // solo el bloque de la casa (ver FORMAS.valladolises.inicio)
   lobosillo: 2.6,
 };
 
@@ -86,7 +86,7 @@ export const AUMENTO_MAPA: Record<ClaveFinca, number> = {
  */
 export const DESPLAZAMIENTO_MAPA: Record<ClaveFinca, { x: number; y: number }> = {
   corvera: { x: -350, y: 1850 },
-  valladolises: { x: -500, y: -150 },
+  valladolises: { x: -150, y: -520 },
   lobosillo: { x: -300, y: -150 },
 };
 // Punto fijo hacia el que se acercan las distancias (zona de Valladolises).
@@ -136,6 +136,18 @@ export type FormaDibujo = {
    * que quepan trozos que están lejos del principal.
    */
   cajaFicha?: { x: number; y: number; w: number; h: number };
+  /**
+   * Solo en el mapa de inicio: se enseña un trozo representativo de la finca en vez
+   * de la finca entera (su caja, sus trozos y dónde van el tractor y la persona).
+   */
+  inicio?: {
+    caja: { x: number; y: number; w: number; h: number };
+    piezas: string[];
+    /** borde superior del trozo (para colgar el cartel) */
+    arriba: number;
+    tractor: { x: number; y: number };
+    persona: { x: number; y: number };
+  };
 };
 
 /*
@@ -242,6 +254,14 @@ export const FORMAS: Record<ClaveFinca, FormaDibujo> = {
     contorno: VALL_BLOQUE_ABAJO,
     piezas: [VALL_LA_CASA, VALL_BLOQUE_OLIVOS, VALL_BLOQUE_ABAJO],
     metrosPorUnidadFijo: 2.5,
+    // en el mapa de inicio, solo el bloque de la casa (casa, pista de tenis, piscina y pantano)
+    inicio: {
+      caja: { x: 0, y: 38, w: 120, h: 142 },
+      piezas: [VALL_LA_CASA],
+      arriba: 46,
+      tractor: { x: 84, y: 82 },
+      persona: { x: 38, y: 108 },
+    },
   },
   lobosillo: {
     caja: { x: -4, y: 6, w: 310, h: 322 },

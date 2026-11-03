@@ -76,6 +76,15 @@ type Colocada = FincaEnMapa & {
   caja: Caja;
 };
 
+/** En el mapa de inicio, algunas fincas enseñan solo un trozo (ver FormaDibujo.inicio). */
+function cajaInicio(clave: ClaveFinca) {
+  return FORMAS[clave].inicio?.caja ?? FORMAS[clave].caja;
+}
+function piezasInicio(clave: ClaveFinca): string[] | null {
+  const f = FORMAS[clave];
+  return f.inicio?.piezas ?? f.piezas ?? (f.contorno ? [f.contorno] : null);
+}
+
 function colocar(f: FincaEnMapa): Colocada {
   const geo = GEO[f.clave];
   const forma = FORMAS[f.clave];
@@ -92,10 +101,10 @@ function colocar(f: FincaEnMapa): Colocada {
     tx,
     ty,
     caja: {
-      x0: tx + forma.caja.x * k,
-      y0: ty + forma.caja.y * k,
-      x1: tx + (forma.caja.x + forma.caja.w) * k,
-      y1: ty + (forma.caja.y + forma.caja.h) * k,
+      x0: tx + cajaInicio(f.clave).x * k,
+      y0: ty + cajaInicio(f.clave).y * k,
+      x1: tx + (cajaInicio(f.clave).x + cajaInicio(f.clave).w) * k,
+      y1: ty + (cajaInicio(f.clave).y + cajaInicio(f.clave).h) * k,
     },
   };
 }
@@ -597,13 +606,13 @@ export function MapaInteractivo({
           return (
             <g key={c.id} transform={`translate(${c.tx} ${c.ty}) scale(${c.k})`}>
               {/* claro alrededor de la finca + sombra, para que resalte sobre el paisaje */}
-              {FORMAS[c.clave].contorno ? (
+              {piezasInicio(c.clave) ? (
                 <>
                   {/* finca calcada: el claro y la sombra siguen su contorno */}
-                  {(FORMAS[c.clave].piezas ?? [FORMAS[c.clave].contorno!]).map((pz) => (
+                  {piezasInicio(c.clave)!.map((pz) => (
                     <polygon key={`s-${pz}`} points={pz} transform="translate(4 8)" fill="#3b2a1a" opacity={0.22} />
                   ))}
-                  {(FORMAS[c.clave].piezas ?? [FORMAS[c.clave].contorno!]).map((pz) => (
+                  {piezasInicio(c.clave)!.map((pz) => (
                     <polygon
                       key={`c-${pz}`}
                       points={pz}
@@ -636,12 +645,12 @@ export function MapaInteractivo({
                 </>
               )}
               {c.clave === "corvera" && <DibujoCorvera pantano={c.pantano} sectores={c.sectores} detalle={detalle} />}
-              {c.clave === "valladolises" && <DibujoValladolises pantano={c.pantano} piscina={c.piscina} detalle={detalle} />}
+              {c.clave === "valladolises" && <DibujoValladolises pantano={c.pantano} piscina={c.piscina} detalle={detalle} soloCasa />}
               {c.clave === "lobosillo" && <DibujoLobosillo detalle={detalle} />}
               {actividades
                 .filter((a) => a.fincaId === c.id)
                 .map((a) => {
-                  const p = FORMAS[c.clave][a.tipo];
+                  const p = (FORMAS[c.clave].inicio ?? FORMAS[c.clave])[a.tipo];
                   return a.tipo === "tractor" ? (
                     <Tractor key={a.id} x={p.x} y={p.y} />
                   ) : (
@@ -695,7 +704,7 @@ export function MapaInteractivo({
         <>
           {colocadas.map((c) => {
             const forma = FORMAS[c.clave];
-            const p = aPantalla(c.tx + forma.centro.x * c.k, c.ty + forma.arriba * c.k);
+            const p = aPantalla(c.tx + forma.centro.x * c.k, c.ty + (forma.inicio?.arriba ?? forma.arriba) * c.k);
             return (
               <Link
                 key={c.id}

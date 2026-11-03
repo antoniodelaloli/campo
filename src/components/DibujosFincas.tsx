@@ -127,23 +127,25 @@ export function DibujoCorvera({ pantano, sectores = [], detalle }: PropsDibujo) 
   );
 }
 
-export function DibujoValladolises({ pantano, piscina, detalle }: PropsDibujo) {
+export function DibujoValladolises({ pantano, piscina, detalle, soloCasa = false }: PropsDibujo & { soloCasa?: boolean }) {
   // La finca entera, dibujada en Google Earth (3/11/2026): tres bloques de limoneros,
   // los trozos de mandarinos y, en el bloque de la casa, los detalles calcados antes
   // (casa, pista de tenis, piscina, pantano y caseta), puestos a la misma escala.
+  // «soloCasa» (mapa de inicio): solo el bloque de la casa, que es el más reconocible.
+  const bloques = soloCasa ? BLOQUES_VALLADOLISES.slice(0, 1) : BLOQUES_VALLADOLISES;
   return (
     <g>
       <defs>
         <pattern id="u-limonero-vall" href="#u-limonero" patternTransform="rotate(-42) scale(0.7)" />
         <pattern id="u-mandarino-vall" href="#u-mandarino" patternTransform="rotate(-42) scale(0.7)" />
       </defs>
-      {BLOQUES_VALLADOLISES.map((b) => (
+      {bloques.map((b) => (
         <g key={b.nombre}>
           <polygon points={b.puntos} fill="#7a5230" stroke="#7a5230" strokeWidth={6} strokeLinejoin="round" />
           <polygon points={b.puntos} fill="url(#u-limonero-vall)" />
         </g>
       ))}
-      {MANDARINOS_VALLADOLISES.map((m) => (
+      {!soloCasa && MANDARINOS_VALLADOLISES.map((m) => (
         <polygon key={m} points={m} fill="url(#u-mandarino-vall)" stroke="#5e3b1c" strokeWidth={1.5} strokeLinejoin="round" />
       ))}
 
@@ -203,7 +205,16 @@ export function DibujoValladolises({ pantano, piscina, detalle }: PropsDibujo) {
       )}
 
       {detalle && pantano && (
-        <Etiqueta x={DETALLES_CASA_VALLADOLISES.pantano.x + 40} y={DETALLES_CASA_VALLADOLISES.pantano.y + 46} texto={`Pantano ~${pantano} m³`} />
+        // en el mapa de inicio la finca va muy agrandada: el cartel se encoge para no taparla
+        <g
+          transform={
+            soloCasa
+              ? `translate(${DETALLES_CASA_VALLADOLISES.pantano.x + 40} ${DETALLES_CASA_VALLADOLISES.pantano.y + 46}) scale(0.4) translate(${-(DETALLES_CASA_VALLADOLISES.pantano.x + 40)} ${-(DETALLES_CASA_VALLADOLISES.pantano.y + 46)})`
+              : undefined
+          }
+        >
+          <Etiqueta x={DETALLES_CASA_VALLADOLISES.pantano.x + 40} y={DETALLES_CASA_VALLADOLISES.pantano.y + 46} texto={`Pantano ~${pantano} m³`} />
+        </g>
       )}
     </g>
   );
