@@ -132,12 +132,20 @@ export type FormaDibujo = {
 };
 
 /*
- * Corvera calcada de la vista aérea de Google Earth (31/10/2026), norte arriba.
- * 1 unidad ≈ 2,3 m en la captura (el contorno medía 35,2 ha; pendiente de confirmar
- * qué parte es de la familia: el dibujo se escala a la superficie de la base de datos).
+ * Corvera con los límites del Catastro (Murcia, polígono 162), norte arriba,
+ * 1 unidad ≈ 2,3 m (mismo encaje que el contorno de Google Earth, así casan el
+ * pantano y los caminos calcados). Según la hoja impresa de la familia (3/11/2026):
+ *   sectores 1 y 2 = parcelas 122 y 45 (5.102 árboles, Fino 95, 20,59 ha cultivadas)
+ *   sector 3 = parcela 143, la «del panadero» (788 árboles, Fino 49, 2,87 ha)
+ * La franja del norte (parcela 123, 10,27 ha) entraba en el dibujo de Google Earth
+ * pero no en la hoja: queda fuera hasta confirmar si es de la familia.
  */
+const CORVERA_122 = "30,282 26,276 213,149 306,87 334,66 349,74 346,74 344,78 356,117 258,185 110,294 64,326";
+const CORVERA_45 = "95,367 64,326 110,294 258,185 356,117 358,127 358,131 356,136 348,148 305,220 292,241 286,242 282,244 255,264 216,296 199,309 191,313 159,338 147,346";
+const CORVERA_PRINCIPAL = "26,276 30,282 58,318 95,367 147,346 159,338 191,313 199,309 255,264 282,244 286,242 292,241 305,220 358,131 358,127 344,79 346,74 349,74 334,66 306,87 213,149";
+const CORVERA_PANADERO = "402,108 408,103 412,94 412,85 410,79 408,75 389,55 357,26 323,-1 317,2 283,29 334,66 349,74 397,106";
 const CONTORNO_CORVERA =
-  "320,0 337,10 351,19 385,44 414,76 416,91 404,105 347,73 359,132 298,241 275,249 152,347 96,366 0,234";
+  "26,276 30,282 58,318 95,367 147,346 159,338 191,313 199,309 255,264 282,244 286,242 292,241 305,220 358,131 358,127 344,79 346,74 349,74 397,106 402,108 408,103 412,94 412,85 410,79 408,75 389,55 357,26 323,-1 317,2 283,29 333,66 333,67 306,87 213,149";
 
 /*
  * Valladolises: dibujada por Antonio en Google Earth (archivo «Fincas.kml», 3/11/2026),
@@ -189,13 +197,15 @@ const CONTORNO_LOBOSILLO =
 
 export const FORMAS: Record<ClaveFinca, FormaDibujo> = {
   corvera: {
-    caja: { x: -8, y: -8, w: 432, h: 384 },
+    caja: { x: 16, y: -12, w: 406, h: 390 },
     centro: { x: 205, y: 187 },
-    arriba: 80,
-    areaDibujada: 66742,
-    tractor: { x: 110, y: 228 },
+    arriba: 60,
+    areaDibujada: 45000,
+    tractor: { x: 150, y: 290 },
     persona: { x: 300, y: 150 },
     contorno: CONTORNO_CORVERA,
+    piezas: [CORVERA_PRINCIPAL, CORVERA_PANADERO],
+    metrosPorUnidadFijo: 2.3,
   },
   valladolises: {
     caja: { x: 0, y: -8, w: 432, h: 308 },
@@ -227,9 +237,9 @@ export function metrosPorUnidad(clave: ClaveFinca, areaHa: number) {
 // Insignias de sector de Corvera según su número
 // (orientativo: falta confirmar qué riega cada sector)
 export const SECTORES_CORVERA: Record<number, { x: number; y: number }> = {
-  1: { x: 153, y: 128 },
-  2: { x: 113, y: 300 },
-  3: { x: 366, y: 62 },
+  1: { x: 160, y: 196 },
+  2: { x: 118, y: 312 },
+  3: { x: 344, y: 44 },
 };
 
 /** Clave de dibujo a partir del nombre de la finca en la base de datos. */
@@ -262,24 +272,20 @@ export type PlanoDeFinca = {
   nota: string;
 };
 
-// Corvera: el saliente del noreste (calcado) se separa del cuerpo principal en 347,73 → 320,0.
-const CORVERA_PANADERO = "320,0 337,10 351,19 385,44 414,76 416,91 404,105 347,73";
-const CORVERA_PRINCIPAL = "320,0 347,73 359,132 298,241 275,249 152,347 96,366 0,234";
-
 export const PLANOS: Record<ClaveFinca, PlanoDeFinca> = {
   corvera: {
     zonas: {
-      "rectangulo grande": { poligono: CORVERA_PRINCIPAL, etiqueta: { x: 130, y: 232 } },
-      "parcela del panadero": { poligono: CORVERA_PANADERO, etiqueta: { x: 330, y: -12 } },
+      "rectangulo grande": { poligono: CORVERA_PRINCIPAL, etiqueta: { x: 170, y: 262 } },
+      "parcela del panadero": { poligono: CORVERA_PANADERO, etiqueta: { x: 340, y: -16 } },
     },
     sectores: {
-      // Sectores 1 y 2 separados por el camino diagonal largo; 3 = parcela del panadero
-      1: { poligono: "320,0 0,234 29,273 346,69", etiqueta: { x: 165, y: 152 } },
-      2: { poligono: "96,366 152,347 275,249 298,241 359,132 347,73 346,69 29,273", etiqueta: { x: 130, y: 300 } },
-      3: { poligono: CORVERA_PANADERO, etiqueta: { x: 376, y: 66 } },
+      // 1 y 2 = parcelas 122 y 45 (por confirmar cuál es cuál); 3 = parcela del panadero
+      1: { poligono: CORVERA_122, etiqueta: { x: 190, y: 200 } },
+      2: { poligono: CORVERA_45, etiqueta: { x: 150, y: 320 } },
+      3: { poligono: CORVERA_PANADERO, etiqueta: { x: 360, y: 60 } },
     },
     nota:
-      "Contorno, caminos y pantano calcados de Google Earth. Por confirmar: que la parcela del panadero sea el saliente del noreste y que el camino diagonal separe los sectores 1 y 2.",
+      "Límites del Catastro (polígono 162: parcelas 45, 122 y 143) y hoja impresa de la familia: sectores 1 y 2 = 5.102 árboles Fino 95 (20,59 ha), sector 3 = parcela del panadero, 788 árboles Fino 49 (2,87 ha). Por confirmar: cuál de las dos franjas es el sector 1 y si la franja del norte (parcela 123) es de la familia.",
   },
   valladolises: {
     zonas: {
