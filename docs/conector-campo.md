@@ -62,6 +62,7 @@ Vale en cualquier plan (el gratuito admite un conector propio) y funciona tambi�
 - «Hay una fuga en el sector 2 de Corvera.»
 - «Apunta en el diario: ha venido Diego y dice que hay algo de cotonet en Valladolises.»
 - «Apunta una idea: en Lobosillo plantaría almendros en la parte de arriba.» / «¿Qué ideas tenía yo sobre el riego?»
+- «Vamos con las preguntas de Antonio, bloque 1.» → hace las preguntas de una en una y guarda cada respuesta en Campo al momento («✅ Guardada»). «Seguimos con las preguntas» → mira cuáles faltan.
 
 > La foto en sí no se guarda en Campo (al conector solo le llega el número). Guardar la foto será una mejora futura.
 
@@ -76,7 +77,8 @@ Vale en cualquier plan (el gratuito admite un conector propio) y funciona tambi�
 | `tratamientos` | `crear_fecha_clave` / `marcar_fecha_clave` |
 | `buscar_lugar` | `apuntar_incidencia` / `nota_diario` |
 | `buscar_ideas` | `apuntar_idea` (libreta de ideas y reflexiones) |
-| `tiempo_para_fumigar` (viento y granizo, 6 días) | |
+| `tiempo_para_fumigar` (viento y granizo, 6 días) | `guardar_respuesta` (banco de preguntas) |
+| `preguntas_contestadas` | |
 
 Un usuario **lector** solo puede consultar; uno **editor** puede apuntar.
 

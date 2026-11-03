@@ -27,15 +27,17 @@ import { esFechaISO, hoyISO, normalizar, sumarDias } from "@/lib/texto";
 const ORIGEN = "conector";
 
 export const INSTRUCCIONES = `Campo es la app interna de las fincas de limoneros de la familia (Valladolises, Corvera y Lobosillo, en Murcia).
+SOLO para las fincas: la familia tiene otro negocio (la confitería y cafeterías Maite y 1968, con su propio conector «Obrador»). Si habla de la confitería, las tiendas, el obrador o las ventas de los locales, NO uses estas herramientas ni guardes nada aquí. «Maite» puede ser la confitería o Maite, la hermana de Juan Carlos y socia de una finca: si no está claro, pregunta.
 Cómo usar estas herramientas:
 - Habla en español, claro y breve: quien pregunta es agricultor, no informático. Usa los nombres de las fincas y zonas tal como los dice él.
 - Para saber qué pasa hoy, empieza por «resumen_del_dia».
-- ANTES de apuntar nada (tareas, niveles, lecturas, fechas clave, incidencias, notas), repite en una frase lo que vas a guardar y espera a que diga que sí. La única excepción son las ideas (ver abajo).
+- ANTES de apuntar nada (tareas, niveles, lecturas, fechas clave, incidencias, notas), repite en una frase lo que vas a guardar y espera a que diga que sí. Las únicas excepciones son las ideas y las respuestas al banco de preguntas (ver abajo).
 - Si un sitio es ambiguo (por ejemplo «el sector 2», que existe en dos fincas), pregunta cuál, o usa «buscar_lugar».
 - Las fechas van en formato AAAA-MM-DD y en hora de España. «Hoy» es la fecha que devuelve resumen_del_dia.
 - No inventes datos: si algo no está en Campo, dilo («eso no está apuntado»).
 - Nada se borra: si algo está mal, se marca como anulado o se corrige apuntándolo de nuevo.
 - IDEAS: está atento a lo que cuenta aunque divague. Si suelta una idea, reflexión, duda, plan o algo aprendido sobre el campo que merezca la pena recordar (sin fecha ni trabajo concreto), guárdala tú con «apuntar_idea» SIN preguntar y con detectada=true; al final de tu respuesta dile en una línea «📝 Apuntado en la libreta de ideas: …». No guardes saludos, quejas sueltas ni cosas que ya estén apuntadas (si dudas, mira «buscar_ideas»). Si es una tarea o una fecha, eso sí pregúntalo antes. Solo lo del campo: nada personal ni familiar.
+- BANCO DE PREGUNTAS: si está contestando las preguntas de Antonio (códigos como LOB-01, AGU-03, NUM-02), antes de empezar mira «preguntas_contestadas» para no repetir las que ya contestó. Hazlas de una en una y, en cuanto conteste cada una, guárdala con «guardar_respuesta» SIN pedir permiso (con el código, la pregunta y lo que dijo completo) y di solo «✅ Guardada» antes de pasar a la siguiente. Si dice «no lo sé», guárdala igual con seguridad «no_sabe». Si corrige una anterior, guarda otra respuesta con el mismo código. Ya no hace falta hacer un acta ni mandarla por WhatsApp.
 - Si preguntan qué día se puede fumigar, si hace viento o si va a granizar, usa «tiempo_para_fumigar». Con viento no se fumiga: el caldo se lo lleva el aire. Si van a apuntar un tratamiento para un día con viento, avísalo antes de guardarlo.`;
 
 type Resultado = { content: { type: "text"; text: string }[]; isError?: boolean };
@@ -732,7 +734,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
     {
       title: "Guardar una idea o reflexión",
       description:
-        "Guarda una idea, reflexión, duda, plan o algo aprendido sobre el campo que NO es una tarea ni una fecha («habría que probar a soltar bichos contra el cotonet», «Los Olivos rinden menos desde que cambiamos el riego»). «texto» = lo que dijo, completo y con sus palabras; «titulo» = resumen de una línea. Si la idea la has detectado tú en la conversación, guárdala sin preguntar con detectada=true y avísale después en una línea; si te la ha pedido él, detectada=false.",
+        "Guarda una idea, reflexión, duda, plan o algo aprendido sobre LAS FINCAS (nunca de la confitería ni de las tiendas: eso va al conector «Obrador») que NO es una tarea ni una fecha («habría que probar a soltar bichos contra el cotonet», «Los Olivos rinden menos desde que cambiamos el riego»). «texto» = lo que dijo, completo y con sus palabras; «titulo» = resumen de una línea. Si la idea la has detectado tú en la conversación, guárdala sin preguntar con detectada=true y avísale después en una línea; si te la ha pedido él, detectada=false.",
       inputSchema: {
         titulo: z.string().min(3).max(200).describe("Resumen en una línea"),
         texto: z.string().min(3).max(8000).describe("Lo que dijo, completo"),
@@ -775,6 +777,96 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
         return fallo(`No se pudo guardar: ${error.message}`);
       }
       return ok({ guardado: true, mensaje: `Idea guardada: «${titulo}».` });
+    },
+  );
+
+  // ------------------------------------------------------------------
+  // Banco de preguntas (docs/deberes/preguntas-campo.md)
+  // ------------------------------------------------------------------
+  server.registerTool(
+    "guardar_respuesta",
+    {
+      title: "Guardar una respuesta del banco de preguntas",
+      description:
+        "Guarda en Campo la respuesta a UNA pregunta del banco de preguntas de Antonio, en cuanto la contesta (sin pedir permiso: está contestando para que quede guardado). «codigo» es el de la pregunta (LOB-01, AGU-03…); «respuesta», lo que dijo completo y con sus palabras. Si corrige o completa una anterior, se guarda otra con el mismo código (vale la última).",
+      inputSchema: {
+        codigo: z
+          .string()
+          .regex(/^[A-Za-z]{3}-\d{2}$/, "Código como LOB-01")
+          .describe("Código de la pregunta, p. ej. LOB-01"),
+        pregunta: z.string().min(3).max(500).describe("La pregunta tal como se hizo"),
+        respuesta: z.string().min(1).max(8000).describe("Lo que contestó, completo"),
+        seguridad: z
+          .enum(["seguro", "mas_o_menos", "no_sabe"])
+          .default("seguro")
+          .describe("seguro / mas_o_menos («más o menos», «creo que») / no_sabe"),
+        quien_sabe: z.string().max(200).optional().describe("Si dice que lo sabe otra persona («eso lo sabe Pencho»)"),
+        falta: z.string().max(1000).optional().describe("Lo que quedó pendiente: una foto, un papel, preguntar a alguien…"),
+      },
+      annotations: ESCRITURA,
+    },
+    async ({ codigo, pregunta, respuesta, seguridad, quien_sabe, falta }) => {
+      const p = sinPermiso(ctx);
+      if (p) return p;
+      const cod = codigo.toUpperCase();
+      const { error } = await supabase.from("respuestas").insert({
+        codigo: cod,
+        pregunta,
+        respuesta,
+        seguridad,
+        quien_sabe: quien_sabe?.trim() || null,
+        falta: falta?.trim() || null,
+        origen: ORIGEN,
+      });
+      if (error) {
+        if (/respuestas/.test(error.message) && /exist|schema cache/i.test(error.message))
+          return fallo("Las respuestas aún no se pueden guardar en Campo (falta la migración 0008). Apúntalas en el chat y avisa a Antonio.");
+        return fallo(`No se pudo guardar: ${error.message}`);
+      }
+      return ok({ guardado: true, mensaje: `✅ Guardada la respuesta de ${cod}.` });
+    },
+  );
+
+  server.registerTool(
+    "preguntas_contestadas",
+    {
+      title: "Preguntas ya contestadas",
+      description:
+        "Lista las preguntas del banco que ya tienen respuesta guardada (código, fecha y resumen de la última respuesta). Úsala antes de seguir con las preguntas para no repetir las contestadas, o cuando diga «seguimos» o «¿por dónde íbamos?».",
+      inputSchema: {},
+      annotations: LECTURA,
+    },
+    async () => {
+      const { data, error } = await supabase
+        .from("respuestas")
+        .select("codigo, respuesta, seguridad, falta, created_at")
+        .order("created_at", { ascending: false })
+        .limit(500)
+        .overrideTypes<
+          { codigo: string; respuesta: string; seguridad: string; falta: string | null; created_at: string }[],
+          { merge: false }
+        >();
+      if (error) {
+        if (/respuestas/.test(error.message) && /exist|schema cache/i.test(error.message))
+          return fallo("Aún no se guardan respuestas en Campo (falta la migración 0008).");
+        return fallo(`No se pudieron leer las respuestas: ${error.message}`);
+      }
+      // La más reciente de cada código
+      const ultimas = new Map<string, (typeof data)[number]>();
+      for (const r of data ?? []) if (!ultimas.has(r.codigo)) ultimas.set(r.codigo, r);
+      const lista = [...ultimas.values()].sort((a, b) => a.codigo.localeCompare(b.codigo));
+      if (lista.length === 0) return ok("Todavía no hay ninguna pregunta contestada.");
+      return ok({
+        contestadas: lista.length,
+        codigos: lista.map((r) => r.codigo),
+        detalle: lista.map((r) => ({
+          codigo: r.codigo,
+          fecha: r.created_at.slice(0, 10),
+          seguridad: r.seguridad,
+          resumen: r.respuesta.length > 160 ? `${r.respuesta.slice(0, 157)}…` : r.respuesta,
+          falta: r.falta,
+        })),
+      });
     },
   );
 
