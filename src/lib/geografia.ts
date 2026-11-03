@@ -303,3 +303,34 @@ export const PLANOS: Record<ClaveFinca, PlanoDeFinca> = {
     nota: "Contorno, balsa, casa y pista de fútbol calcados de Google Earth. Faltan sus zonas y sectores de riego.",
   },
 };
+
+/*
+ * De latitud y longitud a unidades de dibujo de cada finca (para poner chinchetas
+ * en el plano: incidencias con su sitio exacto).
+ * - Valladolises: exacto (mismo cálculo con el que se pasó el KML a unidades de 2,5 m).
+ * - Corvera: ajustado al contorno del KML (1 unidad ≈ 2,3 m).
+ * - Lobosillo: desde su punto de Google Earth, con la escala de su dibujo.
+ */
+const M_LAT_GRADO = 111132;
+const mLonGrado = (lat: number) => Math.cos((lat * Math.PI) / 180) * 111320;
+
+export function aDibujo(clave: ClaveFinca, lat: number, lon: number): { x: number; y: number } {
+  if (clave === "valladolises") {
+    return {
+      x: ((lon - -1.108422607595773) * mLonGrado(37.7715)) / 2.5 + 8,
+      y: ((37.77426798397903 - lat) * M_LAT_GRADO) / 2.5 + 8,
+    };
+  }
+  if (clave === "corvera") {
+    return {
+      x: ((lon - -1.149806946177662) * mLonGrado(37.811)) / 2.31,
+      y: ((37.81491677329856 - lat) * M_LAT_GRADO) / 2.3,
+    };
+  }
+  const g = GEO.lobosillo;
+  const mpu = metrosPorUnidad("lobosillo", g.areaHaPorDefecto);
+  return {
+    x: FORMAS.lobosillo.centro.x + ((lon - g.lon) * mLonGrado(g.lat)) / mpu,
+    y: FORMAS.lobosillo.centro.y - ((lat - g.lat) * M_LAT_GRADO) / mpu,
+  };
+}

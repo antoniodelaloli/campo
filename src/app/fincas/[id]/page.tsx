@@ -7,6 +7,8 @@ import { FilaTarea } from "@/components/FilaTarea";
 import { BarraPantano } from "@/components/BarraPantano";
 import { VistaFinca } from "./VistaFinca";
 import { AccionesFinca } from "./AccionesFinca";
+import { COLOR_INCIDENCIA, enlaceComoLlegar } from "@/components/PlanoFinca";
+import { cerrarIncidencia } from "@/app/avisos/actions";
 import { obtenerContexto } from "@/lib/sesion";
 import {
   cargarContadores,
@@ -18,7 +20,7 @@ import {
   cargarZonaSector,
   lugaresDe,
 } from "@/lib/datos";
-import { formatoNumero, hoyISO, sumarDias } from "@/lib/texto";
+import { fechaCorta, formatoNumero, hoyISO, sumarDias } from "@/lib/texto";
 
 export const instant = false;
 
@@ -114,12 +116,46 @@ async function FincaDetalle({
   const lateral = (
     <>
       {avisos.length > 0 && (
-        <Panel titulo="Avisos" extra={avisos.length}>
-          <ul className="flex flex-col gap-2 text-[13px]">
+        <Panel titulo="Incidencias" extra={avisos.length}>
+          <ul className="flex flex-col gap-2.5 text-[13px]">
             {avisos.map((a) => (
-              <li key={a.id}>
-                <b>{a.titulo}</b>
-                {a.descripcion && <span className="text-tinta-suave"> · {a.descripcion}</span>}
+              <li key={a.id} className="flex items-start gap-2">
+                <span
+                  aria-hidden="true"
+                  className="mt-0.5 h-3 w-3 shrink-0 border-2 border-tinta"
+                  style={{ background: COLOR_INCIDENCIA[a.tipo] }}
+                />
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span>
+                    <b>{a.titulo}</b>
+                    {a.descripcion && <span className="text-tinta-suave"> · {a.descripcion}</span>}
+                    <span className="text-tinta-suave"> · {fechaCorta(a.fecha, hoy)}</span>
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {a.lat != null && a.lon != null && (
+                      <a
+                        href={enlaceComoLlegar(a.lat, a.lon)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="min-h-[32px] border-2 border-tinta bg-[#fff8e2] px-2 py-1 text-xs font-bold hover:bg-[#f6e7c1]"
+                      >
+                        Cómo llegar
+                      </a>
+                    )}
+                    {puedeEditar && (
+                      <form action={cerrarIncidencia}>
+                        <input type="hidden" name="id" value={a.id} />
+                        <input type="hidden" name="estado" value="resuelta" />
+                        <button
+                          type="submit"
+                          className="min-h-[32px] border-2 border-hoja-oscura bg-[#eaf5dc] px-2 text-xs font-bold text-hoja-oscura hover:bg-[#d5ebb8]"
+                        >
+                          Arreglada
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                </div>
               </li>
             ))}
           </ul>
@@ -176,6 +212,7 @@ async function FincaDetalle({
       vistaInicial={vista}
       zonaInicial={typeof sp.zona === "string" ? sp.zona : null}
       piscina={avisos.some((a) => a.tipo === "piscina")}
+      incidencias={avisos}
       riego={riego}
       acciones={acciones}
       lateral={lateral}

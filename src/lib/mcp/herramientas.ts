@@ -38,6 +38,7 @@ Cómo usar estas herramientas:
 - Nada se borra: si algo está mal, se marca como anulado o se corrige apuntándolo de nuevo.
 - IDEAS: está atento a lo que cuenta aunque divague. Si suelta una idea, reflexión, duda, plan o algo aprendido sobre el campo que merezca la pena recordar (sin fecha ni trabajo concreto), guárdala tú con «apuntar_idea» SIN preguntar y con detectada=true; al final de tu respuesta dile en una línea «📝 Apuntado en la libreta de ideas: …». No guardes saludos, quejas sueltas ni cosas que ya estén apuntadas (si dudas, mira «buscar_ideas»). Si es una tarea o una fecha, eso sí pregúntalo antes. Solo lo del campo: nada personal ni familiar.
 - BANCO DE PREGUNTAS: si está contestando las preguntas de Antonio (códigos como LOB-01, AGU-03, NUM-02), antes de empezar mira «preguntas_contestadas» para no repetir las que ya contestó. Hazlas de una en una y, en cuanto conteste cada una, guárdala con «guardar_respuesta» SIN pedir permiso (con el código, la pregunta y lo que dijo completo) y di solo «✅ Guardada» antes de pasar a la siguiente. Si dice «no lo sé», guárdala igual con seguridad «no_sabe». Si corrige una anterior, guarda otra respuesta con el mismo código. Ya no hace falta hacer un acta ni mandarla por WhatsApp.
+- INCIDENCIAS (fugas, goteros rotos, averías, plagas, árboles a revisar): apúntalas con «apuntar_incidencia». Si está junto al sitio, dile una vez que con «Oye Siri, incidencia» queda apuntada con la ubicación exacta.
 - Si preguntan qué día se puede fumigar, si hace viento o si va a granizar, usa «tiempo_para_fumigar». Con viento no se fumiga: el caldo se lo lleva el aire. Si van a apuntar un tratamiento para un día con viento, avísalo antes de guardarlo.`;
 
 type Resultado = { content: { type: "text"; text: string }[]; isError?: boolean };
@@ -662,11 +663,12 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
     "apuntar_incidencia",
     {
       title: "Apuntar un aviso o incidencia",
-      description: "Apunta un problema en una finca: fuga de riego, avería, plaga, la piscina u otro. Sale en el mapa y en los avisos de la web.",
+      description:
+        "Apunta una incidencia en una finca: fuga de riego, avería, plaga, árbol a revisar, la piscina u otro. Sale en los avisos de la web. Desde aquí no se sabe el sitio exacto: si está junto a ella, recuérdale que con «Oye Siri, incidencia» queda apuntada con su ubicación.",
       inputSchema: {
         finca: z.string().min(2),
         titulo: z.string().min(3).max(200),
-        tipo: z.enum(["fuga_riego", "averia", "plaga", "piscina", "otro"]).default("otro"),
+        tipo: z.enum(["fuga_riego", "averia", "plaga", "arbol", "piscina", "otro"]).default("otro"),
         descripcion: z.string().max(1000).optional(),
         gravedad: z.enum(["baja", "media", "alta"]).default("media"),
       },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import type { Finca, ZonaSector } from "@/lib/datos";
+import type { Finca, Incidencia, ZonaSector } from "@/lib/datos";
 import { CabeceraSeccion, Chip, Dato, Panel, PorConfirmar } from "@/components/ui";
 import { COLOR_SECTOR, notaPlano, PlanoFinca, tienePlano, zonasSinSituar } from "@/components/PlanoFinca";
 import { formatoNumero, normalizar } from "@/lib/texto";
@@ -22,6 +22,7 @@ export function VistaFinca({
   vistaInicial,
   zonaInicial,
   piscina,
+  incidencias = [],
   riego,
   acciones,
   lateral,
@@ -32,6 +33,8 @@ export function VistaFinca({
   vistaInicial: Vista;
   zonaInicial: string | null;
   piscina: boolean;
+  /** incidencias abiertas (las que tienen sitio salen en el plano) */
+  incidencias?: Incidencia[];
   /** panel de riego (pantanos y programadores), para la vista de sectores */
   riego: ReactNode;
   /** botonera «Apuntar en …», debajo del plano */
@@ -122,6 +125,7 @@ export function VistaFinca({
                 zonaSector={zonaSector}
                 base={base}
                 piscina={piscina}
+                incidencias={incidencias}
                 onElegir={elegir}
                 onSobre={setSobre}
               />

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { Marco } from "@/components/Marco";
 import { CabeceraSeccion, Cargando, Panel } from "@/components/ui";
@@ -108,6 +109,15 @@ async function FechasClave() {
           <Panel titulo="Avisos en este móvil">
             <AvisosMovil />
           </Panel>
+          <Link
+            href="/atajos"
+            className="ficha flex items-center justify-between gap-2 px-3 py-2.5 text-sm font-bold hover:bg-[#f6e7c1]"
+          >
+            <span>
+              Atajos de Siri: <span className="font-normal">«Oye Siri, incidencia»</span>
+            </span>
+            <span aria-hidden="true">→</span>
+          </Link>
         </div>
 
         <div className="flex flex-col gap-5">

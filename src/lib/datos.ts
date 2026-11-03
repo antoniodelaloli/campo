@@ -237,23 +237,33 @@ export async function cargarPersonas(supabase: Cliente) {
 export type Incidencia = {
   id: string;
   finca_id: string;
-  tipo: "fuga_riego" | "averia" | "plaga" | "piscina" | "otro";
+  tipo: "fuga_riego" | "averia" | "plaga" | "piscina" | "arbol" | "otro";
   titulo: string;
   descripcion: string | null;
   severidad: "baja" | "media" | "alta";
   estado: "abierta" | "en_curso" | "resuelta" | "descartada";
   fecha: string;
+  /** sitio exacto (atajo «Incidencia» de Siri), si lo tiene */
+  lat?: number | null;
+  lon?: number | null;
   fincas: { nombre: string } | null;
 };
 
 export async function cargarIncidenciasAbiertas(supabase: Cliente) {
-  const { data } = await supabase
-    .from("incidencias")
-    .select("id, finca_id, tipo, titulo, descripcion, severidad, estado, fecha, fincas(nombre)")
-    .in("estado", ["abierta", "en_curso"])
-    .order("fecha", { ascending: false })
-    .overrideTypes<Incidencia[], { merge: false }>();
-  return data ?? [];
+  const campos = "id, finca_id, tipo, titulo, descripcion, severidad, estado, fecha, fincas(nombre)";
+  const consulta = (select: string) =>
+    supabase
+      .from("incidencias")
+      .select(select)
+      .in("estado", ["abierta", "en_curso"])
+      .order("fecha", { ascending: false })
+      .order("created_at", { ascending: false })
+      .overrideTypes<Incidencia[], { merge: false }>();
+  // Con el sitio exacto (migración 0010); si aún no está aplicada, sin él
+  const { data, error } = await consulta(`${campos}, lat, lon`);
+  if (!error) return data ?? [];
+  const { data: sinSitio } = await consulta(campos);
+  return sinSitio ?? [];
 }
 
 export type NotaDiario = {

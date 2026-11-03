@@ -1,5 +1,5 @@
-import type { Finca, ZonaSector } from "@/lib/datos";
-import { claveDeFinca, FORMAS, GEO, metrosPorUnidad, PLANOS, type ClaveFinca } from "@/lib/geografia";
+import type { Finca, Incidencia, ZonaSector } from "@/lib/datos";
+import { aDibujo, claveDeFinca, FORMAS, GEO, metrosPorUnidad, PLANOS, type ClaveFinca } from "@/lib/geografia";
 import { formatoNumero, normalizar } from "@/lib/texto";
 import { DibujoCorvera, DibujoLobosillo, DibujoValladolises, Patrones } from "@/components/DibujosFincas";
 
@@ -11,6 +11,37 @@ import { DibujoCorvera, DibujoLobosillo, DibujoValladolises, Patrones } from "@/
  */
 
 export const COLOR_SECTOR = ["#2f7fb0", "#c98a2a", "#8e44ad", "#16a085"];
+
+/** Color de la chincheta de cada tipo de incidencia. */
+export const COLOR_INCIDENCIA: Record<Incidencia["tipo"], string> = {
+  fuga_riego: "#1d6fd1",
+  averia: "#c0392b",
+  plaga: "#8e44ad",
+  arbol: "#2f7a34",
+  piscina: "#1d6fd1",
+  otro: "#c98a2a",
+};
+
+/** Abre Google Maps justo en ese punto (para ir andando o en coche). */
+export function enlaceComoLlegar(lat: number, lon: number) {
+  return `https://www.google.com/maps/search/?api=1&query=${lat.toFixed(6)},${lon.toFixed(6)}`;
+}
+
+/** Chincheta pixel art de una incidencia con sitio exacto (pulsable: «Cómo llegar»). */
+function Chincheta({ x, y, color, titulo, href }: { x: number; y: number; color: string; titulo: string; href: string }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`${titulo}: cómo llegar`}>
+      <title>{`${titulo} · pulsa para ver cómo llegar`}</title>
+      <g transform={`translate(${x} ${y})`}>
+        <ellipse cx={0} cy={0} rx={5} ry={2} fill="#3b2a1a" opacity={0.35} />
+        <rect x={-1} y={-12} width={2} height={12} fill="#3b2a1a" />
+        <rect x={-7} y={-24} width={14} height={13} rx={2} fill={color} stroke="#ffffff" strokeWidth={2} />
+        <rect x={-1.5} y={-21} width={3} height={5} fill="#ffffff" />
+        <rect x={-1.5} y={-15} width={3} height={2.5} fill="#ffffff" />
+      </g>
+    </a>
+  );
+}
 
 const MARGEN = 24;
 
@@ -94,6 +125,7 @@ export function PlanoFinca({
   base,
   piscina = false,
   zonaSobre = null,
+  incidencias = [],
   onElegir,
   onSobre,
 }: {
@@ -105,6 +137,8 @@ export function PlanoFinca({
   piscina?: boolean;
   /** zona bajo el ratón (se resalta sin elegirla) */
   zonaSobre?: string | null;
+  /** incidencias abiertas de la finca: las que tienen sitio exacto salen como chinchetas */
+  incidencias?: Incidencia[];
   /** si se pasa, pulsar una zona la elige sin recargar la página */
   onElegir?: (zonaId: string) => void;
   onSobre?: (zonaId: string | null) => void;
@@ -249,6 +283,23 @@ export function PlanoFinca({
               Riega: {sectoresDeZona(z.id).map((n) => `S${n}`).join(", ")}
             </text>
           ))}
+
+      {/* Incidencias con su sitio exacto (atajo «Incidencia» de Siri) */}
+      {incidencias
+        .filter((i) => i.lat != null && i.lon != null)
+        .map((i) => {
+          const p = aDibujo(clave, i.lat!, i.lon!);
+          return (
+            <Chincheta
+              key={i.id}
+              x={p.x}
+              y={p.y}
+              color={COLOR_INCIDENCIA[i.tipo]}
+              titulo={i.titulo}
+              href={enlaceComoLlegar(i.lat!, i.lon!)}
+            />
+          );
+        })}
 
       <Escala x={vb.x + 16} y={vb.y + vb.h - 16} mpu={mpu} />
       <Norte x={vb.x + 26} y={vb.y + 26} />
