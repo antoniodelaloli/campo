@@ -77,9 +77,9 @@ end;
 $$;
 
 -- Comprobación: las nueve zonas con su superficie
-select nombre, especie, superficie_ha, geom is not null as con_forma
+select z.nombre, z.especie, z.superficie_ha, z.geom is not null as con_forma
 from public.zonas z join public.fincas f on f.id = z.finca_id
 where f.nombre = 'Valladolises'
-order by nombre;
+order by z.nombre;
 
 -- Fin de la migración 0009
