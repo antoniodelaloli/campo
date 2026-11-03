@@ -600,19 +600,19 @@ export function MapaInteractivo({
               {FORMAS[c.clave].contorno ? (
                 <>
                   {/* finca calcada: el claro y la sombra siguen su contorno */}
-                  <polygon
-                    points={FORMAS[c.clave].contorno}
-                    transform="translate(4 8)"
-                    fill="#3b2a1a"
-                    opacity={0.22}
-                  />
-                  <polygon
-                    points={FORMAS[c.clave].contorno}
-                    fill="#e6d7a6"
-                    stroke="#fff4d6"
-                    strokeWidth={22}
-                    strokeLinejoin="round"
-                  />
+                  {(FORMAS[c.clave].piezas ?? [FORMAS[c.clave].contorno!]).map((pz) => (
+                    <polygon key={`s-${pz}`} points={pz} transform="translate(4 8)" fill="#3b2a1a" opacity={0.22} />
+                  ))}
+                  {(FORMAS[c.clave].piezas ?? [FORMAS[c.clave].contorno!]).map((pz) => (
+                    <polygon
+                      key={`c-${pz}`}
+                      points={pz}
+                      fill="#e6d7a6"
+                      stroke="#fff4d6"
+                      strokeWidth={22}
+                      strokeLinejoin="round"
+                    />
+                  ))}
                 </>
               ) : (
                 <>

@@ -74,7 +74,7 @@ export const COMPRESION = 0.22;
  */
 export const AUMENTO_MAPA: Record<ClaveFinca, number> = {
   corvera: 1.8,
-  valladolises: 2.4,
+  valladolises: 1.4,
   lobosillo: 3.5,
 };
 
@@ -84,7 +84,7 @@ export const AUMENTO_MAPA: Record<ClaveFinca, number> = {
  */
 export const DESPLAZAMIENTO_MAPA: Record<ClaveFinca, { x: number; y: number }> = {
   corvera: { x: -350, y: 1850 },
-  valladolises: { x: 0, y: 0 },
+  valladolises: { x: -500, y: -150 },
   lobosillo: { x: -300, y: -150 },
 };
 // Punto fijo hacia el que se acercan las distancias (zona de Valladolises).
@@ -122,6 +122,8 @@ export type FormaDibujo = {
   persona: { x: number; y: number };
   /** contorno real de la finca (puntos SVG), si se ha calcado de una vista aérea */
   contorno?: string;
+  /** si la finca son varios trozos separados, el contorno de cada uno (manda sobre «contorno») */
+  piezas?: string[];
   /**
    * Metros por unidad medidos en la vista aérea. Si está, manda sobre la superficie
    * (se usa cuando el dibujo es solo un trozo de la finca).
@@ -138,13 +140,44 @@ const CONTORNO_CORVERA =
   "320,0 337,10 351,19 385,44 414,76 416,91 404,105 347,73 359,132 298,241 275,249 152,347 96,366 0,234";
 
 /*
- * Valladolises: solo el trozo de la casa, la caseta y el pantano (el resto de la finca
- * va en su módulo). Calcado de Google Earth (31/10/2026), norte arriba.
- * Escala sacada de la pista de tenis (~36 × 18 m con su valla): 1 unidad ≈ 0,875 m.
- * El trozo mide unas 4,9 ha.
+ * Valladolises: dibujada por Antonio en Google Earth (archivo «Fincas.kml», 3/11/2026),
+ * norte arriba, a escala real: 1 unidad = 2,5 m. Son tres bloques separados (suman
+ * unas 27,5 ha, como el catastro: 27,0 ha) y, dentro, sus zonas. Los dibujos son
+ * aproximados (se pueden salir un poco de los caminos). Nombres de los bloques y de
+ * los mandarinos provisionales: pendientes de confirmar con Juan Carlos.
  */
-const CONTORNO_VALLADOLISES =
-  "180,2 206,6 234,20 250,44 270,64 302,92 322,118 308,144 292,172 270,204 246,230 218,248 198,268 182,296 178,312 188,324 186,344 174,354 142,362 126,364 106,358 86,340 74,316 62,284 50,264 34,244 14,220 4,196 2,184 18,164 38,144 58,120 90,84 118,56 142,32 166,8";
+const VALL_LA_CASA = "23,134 48,172 73,153 66,145 112,88 97,71 72,49 64,46 46,65 8,110"; // 4,16 ha (casa, caseta y pantano)
+const VALL_BLOQUE_OLIVOS = "179,143 220,35 173,29 153,28 137,20 116,8 71,40"; // 6,08 ha
+const VALL_BLOQUE_ABAJO = "282,35 223,178 329,265 357,292 394,264 349,233 412,79 424,53 385,39 367,66"; // 17,27 ha
+const VALL_OLIVOS = "188,33 150,94 184,124 217,37"; // «Limoneros los olivos» · 1,83 ha
+const VALL_MANDARINOS = "75,42 137,99 156,117 167,127 179,138 185,128 177,122 152,100 121,73 91,30"; // 0,98 ha
+const VALL_MANDARINOS_VIEJOS = "95,35 107,52 129,77 162,30 139,23 115,9 92,28"; // 1,49 ha
+const VALL_MANDARINOS_2 = "164,30 131,79 149,94 186,33"; // 0,88 ha
+const VALL_DEL_POZO = "284,38 226,175 257,201 314,50"; // «Nuevos Pozo» · 3,47 ha
+const VALL_ABAJO = "370,67 317,51 261,201 329,262 346,234 411,74 384,49"; // «Viejos abajo» · 10,83 ha
+const VALL_TRIVINO = "347,235 330,268 356,290 389,265"; // 1,02 ha
+const VALL_LA_MARI = "390,36 387,44 398,57 413,72 421,55"; // 0,31 ha
+
+/** Los tres bloques de Valladolises (para el dibujo y el mapa). */
+export const BLOQUES_VALLADOLISES = [
+  { nombre: "La Casa", puntos: VALL_LA_CASA },
+  { nombre: "Bloque de Los Olivos", puntos: VALL_BLOQUE_OLIVOS },
+  { nombre: "Bloque de abajo", puntos: VALL_BLOQUE_ABAJO },
+];
+
+/** Zonas de mandarinos de Valladolises (se pintan con naranjas). */
+export const MANDARINOS_VALLADOLISES = [VALL_MANDARINOS, VALL_MANDARINOS_VIEJOS, VALL_MANDARINOS_2];
+
+/*
+ * Detalles de la casa (casa, pista de tenis, piscina, pantano, caseta) calcados antes
+ * de otra captura (unidades de 0,72 m, con la casa en 142,108). Se colocan sobre el
+ * plano nuevo con este cambio de escala: la casa cae en su punto de Google Earth.
+ */
+export const DETALLES_CASA_VALLADOLISES = {
+  transform: "translate(53.1 80.3) scale(0.288) translate(-142 -108)",
+  casa: { x: 53, y: 80 },
+  pantano: { x: 40, y: 137 },
+};
 
 /*
  * Lobosillo calcada de Google Earth (31/10/2026), norte arriba: árboles en filas,
@@ -165,14 +198,15 @@ export const FORMAS: Record<ClaveFinca, FormaDibujo> = {
     contorno: CONTORNO_CORVERA,
   },
   valladolises: {
-    caja: { x: -8, y: -8, w: 340, h: 384 },
-    centro: { x: 141, y: 104 }, // la casa
-    arriba: 30,
-    areaDibujada: 64424,
-    tractor: { x: 214, y: 196 },
-    persona: { x: 70, y: 196 },
-    contorno: CONTORNO_VALLADOLISES,
-    metrosPorUnidadFijo: 0.875,
+    caja: { x: 0, y: -8, w: 432, h: 308 },
+    centro: { x: 53, y: 80 }, // la casa
+    arriba: 8,
+    areaDibujada: 44034, // 27,5 ha / (2,5 m)²
+    tractor: { x: 300, y: 150 },
+    persona: { x: 165, y: 70 },
+    contorno: VALL_BLOQUE_ABAJO,
+    piezas: [VALL_LA_CASA, VALL_BLOQUE_OLIVOS, VALL_BLOQUE_ABAJO],
+    metrosPorUnidadFijo: 2.5,
   },
   lobosillo: {
     caja: { x: -8, y: -6, w: 322, h: 356 },
@@ -249,11 +283,19 @@ export const PLANOS: Record<ClaveFinca, PlanoDeFinca> = {
   },
   valladolises: {
     zonas: {
-      "la casa": { poligono: "118,88 150,74 220,122 206,152 160,170 136,160 112,124", etiqueta: { x: 146, y: 64 } },
+      "la casa": { poligono: VALL_LA_CASA, etiqueta: { x: 50, y: 118 } },
+      "los olivos": { poligono: VALL_OLIVOS, etiqueta: { x: 200, y: 70 } },
+      mandarinos: { poligono: VALL_MANDARINOS, etiqueta: { x: 135, y: 104 } },
+      "mandarinos viejos": { poligono: VALL_MANDARINOS_VIEJOS, etiqueta: { x: 95, y: 18 } },
+      "mandarinos 2": { poligono: VALL_MANDARINOS_2, etiqueta: { x: 172, y: -4 } },
+      "del pozo": { poligono: VALL_DEL_POZO, etiqueta: { x: 271, y: 118 } },
+      abajo: { poligono: VALL_ABAJO, etiqueta: { x: 340, y: 150 } },
+      trivino: { poligono: VALL_TRIVINO, etiqueta: { x: 360, y: 272 } },
+      "la mari": { poligono: VALL_LA_MARI, etiqueta: { x: 402, y: 24 } },
     },
     sectores: {},
     nota:
-      "De momento solo está dibujado el trozo de la casa, la pista de tenis y el pantano (unas 4,9 ha de las ~22). El resto de trozos se dibujará con una vista aérea que los marque.",
+      "Zonas dibujadas por Antonio en Google Earth (3/11/2026), aproximadas. Provisional, por confirmar con Juan Carlos: los nombres de los bloques, que «Nuevos Pozo» sea Del Pozo / Los Nuevos y los tres trozos de mandarinos (en la ficha, Los Olivos figura como mandarinos y en el dibujo como limoneros).",
   },
   lobosillo: {
     zonas: {},

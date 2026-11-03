@@ -221,7 +221,11 @@ export function PlanoFinca({
 
       {/* Sectores sin situar: la finca entera rayada */}
       {vista === "sectores" && sectores.length > 0 && sectores.every((s) => !plano.sectores[s.numero]) && forma.contorno && (
-        <polygon points={forma.contorno} fill="url(#pf-rayado)" pointerEvents="none" />
+        <g pointerEvents="none">
+          {(forma.piezas ?? [forma.contorno]).map((pz) => (
+            <polygon key={pz} points={pz} fill="url(#pf-rayado)" />
+          ))}
+        </g>
       )}
 
       {/* zona seleccionada con sus sectores, como pista en la vista de zonas */}
