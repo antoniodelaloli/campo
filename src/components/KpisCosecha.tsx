@@ -217,6 +217,7 @@ export function KpisCosecha({
     return {
       finca: f.finca,
       arboles,
+      arbolesAntiguos: Boolean(finca?.arboles_nota),
       ha,
       haDudosa: finca?.superficie_fiabilidad !== "medido",
       kg: f.kgTotal,
@@ -226,13 +227,16 @@ export function KpisCosecha({
     };
   });
 
+  const notaArboles = datos.some((d) => d.arbolesAntiguos)
+    ? " * Con un número de árboles antiguo (de cuando se compró la finca): puede haber cambiado."
+    : "";
   const corvera = datos.find((d) => d.finca === "Corvera");
   const eurosArbolCorvera = corvera?.arboles ? corvera.euros / corvera.arboles : null;
   const kgArbolCorvera = corvera?.arboles ? corvera.kg / corvera.arboles : null;
 
   // Variedades: barras de kg por árbol (solo lo que se puede calcular)
   const variedades = [
-    { nombre: "Limón Fino 49 · Corvera", valor: kgArbolCorvera, falta: null as string | null },
+    { nombre: "Limón Fino 95 y Fino 49 · Corvera", valor: kgArbolCorvera, falta: null as string | null },
     { nombre: "Limón Fino 49 · Valladolises", valor: null, falta: "faltan los kilos y los árboles de cada variedad" },
     { nombre: "Mandarina Clemenvilla / Nova · Valladolises", valor: null, falta: "faltan los kilos y los árboles" },
   ];
@@ -262,10 +266,10 @@ export function KpisCosecha({
         <Kpi
           icono="arbol"
           titulo="Kilos por árbol"
-          explica={estimada ? "Lo que daría cada árbol si rinde como el año pasado." : "Cuánto limón ha dado cada árbol de media. Si sube de un año a otro, los árboles vienen más cargados."}
+          explica={`${estimada ? "Lo que daría cada árbol si rinde como el año pasado." : "Cuánto limón ha dado cada árbol de media. Si sube de un año a otro, los árboles vienen más cargados."}${notaArboles}`}
           valores={datos.map((d) => ({
             finca: d.finca,
-            valor: d.arboles ? kgFmt(d.kg / d.arboles) : null,
+            valor: d.arboles ? `${kgFmt(d.kg / d.arboles)}${d.arbolesAntiguos ? " *" : ""}` : null,
             falta: "falta el nº de árboles",
           }))}
         />
@@ -300,10 +304,10 @@ export function KpisCosecha({
         <Kpi
           icono="limon"
           titulo="Euros por árbol"
-          explica={estimada ? "Lo que daría cada árbol de media, antes de gastos." : "Lo que ha dado cada árbol de media, antes de gastos."}
+          explica={`${estimada ? "Lo que daría cada árbol de media, antes de gastos." : "Lo que ha dado cada árbol de media, antes de gastos."}${notaArboles}`}
           valores={datos.map((d) => ({
             finca: d.finca,
-            valor: d.arboles ? eurFmt(d.euros / d.arboles, 2) : null,
+            valor: d.arboles ? `${eurFmt(d.euros / d.arboles, 2)}${d.arbolesAntiguos ? " *" : ""}` : null,
             falta: "falta el nº de árboles",
           }))}
         />

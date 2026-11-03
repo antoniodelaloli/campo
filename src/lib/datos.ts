@@ -16,6 +16,8 @@ export type Zona = {
   variedad: string | null;
   edad_aprox_anios: number | null;
   n_arboles: number | null;
+  /** de dónde sale n_arboles si puede estar desfasado (se enseña con asterisco) */
+  arboles_nota?: string | null;
   superficie_ha: number | null;
   fiabilidad: Fiabilidad;
   notas: string | null;
@@ -53,6 +55,8 @@ export type Finca = {
   superficie_ha: number | null;
   superficie_fiabilidad: Fiabilidad;
   n_arboles_aprox: number | null;
+  /** de dónde sale n_arboles_aprox si puede estar desfasado (se enseña con asterisco) */
+  arboles_nota?: string | null;
   notas: string | null;
   zonas: Zona[];
   sectores_riego: Sector[];
@@ -60,19 +64,23 @@ export type Finca = {
 };
 
 export async function cargarFincas(supabase: Cliente) {
-  const { data, error } = await supabase
-    .from("fincas")
-    .select(
-      `id, nombre, alias, regimen, superficie_ha, superficie_fiabilidad, n_arboles_aprox, notas,
-       zonas(id, nombre, alias, especie, variedad, edad_aprox_anios, n_arboles, superficie_ha, fiabilidad, notas),
-       sectores_riego(id, numero, nombre, alias, notas),
-       pantanos(id, nombre, capacidad_m3, capacidad_util_m3, fiabilidad, notas,
-         niveles_pantano(id, fecha, nivel_m3, metodo, anulado))`,
-    )
-    .eq("activa", true)
-    .order("nombre")
-    .overrideTypes<Finca[], { merge: false }>();
+  const consulta = (conNota: boolean) =>
+    supabase
+      .from("fincas")
+      .select(
+        `id, nombre, alias, regimen, superficie_ha, superficie_fiabilidad, n_arboles_aprox, notas${conNota ? ", arboles_nota" : ""},
+         zonas(id, nombre, alias, especie, variedad, edad_aprox_anios, n_arboles, superficie_ha, fiabilidad, notas${conNota ? ", arboles_nota" : ""}),
+         sectores_riego(id, numero, nombre, alias, notas),
+         pantanos(id, nombre, capacidad_m3, capacidad_util_m3, fiabilidad, notas,
+           niveles_pantano(id, fecha, nivel_m3, metodo, anulado))`,
+      )
+      .eq("activa", true)
+      .order("nombre")
+      .overrideTypes<Finca[], { merge: false }>();
 
+  // Con la nota de los árboles (migración 0011); si aún no está aplicada, sin ella
+  let { data, error } = await consulta(true);
+  if (error && /arboles_nota/.test(error.message)) ({ data, error } = await consulta(false));
   return { fincas: data ?? [], error: error?.message ?? null };
 }
 

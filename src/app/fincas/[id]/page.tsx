@@ -89,7 +89,9 @@ async function FincaDetalle({
     finca.superficie_ha != null
       ? `~${formatoNumero(Number(finca.superficie_ha))} ha (${finca.superficie_fiabilidad})`
       : "Superficie por confirmar",
-    finca.n_arboles_aprox ? `~${formatoNumero(finca.n_arboles_aprox)} árboles` : null,
+    finca.n_arboles_aprox
+      ? `~${formatoNumero(finca.n_arboles_aprox)} árboles${finca.arboles_nota ? " (dato antiguo, puede haber cambiado)" : ""}`
+      : null,
     REGIMEN[finca.regimen],
   ]
     .filter(Boolean)

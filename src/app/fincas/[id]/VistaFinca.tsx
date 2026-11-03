@@ -232,7 +232,16 @@ export function VistaFinca({
                 <Dato k="Especie" v={zonaVista.especie ?? <PorConfirmar />} />
                 <Dato k="Variedad" v={zonaVista.variedad ?? <PorConfirmar />} />
                 <Dato k="Edad" v={zonaVista.edad_aprox_anios ? `~${zonaVista.edad_aprox_anios} años` : <PorConfirmar />} />
-                <Dato k="Árboles" v={zonaVista.n_arboles ? formatoNumero(zonaVista.n_arboles) : <PorConfirmar />} />
+                <Dato
+                  k="Árboles"
+                  v={
+                    zonaVista.n_arboles ? (
+                      `${formatoNumero(zonaVista.n_arboles)}${zonaVista.arboles_nota ? " *" : ""}`
+                    ) : (
+                      <PorConfirmar />
+                    )
+                  }
+                />
                 <Dato
                   k="Superficie"
                   v={
@@ -257,6 +266,9 @@ export function VistaFinca({
                 />
                 <Dato k="Fiabilidad" v={zonaVista.fiabilidad} />
               </div>
+              {zonaVista.n_arboles != null && zonaVista.arboles_nota && (
+                <p className="text-xs text-tinta-suave">* Árboles: {zonaVista.arboles_nota}</p>
+              )}
             </Panel>
           )}
 
