@@ -122,7 +122,7 @@ function unir(cajas: Caja[], margen: number): Caja {
 function margenes(ancho: number) {
   return ancho >= 1024
     ? { izq: 350, der: 360, arr: 70, aba: 110 }
-    : { izq: 40, der: 90, arr: 70, aba: 150 };
+    : { izq: 30, der: 70, arr: 110, aba: 150 }; // arriba, sitio para los carteles
 }
 
 function encuadrar(caja: Caja, w: number, h: number): Vista {
@@ -604,7 +604,13 @@ export function MapaInteractivo({
         {colocadas.map((c) => {
           const detalle = pxPorUnidad(c) >= 0.75;
           return (
-            <g key={c.id} transform={`translate(${c.tx} ${c.ty}) scale(${c.k})`}>
+            // tocar el dibujo de la finca también abre su ficha (en el móvil el cartel puede quedar tapado)
+            <g
+              key={c.id}
+              transform={`translate(${c.tx} ${c.ty}) scale(${c.k})`}
+              className="cursor-pointer"
+              onClick={() => router.push(`/fincas/${c.id}`)}
+            >
               {/* claro alrededor de la finca + sombra, para que resalte sobre el paisaje */}
               {piezasInicio(c.clave) ? (
                 <>
@@ -784,9 +790,9 @@ export function MapaInteractivo({
         </>
       )}
 
-      {/* controles: atajos a cada finca, zoom y escala */}
+      {/* controles: atajos a cada finca, zoom y escala (la caja no tapa los carteles, solo sus botones) */}
       <div
-        className={`absolute right-3 bottom-3 z-20 flex flex-col items-end gap-2 transition-opacity duration-700 lg:right-5 lg:bottom-6 ${salvapantallas ? "opacity-30" : ""}`}
+        className={`pointer-events-none absolute right-3 bottom-3 z-20 flex flex-col items-end gap-2 transition-opacity *:pointer-events-auto duration-700 lg:right-5 lg:bottom-6 ${salvapantallas ? "opacity-30" : ""}`}
       >
         <div className="flex items-center gap-2">
           {puede3d && (

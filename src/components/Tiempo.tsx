@@ -291,10 +291,13 @@ export function BotonTiempo({ puntos }: { puntos: PuntoTiempo[] }) {
         ref={botonRef}
         type="button"
         onClick={abrir}
+        aria-label="Ver tiempo"
+        title="Ver tiempo"
         className="flex items-center gap-1.5 rounded-[4px] border-[3px] border-madera-oscura bg-pergamino px-2.5 py-1 font-pixel text-sm font-bold text-tinta shadow-[0_3px_0_#3b2412] hover:bg-sol"
       >
         <Icono tipo="nubes" tam={20} />
-        Ver tiempo
+        {/* en el móvil solo el icono, para no tapar los carteles de las fincas */}
+        <span className="hidden sm:inline">Ver tiempo</span>
       </button>
       {modal && typeof document !== "undefined" ? createPortal(modal, document.body) : null}
     </>
