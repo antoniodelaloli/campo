@@ -73,9 +73,9 @@ export const COMPRESION = 0.22;
  * El plano de cada finca (/fincas/[id]) sí va a su tamaño real, con escala en metros.
  */
 export const AUMENTO_MAPA: Record<ClaveFinca, number> = {
-  corvera: 1.8,
-  valladolises: 1.4,
-  lobosillo: 3.5,
+  corvera: 1.1,
+  valladolises: 0.9,
+  lobosillo: 2.6,
 };
 
 /**
