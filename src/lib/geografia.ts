@@ -212,15 +212,18 @@ export const DETALLES_CASA_VALLADOLISES = {
  * PNOA: árboles en filas, balsa con su caseta, explanada con la casa y pista de fútbol.
  * Escala fija: 1 unidad = 0,5866 m; el punto de Google Earth cae en (154, 172).
  * La escritura cita además la parcela 536/67 (20.246 m², unos 400 m al nordeste):
- * es de Lobosillo. Se dibuja solo en la ficha de la finca, no en el mapa de inicio.
+ * es de Lobosillo. Se dibuja solo en la ficha de la finca, no en el mapa de inicio,
+ * y ACERCADA al trozo de la casa (a escala, pero no a su distancia real).
  * Total Catastro: 36.866 m² ≈ 3,69 ha.
  */
 export const LOBOSILLO_MPU = 0.586563;
 const CONTORNO_LOBOSILLO =
   "5,72 150,16 201,107 262,214 264,217 297,278 288,291 275,301 249,311 208,316 172,314 139,319 103,264 83,227 72,212 52,165";
-/** Parcela 536/67 (Catastro), en las mismas unidades que el trozo de la casa */
+/** Desplazamiento de la parcela 536/67 en la ficha: se acerca al trozo de la casa (no está a su distancia real) */
+export const ACERCAR_536_67 = { x: -130, y: 330 };
+/** Parcela 536/67 (Catastro), en las mismas unidades que el trozo de la casa, ya acercada */
 export const LOBOSILLO_536_67 =
-  "694,-365 695,-357 694,-343 692,-344 500,-437 495,-439 491,-442 487,-445 483,-449 481,-451 479,-453 477,-457 474,-462 472,-467 388,-663 387,-666 391,-668 423,-671 458,-671 483,-666 510,-659 539,-655 565,-655 581,-656 593,-658 611,-661 618,-663 630,-666 634,-667 638,-648 640,-640 641,-635 643,-630 657,-558 680,-440 688,-405 693,-380";
+  "564,-35 565,-27 564,-13 562,-14 370,-107 365,-109 361,-112 357,-115 353,-119 351,-121 349,-123 347,-127 344,-132 342,-137 258,-333 257,-336 261,-338 293,-341 328,-341 353,-336 380,-329 409,-325 435,-325 451,-326 463,-328 481,-331 488,-333 500,-336 504,-337 508,-318 510,-310 511,-305 513,-300 527,-228 550,-110 558,-75 563,-50";
 
 /** detalles calcados de la ortofoto, en unidades del dibujo */
 export const DETALLES_LOBOSILLO = {
@@ -272,7 +275,7 @@ export const FORMAS: Record<ClaveFinca, FormaDibujo> = {
     persona: { x: 170, y: 120 },
     contorno: CONTORNO_LOBOSILLO,
     metrosPorUnidadFijo: LOBOSILLO_MPU,
-    cajaFicha: { x: -4, y: -690, w: 712, h: 1018 },
+    cajaFicha: { x: -4, y: -380, w: 590, h: 708 },
   },
 };
 
@@ -354,7 +357,7 @@ export const PLANOS: Record<ClaveFinca, PlanoDeFinca> = {
     zonas: {},
     sectores: {},
     nota:
-      "Dos trozos, con los límites del Catastro: el de la casa (polígono 535, parcelas 63 y 64: 1,66 ha), con la balsa y la pista de fútbol de la ortofoto, y la parcela 536/67 de la escritura (2,02 ha), unos 400 m al nordeste. Faltan sus zonas y sectores de riego.",
+      "Dos trozos, con los límites del Catastro: el de la casa (polígono 535, parcelas 63 y 64: 1,66 ha), con la balsa y la pista de fútbol de la ortofoto, y la parcela 536/67 de la escritura (2,02 ha), que en realidad está unos 400 m al nordeste (en el plano, acercada). Faltan sus zonas y sectores de riego.",
   },
 };
 
@@ -383,8 +386,9 @@ export function aDibujo(clave: ClaveFinca, lat: number, lon: number): { x: numbe
   }
   const g = GEO.lobosillo;
   const mpu = LOBOSILLO_MPU;
-  return {
-    x: FORMAS.lobosillo.centro.x + ((lon - g.lon) * mLonGrado(g.lat)) / mpu,
-    y: FORMAS.lobosillo.centro.y - ((lat - g.lat) * M_LAT_GRADO) / mpu,
-  };
+  const x = FORMAS.lobosillo.centro.x + ((lon - g.lon) * mLonGrado(g.lat)) / mpu;
+  const y = FORMAS.lobosillo.centro.y - ((lat - g.lat) * M_LAT_GRADO) / mpu;
+  // los puntos de la parcela 536/67 (muy al norte) se mueven con ella en la ficha
+  if (y < -150) return { x: x + ACERCAR_536_67.x, y: y + ACERCAR_536_67.y };
+  return { x, y };
 }

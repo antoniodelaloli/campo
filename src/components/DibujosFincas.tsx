@@ -223,7 +223,7 @@ export function DibujoValladolises({ pantano, piscina, detalle, soloCasa = false
 export function DibujoLobosillo({ detalle, completa = false }: PropsDibujo & { completa?: boolean }) {
   // Límites del Catastro (parcelas 535/63 y 535/64) y, dentro, lo que se ve en la
   // ortofoto: filas de árboles, balsa con su caseta, explanada con la casa y pista de fútbol.
-  // «completa» (solo en la ficha): también la parcela 536/67, unos 400 m al nordeste.
+  // «completa» (solo en la ficha): también la parcela 536/67 (en realidad a unos 400 m al nordeste; aquí, acercada).
   const contorno = FORMAS.lobosillo.contorno!;
   const d = DETALLES_LOBOSILLO;
   return (
@@ -275,7 +275,7 @@ export function DibujoLobosillo({ detalle, completa = false }: PropsDibujo & { c
         <>
           <Etiqueta x={250} y={336} texto="Pista de fútbol" />
           <Etiqueta x={226} y={190} texto="Balsa" />
-          {completa && <Etiqueta x={540} y={-330} texto="Parcela 536/67 · 2,02 ha" />}
+          {completa && <Etiqueta x={430} y={-350} texto="Parcela 536/67 · 2,02 ha" />}
           {completa && <Etiqueta x={70} y={345} texto="Casa · 1,66 ha" />}
         </>
       )}
