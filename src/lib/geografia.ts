@@ -5,7 +5,8 @@
  * Coordenadas en UTM huso 30 (ETRS89), en metros.
  * - Corvera: centro de la finca marcado por la familia en Google Earth (31/10/2026).
  * - Valladolises: la casa, según Google Earth (37°46'21.50"N 1°06'25.70"W, familia 31/10/2026).
- * - Lobosillo: punto de Google Earth marcado por la familia (37°43'06.41"N 1°04'50.15"W, 31/10/2026).
+ * - Lobosillo: punto de Google Earth marcado por la familia (37°43'06.41"N 1°04'50.15"W, 31/10/2026);
+ *   contorno del Catastro (Murcia, polígono 535, parcelas 63 y 64).
  * El mapa usa metros: x = este, y = sur (crece hacia abajo, como la pantalla).
  */
 export const ORIGEN_UTM = { e: 662000, n: 4188000 };
@@ -48,7 +49,8 @@ export const GEO: Record<ClaveFinca, GeoFinca> = {
     e: 669169,
     n: 4176311,
     areaHaPorDefecto: 2.137,
-    fuente: "Google Earth (familia, 31/10/2026); superficie de la escritura (2 ha 13 a 70 ca)",
+    fuente:
+      "Google Earth (familia, 31/10/2026). Catastro: Murcia, polígono 535, parcelas 63 y 64 (1,66 ha). La escritura (2 ha 13 a 70 ca) cita la 536/67: por confirmar si también es de Lobosillo",
     lat: 37.718447,
     lon: -1.080597,
   },
@@ -188,12 +190,25 @@ export const DETALLES_CASA_VALLADOLISES = {
 };
 
 /*
- * Lobosillo calcada de Google Earth (31/10/2026), norte arriba: árboles en filas,
- * balsa, caseta, casa y pista de fútbol. Se escala con la superficie de la escritura
- * (2,137 ha), que cuadra con lo que mide el contorno (pista de ~46 m de largo).
+ * Lobosillo con los límites del Catastro (Murcia, polígono 535, parcelas 63 y 64,
+ * 5.623 + 10.997 m² = 1,66 ha), norte arriba. Dentro, sacados de la ortofoto del
+ * PNOA: árboles en filas, balsa con su caseta, explanada con la casa y pista de fútbol.
+ * Escala fija: 1 unidad = 0,5866 m; el punto de Google Earth cae en (154, 172).
+ * Por confirmar: la escritura cita la parcela 536/67 (2,02 ha, 400 m al norte),
+ * que no se dibuja hasta saber si también es de Lobosillo.
  */
+export const LOBOSILLO_MPU = 0.586563;
 const CONTORNO_LOBOSILLO =
-  "2,55 36,34 76,17 116,9 144,6 154,3 168,34 184,62 200,86 220,106 242,130 244,146 252,170 272,206 290,246 302,270 304,310 288,318 256,332 224,338 184,342 152,342 136,332 126,318 116,294 104,274 88,254 72,238 56,222 44,206 40,174 32,138 20,110 12,86";
+  "5,72 150,16 201,107 262,214 264,217 297,278 288,291 275,301 249,311 208,316 172,314 139,319 103,264 83,227 72,212 52,165";
+/** detalles calcados de la ortofoto, en unidades del dibujo */
+export const DETALLES_LOBOSILLO = {
+  balsaTalud: "193,209 240,201 260,252 204,262",
+  balsaAgua: "200,213 238,207 253,248 208,256",
+  caseta: { x: 235, y: 203 },
+  explanada: "133,284 210,269 218,312 139,319",
+  pista: "210,269 282,257 292,297 218,312",
+  casa: { x: 141, y: 301 },
+};
 
 export const FORMAS: Record<ClaveFinca, FormaDibujo> = {
   corvera: {
@@ -219,13 +234,14 @@ export const FORMAS: Record<ClaveFinca, FormaDibujo> = {
     metrosPorUnidadFijo: 2.5,
   },
   lobosillo: {
-    caja: { x: -8, y: -6, w: 322, h: 356 },
+    caja: { x: -4, y: 6, w: 310, h: 322 },
     centro: { x: 154, y: 172 }, // el punto marcado en Google Earth
-    arriba: 4,
-    areaDibujada: 62112,
+    arriba: 16,
+    areaDibujada: 48315, // 1,66 ha / (0,5866 m)²
     tractor: { x: 110, y: 150 },
     persona: { x: 170, y: 120 },
     contorno: CONTORNO_LOBOSILLO,
+    metrosPorUnidadFijo: LOBOSILLO_MPU,
   },
 };
 
@@ -306,7 +322,8 @@ export const PLANOS: Record<ClaveFinca, PlanoDeFinca> = {
   lobosillo: {
     zonas: {},
     sectores: {},
-    nota: "Contorno, balsa, casa y pista de fútbol calcados de Google Earth. Faltan sus zonas y sectores de riego.",
+    nota:
+      "Contorno del Catastro (polígono 535, parcelas 63 y 64: 1,66 ha); balsa, casa y pista de fútbol de la ortofoto. La escritura cita también la parcela 536/67 (2,02 ha, 400 m al norte): por confirmar si es de Lobosillo. Faltan sus zonas y sectores de riego.",
   },
 };
 
@@ -315,7 +332,7 @@ export const PLANOS: Record<ClaveFinca, PlanoDeFinca> = {
  * en el plano: incidencias con su sitio exacto).
  * - Valladolises: exacto (mismo cálculo con el que se pasó el KML a unidades de 2,5 m).
  * - Corvera: ajustado al contorno del KML (1 unidad ≈ 2,3 m).
- * - Lobosillo: desde su punto de Google Earth, con la escala de su dibujo.
+ * - Lobosillo: desde su punto de Google Earth, con la escala fija del Catastro (0,5866 m).
  */
 const M_LAT_GRADO = 111132;
 const mLonGrado = (lat: number) => Math.cos((lat * Math.PI) / 180) * 111320;
@@ -334,7 +351,7 @@ export function aDibujo(clave: ClaveFinca, lat: number, lon: number): { x: numbe
     };
   }
   const g = GEO.lobosillo;
-  const mpu = metrosPorUnidad("lobosillo", g.areaHaPorDefecto);
+  const mpu = LOBOSILLO_MPU;
   return {
     x: FORMAS.lobosillo.centro.x + ((lon - g.lon) * mLonGrado(g.lat)) / mpu,
     y: FORMAS.lobosillo.centro.y - ((lat - g.lat) * M_LAT_GRADO) / mpu,

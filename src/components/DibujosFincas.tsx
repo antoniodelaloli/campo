@@ -1,6 +1,7 @@
 import {
   BLOQUES_VALLADOLISES,
   DETALLES_CASA_VALLADOLISES,
+  DETALLES_LOBOSILLO,
   FORMAS,
   MANDARINOS_VALLADOLISES,
   SECTORES_CORVERA,
@@ -208,41 +209,43 @@ export function DibujoValladolises({ pantano, piscina, detalle }: PropsDibujo) {
 }
 
 export function DibujoLobosillo({ detalle }: PropsDibujo) {
-  // Calcada de la vista aérea: filas de árboles casi de norte a sur, balsa con su caseta,
-  // casa y pista de fútbol abajo.
+  // Límites del Catastro (parcelas 535/63 y 535/64) y, dentro, lo que se ve en la
+  // ortofoto: filas de árboles, balsa con su caseta, explanada con la casa y pista de fútbol.
   const contorno = FORMAS.lobosillo.contorno!;
+  const d = DETALLES_LOBOSILLO;
   return (
     <g>
       <defs>
         <pattern id="u-arbol-lobosillo" href="#u-arbol" patternTransform="rotate(68)" />
+        <clipPath id="u-recorte-lobosillo">
+          <polygon points={contorno} />
+        </clipPath>
       </defs>
       <polygon points={contorno} fill="#7a5230" stroke="#7a5230" strokeWidth={8} strokeLinejoin="round" />
       <polygon points={contorno} fill="url(#u-arbol-lobosillo)" />
 
-      {/* explanada de abajo: tierra y hormigón */}
-      <polygon points="104,274 200,250 300,262 304,310 288,318 256,332 224,338 184,342 152,342 136,332 126,318 116,294" fill="#d8c08a" />
-      <polygon points="144,298 220,286 228,336 152,342" fill="#cfcac0" />
+      <g clipPath="url(#u-recorte-lobosillo)">
+        {/* explanada de abajo: tierra y hormigón */}
+        <polygon points={d.explanada} fill="#d8c08a" />
 
-      {/* balsa con su talud */}
-      <polygon points="202,228 256,215 274,268 216,284" fill="#e9dcc0" stroke="#b9a57a" strokeWidth={2} />
-      <polygon points="209,233 251,222 267,265 220,277" fill="#3f5566" />
-      <line x1={220} y1={244} x2={244} y2={238} stroke="#6f8797" strokeWidth={2} />
+        {/* balsa con su talud */}
+        <polygon points={d.balsaTalud} fill="#e9dcc0" stroke="#b9a57a" strokeWidth={2} />
+        <polygon points={d.balsaAgua} fill="#3f5566" />
+
+        {/* pista de fútbol */}
+        <polygon points={d.pista} fill="#2f6b43" stroke="#ffffff" strokeWidth={1.5} />
+        <line x1={246} y1={263} x2={255} y2={304.5} stroke="#ffffff" strokeWidth={1.2} />
+        <circle cx={250.5} cy={284} r={6} fill="none" stroke="#ffffff" strokeWidth={1.2} />
+      </g>
 
       {/* caseta junto a la balsa */}
-      <g transform="translate(246,202)">
+      <g transform={`translate(${d.caseta.x - 6},${d.caseta.y - 7})`}>
         <rect x={0} y={4} width={12} height={10} fill="#e9e9e2" stroke="#3b2a1a" strokeWidth={1.5} />
         <rect x={-2} y={0} width={16} height={5} fill="#9a9a92" stroke="#3b2a1a" strokeWidth={1.5} />
       </g>
 
-      {/* pista de fútbol */}
-      <polygon points="220,284 298,273 305,312 229,334" fill="#2f6b43" stroke="#ffffff" strokeWidth={1.5} />
-      <line x1={259} y1={278.5} x2={267} y2={323} stroke="#ffffff" strokeWidth={1.2} />
-      <circle cx={263} cy={301} r={6} fill="none" stroke="#ffffff" strokeWidth={1.2} />
-      <polygon points="222,296 232,294 236,316 226,319" fill="none" stroke="#ffffff" strokeWidth={1} />
-      <polygon points="290,282 299,280 303,301 294,303" fill="none" stroke="#ffffff" strokeWidth={1} />
-
       {/* casa */}
-      <g transform="translate(122,304)">
+      <g transform={`translate(${d.casa.x - 10},${d.casa.y - 12})`}>
         <rect x={0} y={7} width={20} height={14} fill="#f3e6c8" stroke="#3b2a1a" strokeWidth={1.5} />
         <polygon points="-3,8 10,0 23,8" fill="#9a9a92" stroke="#3b2a1a" strokeWidth={1.5} />
         <rect x={8} y={13} width={5} height={8} fill="#6b4423" />
@@ -250,8 +253,8 @@ export function DibujoLobosillo({ detalle }: PropsDibujo) {
 
       {detalle && (
         <>
-          <Etiqueta x={262} y={350} texto="Pista de fútbol" />
-          <Etiqueta x={240} y={200} texto="Balsa" />
+          <Etiqueta x={250} y={336} texto="Pista de fútbol" />
+          <Etiqueta x={226} y={190} texto="Balsa" />
         </>
       )}
     </g>

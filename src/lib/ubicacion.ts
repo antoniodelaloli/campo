@@ -2,10 +2,10 @@
 // Polígonos en grados (lon, lat), sacados de Google Earth:
 // - Valladolises: «Fincas.kml» de Antonio (3/11/2026), bloques y zonas.
 // - Corvera: límites del Catastro (parcelas 45, 122 y 143), como en la hoja impresa de la familia.
-// - Lobosillo: aún sin contorno: un círculo alrededor del punto marcado.
+// - Lobosillo: límites del Catastro (Murcia, polígono 535, parcelas 63 y 64).
 // Los dibujos son aproximados: se acepta un margen alrededor de cada zona.
 // Sin dependencias: sirve en servidor y en cliente (funciona sin cobertura).
-import { GEO, type ClaveFinca } from "@/lib/geografia";
+import type { ClaveFinca } from "@/lib/geografia";
 
 type Anillo = [number, number][];
 
@@ -56,10 +56,17 @@ const CORVERA: FincaGeo = {
   ],
 };
 
-const FINCAS_GEO: FincaGeo[] = [VALLADOLISES, CORVERA];
+// Lobosillo: parcelas 63 y 64 del polígono 535 de Murcia, juntas (1,66 ha)
+const L535: Anillo = [[-1.081588, 37.718974], [-1.080623, 37.719271], [-1.080283, 37.718790], [-1.079876, 37.718224], [-1.079864, 37.718207], [-1.079645, 37.717890], [-1.079703, 37.717820], [-1.079793, 37.717765], [-1.079962, 37.717712], [-1.080239, 37.717688], [-1.080478, 37.717695], [-1.080695, 37.717669], [-1.080935, 37.717959], [-1.081067, 37.718155], [-1.081142, 37.718235], [-1.081279, 37.718482]];
 
-/** Lobosillo (2,14 ha) aún no tiene contorno: se toma un círculo de este radio. */
-const RADIO_LOBOSILLO_M = 110;
+const LOBOSILLO: FincaGeo = {
+  clave: "lobosillo",
+  nombre: "Lobosillo",
+  piezas: [L535],
+  zonas: [],
+};
+
+const FINCAS_GEO: FincaGeo[] = [VALLADOLISES, CORVERA, LOBOSILLO];
 /** Margen alrededor de las zonas (los dibujos son aproximados). */
 const MARGEN_ZONA_M = 35;
 /** Margen alrededor de la finca para darla por buena. */
@@ -123,16 +130,6 @@ export function ubicar(lat: number, lon: number): Ubicacion {
       if (porZona && porZona.d <= MARGEN_ZONA_M) zona = porZona.nombre;
     }
     return { clave: f.clave, finca: f.nombre, enFinca: d <= MARGEN_FINCA_M, zona, distanciaFincaM: Math.round(d) };
-  });
-  const lob = GEO.lobosillo;
-  const [dx, dy] = aMetros([lon, lat], [lob.lon, lob.lat]);
-  const dLob = Math.max(0, Math.hypot(dx, dy) - RADIO_LOBOSILLO_M);
-  candidatos.push({
-    clave: "lobosillo",
-    finca: "Lobosillo",
-    enFinca: dLob <= MARGEN_FINCA_M,
-    zona: null,
-    distanciaFincaM: Math.round(dLob),
   });
   return candidatos.sort((a, b) => a.distanciaFincaM - b.distanciaFincaM)[0];
 }
