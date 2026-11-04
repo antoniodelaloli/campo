@@ -82,11 +82,19 @@ export function FilaTarea({
             {tarea.hitos.titulo}
           </Link>
         )}
-        {tarea.descripcion && (
-          <p className={`text-xs leading-snug text-tinta-suave ${compacta ? "line-clamp-2" : ""}`}>
-            {tarea.descripcion}
-          </p>
-        )}
+        {tarea.descripcion &&
+          (tarea.descripcion.length > 140 || tarea.descripcion.includes("\n") ? (
+            // descripción larga (por ejemplo, una idea convertida en tarea): dos líneas y «Ver más»
+            <details className="group text-xs leading-snug text-tinta-suave">
+              <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                <span className="line-clamp-2 whitespace-pre-line group-open:line-clamp-none">{tarea.descripcion}</span>
+                <span className="font-bold text-tinta underline underline-offset-2 group-open:hidden">Ver más</span>
+                <span className="hidden font-bold text-tinta underline underline-offset-2 group-open:inline">Ver menos</span>
+              </summary>
+            </details>
+          ) : (
+            <p className={`text-xs leading-snug text-tinta-suave ${compacta ? "line-clamp-2" : ""}`}>{tarea.descripcion}</p>
+          ))}
       </div>
     </div>
   );
