@@ -1,0 +1,33 @@
+# Campo · Hoja de ruta
+
+Ideas y trabajos de desarrollo pendientes de la app. Lo más reciente arriba.
+Cuando algo se haga, se tacha y se pone la fecha.
+
+## Pendiente
+
+- [ ] **Precios del limón de la Consejería** (apuntado el 4/11/2026)
+  Revisar los precios que publica la Consejería de Agricultura de la Región de Murcia en su web
+  (precios agrarios semanales / de referencia) y ver cómo traerlos a Campo: precio del limón
+  Fino y Verna por semana, para compararlo con lo que liquidan Citrisol y los compradores.
+  Primero: ver qué publica exactamente, cada cuánto y en qué formato (página, PDF, Excel).
+  Después: decidir si se lee solo (cada semana) o se apunta a mano, y dónde se enseña
+  (Cosecha, junto a la liquidación de cada campaña).
+
+- [ ] **Que la app funcione sin cobertura en el campo** (apuntar sin red y enviar al volver la cobertura).
+
+- [ ] **Sectores de riego en los planos**: falta la tabla de qué zonas riega cada sector
+  (Valladolises y Corvera) para pintarlos.
+
+- [ ] **Atajo de Siri «Incidencia» en el iPhone de Juan Carlos**: crear su clave en /atajos y montarle el atajo.
+
+- [ ] **Avisos de tormenta**: valorar avisar solo de granizo, o de tormenta solo con probabilidad alta
+  (Open-Meteo marca «tormenta» con poco riesgo; ej. Lobosillo, 4/11/2026).
+
+- [ ] **Esquema visual de la campaña del limonero** (mayo a mayo) frente al ejercicio fiscal
+  (enero a diciembre), como pidió Juan Carlos en su idea del 4/11/2026.
+
+## Hecho
+
+- [x] Diario a la vista: página /diario y últimas notas en cada ficha; herramienta «ver_diario» en el conector (4/11/2026).
+- [x] Lobosillo con los límites del Catastro, en dos trozos (3/11/2026).
+- [x] Mapa de inicio: Valladolises solo con el bloque de la casa; arreglo de los carteles en el móvil (3/11/2026).
