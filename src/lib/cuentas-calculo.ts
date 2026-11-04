@@ -27,6 +27,8 @@ export type Factura = {
   impuesto_eur: number;
   total_eur: number;
   cuenta_limite: boolean;
+  categoria: string | null;
+  archivo_url: string | null;
   notas: string | null;
 };
 
@@ -79,4 +81,19 @@ export const COLOR_ESTADO: Record<EstadoLimite, { fondo: string; texto: string; 
   aviso: { fondo: "#d4a20a", texto: "#7a5a00", etiqueta: "Cerca" },
   tope: { fondo: "#d9731f", texto: "#7a3a00", etiqueta: "Pasa el tope de seguridad" },
   pasado: { fondo: "#c8473a", texto: "#7d1a10", etiqueta: "Pasa el límite" },
+};
+
+/** Tipos de gasto (migración 0015). */
+export const CATEGORIAS_GASTO: Record<string, string> = {
+  agua: "Agua",
+  abonos: "Abonos",
+  productos: "Productos (tratamientos)",
+  mano_obra: "Mano de obra",
+  luz: "Luz",
+  gasoil: "Gasoil",
+  maquinaria: "Maquinaria y reparaciones",
+  alquiler: "Alquiler",
+  seguros: "Seguros",
+  gestoria: "Gestoría",
+  otros: "Otros",
 };

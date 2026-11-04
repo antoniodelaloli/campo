@@ -4,9 +4,9 @@ import { Marco } from "@/components/Marco";
 import { CabeceraSeccion, Cargando, ChipFinca, Panel } from "@/components/ui";
 import { obtenerContexto } from "@/lib/sesion";
 import { cargarFincas } from "@/lib/datos";
-import { cargarCuentas, situacion, type SituacionTitular } from "@/lib/cuentas";
+import { cargarCuentas, CATEGORIAS_GASTO, enlacesArchivos, situacion, type Factura, type SituacionTitular } from "@/lib/cuentas";
 import { fechaCorta, formatoNumero, hoyISO } from "@/lib/texto";
-import { FormFactura, Simulador } from "./FormulariosCuentas";
+import { ApuntarFactura, Simulador } from "./FormulariosCuentas";
 import { COLOR_ESTADO } from "@/lib/cuentas-calculo";
 import { anularFactura, marcarEmitida } from "./actions";
 
@@ -67,6 +67,17 @@ function BarraLimite({ t }: { t: SituacionTitular }) {
   );
 }
 
+/** Enlace a la foto o el PDF de la factura, si lo tiene. */
+function Archivo({ f, enlaces }: { f: Factura; enlaces: Map<string, string> }) {
+  const url = f.archivo_url ? enlaces.get(f.archivo_url) : null;
+  if (!url) return null;
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="ml-1.5 font-bold underline" title="Ver la factura">
+      📎
+    </a>
+  );
+}
+
 async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["searchParams"] }) {
   const { supabase, puedeEditar } = await obtenerContexto();
   const sp = await searchParams;
@@ -79,6 +90,17 @@ async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["
   const nombreTitular = new Map(cuentas.titulares.map((t) => [t.id, t.nombre]));
   const sit = situacion(cuentas.titulares, cuentas.facturas);
   const ventas = cuentas.facturas.filter((f) => f.tipo === "venta");
+  const gastos = cuentas.facturas.filter((f) => f.tipo === "gasto");
+  const enlaces = await enlacesArchivos(
+    supabase,
+    cuentas.facturas.map((f) => f.archivo_url).filter((r): r is string => !!r),
+  );
+  const totalGastos = gastos.reduce((s, f) => s + f.base_eur, 0);
+  const porCategoria = new Map<string, number>();
+  for (const g of gastos) {
+    const k = CATEGORIAS_GASTO[g.categoria ?? "otros"] ?? "Otros";
+    porCategoria.set(k, (porCategoria.get(k) ?? 0) + g.base_eur);
+  }
 
   // por finca de origen (lo que da cada finca, se facture a nombre de quien sea)
   const porFinca = new Map<string, number>();
@@ -91,7 +113,7 @@ async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-5">
       <CabeceraSeccion
         titulo="Cuentas"
-        subtitulo="Ventas de cada titular en el año, para no pasar del límite de los módulos"
+        subtitulo="Ventas y gastos del año. Ventas de cada titular, para no pasar del límite de los módulos"
         volver="/cosecha"
       >
         <nav aria-label="Año" className="flex gap-1.5">
@@ -148,11 +170,13 @@ async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["
         </Panel>
 
         {puedeEditar && !cuentas.falta && (
-          <Panel titulo="Apuntar una factura de venta">
-            <FormFactura
+          <Panel titulo="Apuntar una factura">
+            <ApuntarFactura
               titulares={cuentas.titulares.map((t) => ({ id: t.id, nombre: t.nombre }))}
               fincas={fincas.map((f) => ({ id: f.id, nombre: f.nombre }))}
               hoy={hoy}
+              conArchivos={!cuentas.falta0015}
+              conGastos={!cuentas.falta0015}
             />
           </Panel>
         )}
@@ -204,7 +228,10 @@ async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["
                         {f.contraparte ?? "—"}
                         {f.kg ? <span className="text-tinta-suave"> · {formatoNumero(f.kg)} kg</span> : null}
                       </td>
-                      <td className="py-1 text-right">{formatoNumero(f.base_eur, 2)}</td>
+                      <td className="py-1 text-right">
+                        {formatoNumero(f.base_eur, 2)}
+                        <Archivo f={f} enlaces={enlaces} />
+                      </td>
                       <td className="py-1 text-right">
                         {puedeEditar && (
                           <span className="flex justify-end gap-1">
@@ -233,6 +260,83 @@ async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["
           )}
         </Panel>
       </div>
+
+      <section className="flex flex-col gap-4" aria-labelledby="gastos-anio">
+        <h2 id="gastos-anio" className="titulo-pixel text-2xl">
+          Gastos de {anio}
+        </h2>
+        <div className="grid gap-5 lg:grid-cols-[1fr_2fr] lg:items-start">
+          <Panel titulo="Por tipo de gasto" extra={gastos.length ? eur(totalGastos) : undefined}>
+            {gastos.length === 0 ? (
+              <p className="text-sm text-tinta-suave">
+                Aún no hay gastos apuntados en {anio}. El agua de la Comunidad de Regantes se ve en Agua y en Cosecha.
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-1.5 text-sm">
+                {[...porCategoria.entries()]
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([k, v]) => (
+                    <li key={k} className="flex justify-between border-b-2 border-dotted border-borde-papel pb-1">
+                      <b>{k}</b>
+                      <span>{eur(v)}</span>
+                    </li>
+                  ))}
+              </ul>
+            )}
+            <p className="text-xs text-tinta-suave">Sin IVA.</p>
+          </Panel>
+
+          <Panel titulo={`Facturas de gasto de ${anio}`} extra={gastos.length || undefined}>
+            {gastos.length === 0 ? (
+              <p className="text-sm text-tinta-suave">Todavía no hay ninguna.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-[13px]">
+                  <thead>
+                    <tr className="text-left text-tinta-suave">
+                      <th className="py-1 font-semibold">Fecha</th>
+                      <th className="py-1 font-semibold">Proveedor</th>
+                      <th className="py-1 font-semibold">Tipo</th>
+                      <th className="py-1 font-semibold">Finca</th>
+                      <th className="py-1 font-semibold">Paga</th>
+                      <th className="py-1 text-right font-semibold">Base</th>
+                      <th className="py-1" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {gastos.map((f) => (
+                      <tr key={f.id} className="border-t border-dotted border-borde-papel">
+                        <td className="py-1">{fechaCorta(f.fecha, hoy)}</td>
+                        <td className="py-1">
+                          {f.contraparte ?? "—"}
+                          {f.concepto ? <span className="text-tinta-suave"> · {f.concepto}</span> : null}
+                        </td>
+                        <td className="py-1">{CATEGORIAS_GASTO[f.categoria ?? "otros"] ?? "Otros"}</td>
+                        <td className="py-1">{f.finca_id ? <ChipFinca nombre={nombreFinca.get(f.finca_id)} /> : "—"}</td>
+                        <td className="py-1 font-bold">{nombreTitular.get(f.titular_id)}</td>
+                        <td className="py-1 text-right">
+                          {formatoNumero(f.base_eur, 2)}
+                          <Archivo f={f} enlaces={enlaces} />
+                        </td>
+                        <td className="py-1 text-right">
+                          {puedeEditar && (
+                            <form action={anularFactura}>
+                              <input type="hidden" name="id" value={f.id} />
+                              <button type="submit" className="border-2 border-borde-papel px-1.5 text-xs font-bold text-tinta-suave">
+                                Anular
+                              </button>
+                            </form>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Panel>
+        </div>
+      </section>
     </main>
   );
 }
