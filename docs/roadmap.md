@@ -5,6 +5,14 @@ Cuando algo se haga, se tacha y se pone la fecha.
 
 ## Pendiente
 
+- [ ] **Facturas de venta claras, para los módulos y las cuentas de cada socio** (apuntado el 4/11/2026)
+  Tener en Campo todas las facturas y liquidaciones de venta del limón (Citrisol y otros compradores),
+  por finca y por campaña, con fecha de factura, kilos, precio y total. Con eso:
+  - calcular lo que toca declarar en **módulos** (estimación objetiva), que va por año fiscal (enero a diciembre);
+  - llevar las **cuentas de cada socio y hermano** según su parte en cada finca.
+  Por concretar: qué parte tiene cada uno en cada finca, quién factura (a nombre de quién va cada
+  factura) y qué gastos entran en el reparto. Ojo: una misma campaña se factura en dos años fiscales.
+
 - [ ] **Precios del limón de la Consejería** (apuntado el 4/11/2026)
   Revisar los precios que publica la Consejería de Agricultura de la Región de Murcia en su web
   (precios agrarios semanales / de referencia) y ver cómo traerlos a Campo: precio del limón
