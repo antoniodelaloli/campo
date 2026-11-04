@@ -6,6 +6,7 @@ import { cargarHitos, cargarTareasAbiertas, cargarTratamientos } from "@/lib/dat
 import { enviarAUsuario } from "@/lib/push";
 import { resumenDelDia } from "@/lib/resumen-avisos";
 import { previsionFincas } from "@/lib/alertas-tiempo";
+import { datoDelDia } from "@/lib/dato-del-dia";
 import { hoyISO, sumarDias } from "@/lib/texto";
 
 // Acciones del botón «Avisarme en este móvil» (componente AvisosMovil).
@@ -75,8 +76,8 @@ export async function enviarPrueba(): Promise<Resultado> {
       cargarTratamientos(admin),
       cargarTareasAbiertas(admin),
     ]);
-    const { alertas, viento } = await previsionFincas();
-    const resumen = resumenDelDia({ hitos, tratamientos, tareas, alertas, viento, hoy });
+    const [{ alertas, viento }, dato] = await Promise.all([previsionFincas(), datoDelDia(admin, hoy)]);
+    const resumen = resumenDelDia({ hitos, tratamientos, tareas, alertas, viento, dato, hoy });
     if (resumen) {
       titulo = `${resumen.titulo} (prueba)`;
       cuerpo = resumen.cuerpo;

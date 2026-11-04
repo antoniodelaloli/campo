@@ -16,6 +16,7 @@ import {
   type Finca,
 } from "@/lib/datos";
 import { previsionFincas, RACHA_MAX_KMH, VIENTO_MAX_KMH } from "@/lib/alertas-tiempo";
+import { datoDelDia } from "@/lib/dato-del-dia";
 import { construirAgenda, cuentaAtras, NOMBRE_TIPO_HITO, TIPOS_HITO } from "@/lib/agenda";
 import { esFechaISO, hoyISO, normalizar, sumarDias } from "@/lib/texto";
 
@@ -30,7 +31,7 @@ export const INSTRUCCIONES = `Campo es la app interna de las fincas de limoneros
 SOLO para las fincas: la familia tiene otro negocio (la confitería y cafeterías Maite y 1968, con su propio conector «Obrador»). Si habla de la confitería, las tiendas, el obrador o las ventas de los locales, NO uses estas herramientas ni guardes nada aquí. «Maite» puede ser la confitería o Maite, la hermana de Juan Carlos y socia de una finca: si no está claro, pregunta.
 Cómo usar estas herramientas:
 - Habla en español, claro y breve: quien pregunta es agricultor, no informático. Usa los nombres de las fincas y zonas tal como los dice él.
-- Para saber qué pasa hoy, empieza por «resumen_del_dia».
+- Para saber qué pasa hoy, empieza por «resumen_del_dia». Trae un «dato_del_dia» (una curiosidad o cifra de cómo va la campaña): díselo en una frase al saludar, sin abrumar.
 - ANTES de apuntar nada (tareas, niveles, lecturas, fechas clave, incidencias, notas), repite en una frase lo que vas a guardar y espera a que diga que sí. Las únicas excepciones son las ideas y las respuestas al banco de preguntas (ver abajo).
 - Si un sitio es ambiguo (por ejemplo «el sector 2», que existe en dos fincas), pregunta cuál, o usa «buscar_lugar».
 - Las fechas van en formato AAAA-MM-DD y en hora de España. «Hoy» es la fecha que devuelve resumen_del_dia.
@@ -115,11 +116,13 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
         cargarTratamientos(supabase),
       ]);
       const agenda = construirAgenda({ hitos, tratamientos, hoy, hasta: sumarDias(hoy, 14) });
+      const dato = await datoDelDia(supabase, hoy);
       const fecha = (e: { fecha: string | null; aproximada: boolean }) =>
         e.fecha ? `${e.fecha} (${cuentaAtras(e.fecha, hoy, e.aproximada).texto})` : "sin fecha";
       return ok({
         hoy,
         usuario: ctx.nombre,
+        dato_del_dia: dato,
         fechas_clave_atrasadas: agenda.atrasados.map((e) => ({ titulo: e.titulo, finca: e.finca, fecha: fecha(e), id: e.hitoId })),
         fechas_clave_proximas_14_dias: agenda.proximos.map((e) => ({
           titulo: e.titulo,

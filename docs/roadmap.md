@@ -41,8 +41,13 @@ Cuando algo se haga, se tacha y se pone la fecha.
 - [ ] **Esquema visual de la campaña del limonero** (mayo a mayo) frente al ejercicio fiscal
   (enero a diciembre), como pidió Juan Carlos en su idea del 4/11/2026.
 
+- [ ] **Más «datos del día»** para el aviso de la mañana (lib/dato-del-dia.ts). Ideas: kilos cortados
+  frente al año pasado (cuando haya albaranes), € por kilo de cada corte, gasto de la campaña por finca,
+  días sin llover, días desde la última fumigación y plazos de seguridad, árboles por zona, agua por kilo cosechado.
+
 ## Hecho
 
+- [x] «Dato del día» en el aviso de cada mañana y en el resumen del conector: agua de la campaña frente al año pasado, últimos 30 días, ahorro por precio, pantanos, ventas por titular (y aviso si alguien se acerca al límite), ideas de la semana y fase de la campaña (4/11/2026).
 - [x] Cuentas, primera parte (migración 0014): titulares (Maite, Carlos, JHSYO), facturas de venta con titular y finca de origen, contador del límite de 250.000 € por año y simulador «¿a nombre de quién facturo este corte?» en /cuentas (4/11/2026). Falta: meter las facturas de 2026, gastos con foto, reparto por socio y exportar para el gestor.
 - [x] Riegos pedidos a la Comunidad de Regantes (talones, migración 0013): gasto por campaña y año fiscal, comparación con el año pasado, por meses y por arqueta; «Gastos de la campaña» en Cosecha (4/11/2026). Falta: apuntar lecturas del contador de entrada para comprobar si llega toda el agua.
 - [x] Diario a la vista: página /diario y últimas notas en cada ficha; herramienta «ver_diario» en el conector (4/11/2026).

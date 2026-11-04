@@ -4,6 +4,7 @@ import { cargarHitos, cargarTareasAbiertas, cargarTratamientos } from "@/lib/dat
 import { enviarAUsuario } from "@/lib/push";
 import { resumenDelDia } from "@/lib/resumen-avisos";
 import { previsionFincas } from "@/lib/alertas-tiempo";
+import { datoDelDia } from "@/lib/dato-del-dia";
 import { hoyISO, sumarDias } from "@/lib/texto";
 
 // Aviso de cada mañana. Lo llama el cron de Vercel (vercel.json) con la
@@ -31,8 +32,8 @@ export async function GET(request: Request) {
     if (errorHitos || errorTrat || errorTareas)
       throw new Error(errorHitos ?? errorTrat ?? errorTareas ?? "Error al leer datos");
 
-    const { alertas, viento } = await previsionFincas();
-    const resumen = resumenDelDia({ hitos, tratamientos, tareas, alertas, viento, hoy });
+    const [{ alertas, viento }, dato] = await Promise.all([previsionFincas(), datoDelDia(admin, hoy)]);
+    const resumen = resumenDelDia({ hitos, tratamientos, tareas, alertas, viento, dato, hoy });
     if (!resumen) return Response.json({ hoy, enviado: false, motivo: "Nada que avisar hoy" });
 
     // Personas activas con algún móvil apuntado

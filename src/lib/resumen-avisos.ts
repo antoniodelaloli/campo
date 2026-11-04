@@ -11,7 +11,9 @@
 // - Tratamiento previsto en los próximos días con viento ese día: aviso de que no
 //   es buen día para fumigar y cuál es el siguiente día tranquilo.
 // - Lunes: repaso de la semana (los próximos 7 días), aunque no haya nada.
-// - Resto de días: si no toca avisar de nada, no se manda aviso.
+// - «El dato del día» (lib/dato-del-dia.ts): una curiosidad o KPI de cómo va la
+//   campaña, al final. Con él hay aviso todos los días aunque no haya nada más.
+// - Sin dato y sin nada que avisar, no se manda aviso.
 import type { Hito, Tarea, Tratamiento } from "@/lib/datos";
 import { construirAgenda, type ElementoAgenda } from "@/lib/agenda";
 import { diasEntre, normalizar, sumarDias } from "@/lib/texto";
@@ -115,6 +117,7 @@ export function resumenDelDia({
   tareas = [],
   alertas = [],
   viento = [],
+  dato = null,
   hoy,
 }: {
   hitos: Hito[];
@@ -125,6 +128,8 @@ export function resumenDelDia({
   alertas?: AlertaTiempo[];
   /** viento en horas de fumigar por finca y día */
   viento?: VientoDia[];
+  /** el dato del día (curiosidad o KPI), si lo hay */
+  dato?: string | null;
   hoy: string;
 }): ResumenAviso | null {
   const agenda = construirAgenda({ hitos, tratamientos, hoy, hasta: sumarDias(hoy, 60) });
@@ -157,7 +162,8 @@ export function resumenDelDia({
   const granizo = alertasVigentes.filter((a) => a.tipo === "granizo");
   const hayAlgo = lista.length > 0 || tareasAviso.length > 0;
   const avisosViento = lineasViento(tratamientos, viento, hoy);
-  if (!esLunes && !hayAlgo && alertasVigentes.length === 0 && avisosViento.length === 0) return null;
+  const soloDato = !esLunes && !hayAlgo && alertasVigentes.length === 0 && avisosViento.length === 0;
+  if (soloDato && !dato) return null;
 
   const todas = [...lista.map((e) => linea(e, hoy)), ...tareasAviso.map((t) => lineaTarea(t, hoy))];
   const lineas = todas.slice(0, MAX_LINEAS);
@@ -181,6 +187,8 @@ export function resumenDelDia({
   }
   // El tiempo, siempre lo primero: granizo y tormentas, luego el viento para fumigar
   lineas.unshift(...alertasVigentes.map((a) => lineaAlerta(a, hoy)), ...avisosViento);
+  // El dato del día, al final
+  if (dato) lineas.push(dato);
 
   const claveHoy = lista.find((e) => e.fecha === hoy);
   const tareasHoy = tareasAviso.filter((t) => t.fecha_prevista === hoy);
@@ -196,11 +204,14 @@ export function resumenDelDia({
         ? `Campo · hoy: ${tareasHoy[0].titulo}`
         : tareasHoy.length > 1
           ? `Campo · hoy: ${tareasHoy.length} tareas`
-          : "Campo · lo que viene";
+          : soloDato
+            ? "Campo · buenos días"
+            : "Campo · lo que viene";
 
   // Adónde lleva el aviso: a esa fecha clave si es la única, a Tareas si solo hay tareas
-  const url =
-    avisosViento.length && alertasVigentes.length === 0
+  const url = soloDato
+    ? "/"
+    : avisosViento.length && alertasVigentes.length === 0
       ? "/tratamientos"
       : lista.length === 1 && tareasAviso.length === 0 && atrasadas.length === 0
       ? lista[0].href
