@@ -52,7 +52,7 @@ async function FincaDetalle({
   const vista = sp.vista === "sectores" ? "sectores" : "zonas";
   const hoy = hoyISO();
 
-  const [{ fincas }, { tareas }, incidencias, zonaSector, programadores, contadores, personas, { hitos }] =
+  const [{ fincas }, { tareas }, incidencias, zonaSector, programadores, contadores, personas, { hitos }, diario] =
     await Promise.all([
       cargarFincas(supabase),
       cargarTareasAbiertas(supabase),
@@ -76,6 +76,14 @@ async function FincaDetalle({
       cargarContadores(supabase),
       cargarPersonas(supabase),
       cargarHitos(supabase, sumarDias(hoy, 365)),
+      supabase
+        .from("diario")
+        .select("id, fecha, texto, profiles:created_by(nombre)")
+        .eq("finca_id", id)
+        .order("fecha", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(5)
+        .then((r) => (r.data ?? []) as unknown as { id: string; fecha: string; texto: string; profiles: { nombre: string | null } | null }[]),
     ]);
 
   const finca = fincas.find((f) => f.id === id);
@@ -181,6 +189,27 @@ async function FincaDetalle({
             Ver las {tareasFinca.length} tareas →
           </Link>
         )}
+      </Panel>
+
+      <Panel titulo="Diario" extra={diario.length > 0 ? "últimas notas" : undefined}>
+        {diario.length === 0 ? (
+          <p className="text-sm text-tinta-suave">Todavía no hay nada apuntado en el diario de esta finca.</p>
+        ) : (
+          <ul className="flex flex-col gap-2 text-[13px]">
+            {diario.map((d) => (
+              <li key={d.id} className="flex flex-col">
+                <span className="text-xs font-bold text-tinta-suave">
+                  {fechaCorta(d.fecha, hoy)}
+                  {d.profiles?.nombre ? ` · ${d.profiles.nombre}` : ""}
+                </span>
+                <span className="leading-snug">{d.texto}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <Link href={`/diario?finca=${finca.id}`} className="text-[13px] font-bold text-tinta-suave underline-offset-2 hover:underline">
+          Ver todo el diario →
+        </Link>
       </Panel>
 
       {finca.notas && (

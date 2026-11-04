@@ -118,6 +118,15 @@ async function FechasClave() {
             </span>
             <span aria-hidden="true">→</span>
           </Link>
+          <Link
+            href="/diario"
+            className="ficha flex items-center justify-between gap-2 px-3 py-2.5 text-sm font-bold hover:bg-[#f6e7c1]"
+          >
+            <span>
+              Diario: <span className="font-normal">lo que ya se ha hecho en las fincas</span>
+            </span>
+            <span aria-hidden="true">→</span>
+          </Link>
         </div>
 
         <div className="flex flex-col gap-5">
