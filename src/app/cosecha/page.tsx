@@ -69,6 +69,9 @@ function Pestanas({ actual }: { actual: IdCampana }) {
           </Link>
         );
       })}
+      <Link href="/cuentas" className="pestana gap-1.5 whitespace-nowrap">
+        € Cuentas y límites
+      </Link>
     </nav>
   );
 }
