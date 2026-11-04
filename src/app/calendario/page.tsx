@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { URL_ALERTAS_CARM } from "@/lib/resumen-avisos";
 import { Suspense } from "react";
 import { Marco } from "@/components/Marco";
 import { CabeceraSeccion, Cargando, Panel } from "@/components/ui";
@@ -118,6 +119,17 @@ async function FechasClave() {
             </span>
             <span aria-hidden="true">→</span>
           </Link>
+          <a
+            href={URL_ALERTAS_CARM}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ficha flex items-center justify-between gap-2 px-3 py-2.5 text-sm font-bold hover:bg-[#f6e7c1]"
+          >
+            <span>
+              Alertas de plagas (CARM): <span className="font-normal">revisar cada 15 días por si sale algo de cítricos</span>
+            </span>
+            <span aria-hidden="true">↗</span>
+          </a>
           <Link
             href="/diario"
             className="ficha flex items-center justify-between gap-2 px-3 py-2.5 text-sm font-bold hover:bg-[#f6e7c1]"

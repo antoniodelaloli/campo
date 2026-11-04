@@ -80,6 +80,31 @@ function lineaAlerta(a: AlertaTiempo, hoy: string) {
 
 const MAX_LINEAS = 5;
 
+/*
+ * Recordatorios que se repiten cada N días (desde una fecha). Salen en el aviso
+ * de la mañana del día que toca, aunque no haya nada más.
+ */
+export const URL_ALERTAS_CARM =
+  "https://www.carm.es/web/pagina?IDCONTENIDO=66972&IDTIPO=100&RASTRO=c3039$m64522";
+
+const RECORDATORIOS: { desde: string; cada: number; texto: string; url: string }[] = [
+  {
+    desde: "2026-11-05",
+    cada: 15,
+    texto:
+      "🔎 Toca revisar las alertas fitosanitarias de la CARM (Sanidad Vegetal) por si sale algo de cítricos: carm.es → Sanidad Vegetal → Alertas fitosanitarias. También en Campo → Agenda.",
+    // al tocar el aviso se abre la Agenda de Campo, que tiene el enlace a la CARM
+    url: "/calendario",
+  },
+];
+
+function recordatoriosDeHoy(hoy: string) {
+  return RECORDATORIOS.filter((r) => {
+    const d = diasEntre(r.desde, hoy);
+    return d >= 0 && d % r.cada === 0;
+  });
+}
+
 function cuando(d: number) {
   if (d === 0) return "Hoy";
   if (d === 1) return "Mañana";
@@ -162,7 +187,9 @@ export function resumenDelDia({
   const granizo = alertasVigentes.filter((a) => a.tipo === "granizo");
   const hayAlgo = lista.length > 0 || tareasAviso.length > 0;
   const avisosViento = lineasViento(tratamientos, viento, hoy);
-  const soloDato = !esLunes && !hayAlgo && alertasVigentes.length === 0 && avisosViento.length === 0;
+  const recordatorios = recordatoriosDeHoy(hoy);
+  const soloDato =
+    !esLunes && !hayAlgo && alertasVigentes.length === 0 && avisosViento.length === 0 && recordatorios.length === 0;
   if (soloDato && !dato) return null;
 
   const todas = [...lista.map((e) => linea(e, hoy)), ...tareasAviso.map((t) => lineaTarea(t, hoy))];
@@ -187,7 +214,10 @@ export function resumenDelDia({
   }
   // El tiempo, siempre lo primero: granizo y tormentas, luego el viento para fumigar
   lineas.unshift(...alertasVigentes.map((a) => lineaAlerta(a, hoy)), ...avisosViento);
-  // El dato del día, al final
+  const soloRecordatorio =
+    recordatorios.length > 0 && !esLunes && !hayAlgo && alertasVigentes.length === 0 && avisosViento.length === 0;
+  // Recordatorios que se repiten y, al final, el dato del día
+  lineas.push(...recordatorios.map((r) => r.texto));
   if (dato) lineas.push(dato);
 
   const claveHoy = lista.find((e) => e.fecha === hoy);
@@ -204,13 +234,17 @@ export function resumenDelDia({
         ? `Campo · hoy: ${tareasHoy[0].titulo}`
         : tareasHoy.length > 1
           ? `Campo · hoy: ${tareasHoy.length} tareas`
-          : soloDato
+          : soloRecordatorio
+            ? "Campo · revisar alertas de plagas"
+            : soloDato
             ? "Campo · buenos días"
             : "Campo · lo que viene";
 
   // Adónde lleva el aviso: a esa fecha clave si es la única, a Tareas si solo hay tareas
   const url = soloDato
     ? "/"
+    : soloRecordatorio
+    ? recordatorios[0].url
     : avisosViento.length && alertasVigentes.length === 0
       ? "/tratamientos"
       : lista.length === 1 && tareasAviso.length === 0 && atrasadas.length === 0
