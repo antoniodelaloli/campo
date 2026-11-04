@@ -231,6 +231,7 @@ export function VistaFinca({
                 />
                 <Dato k="Especie" v={zonaVista.especie ?? <PorConfirmar />} />
                 <Dato k="Variedad" v={zonaVista.variedad ?? <PorConfirmar />} />
+                {zonaVista.patron && <Dato k="Pie (patrón)" v={zonaVista.patron} />}
                 <Dato k="Edad" v={zonaVista.edad_aprox_anios ? `~${zonaVista.edad_aprox_anios} años` : <PorConfirmar />} />
                 <Dato
                   k="Árboles"

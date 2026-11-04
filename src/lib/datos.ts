@@ -14,6 +14,8 @@ export type Zona = {
   alias: string[];
   especie: string | null;
   variedad: string | null;
+  /** pie o portainjerto (migración 0018), p. ej. Macrophylla o Cleopatra */
+  patron?: string | null;
   edad_aprox_anios: number | null;
   n_arboles: number | null;
   /** de dónde sale n_arboles si puede estar desfasado (se enseña con asterisco) */
@@ -64,12 +66,12 @@ export type Finca = {
 };
 
 export async function cargarFincas(supabase: Cliente) {
-  const consulta = (conNota: boolean) =>
+  const consulta = (conNota: boolean, conPatron = false) =>
     supabase
       .from("fincas")
       .select(
         `id, nombre, alias, regimen, superficie_ha, superficie_fiabilidad, n_arboles_aprox, notas${conNota ? ", arboles_nota" : ""},
-         zonas(id, nombre, alias, especie, variedad, edad_aprox_anios, n_arboles, superficie_ha, fiabilidad, notas${conNota ? ", arboles_nota" : ""}),
+         zonas(id, nombre, alias, especie, variedad${conPatron ? ", patron" : ""}, edad_aprox_anios, n_arboles, superficie_ha, fiabilidad, notas${conNota ? ", arboles_nota" : ""}),
          sectores_riego(id, numero, nombre, alias, notas),
          pantanos(id, nombre, capacidad_m3, capacidad_util_m3, fiabilidad, notas,
            niveles_pantano(id, fecha, nivel_m3, metodo, anulado))`,
@@ -79,7 +81,9 @@ export async function cargarFincas(supabase: Cliente) {
       .overrideTypes<Finca[], { merge: false }>();
 
   // Con la nota de los árboles (migración 0011); si aún no está aplicada, sin ella
-  let { data, error } = await consulta(true);
+  // y con el pie de cada zona (migración 0018)
+  let { data, error } = await consulta(true, true);
+  if (error && /patron/.test(error.message)) ({ data, error } = await consulta(true));
   if (error && /arboles_nota/.test(error.message)) ({ data, error } = await consulta(false));
   return { fincas: data ?? [], error: error?.message ?? null };
 }

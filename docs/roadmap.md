@@ -20,6 +20,13 @@ Cuando algo se haga, se tacha y se pone la fecha.
   Por concretar: qué parte tiene cada uno en cada finca, quién factura (a nombre de quién va cada
   factura) y qué gastos entran en el reparto. Ojo: una misma campaña se factura en dos años fiscales.
 
+- [ ] **Precios, ofertas y competencia** (apuntado el 4/11/2026; tarea en el calendario de Antonio)
+  1. Sacar (scrapear) los precios de referencia de la Consejería: «un corte» (p. ej. 0,40-0,50 €/kg; a veces
+     se cierra a la mitad, 0,45) y «todo limón» (suele ser más bajo). Mandarina también.
+  2. Apuntar las ofertas que recibimos: comprador, fecha, finca, tipo de corte (primer corte / todo), precio y calibre.
+  3. Apuntar los precios a los que sabemos que venden los competidores.
+  4. Comparar todo en un gráfico a lo largo del año para decidir cuándo vender, a qué precio y cuánto.
+
 - [ ] **Precios del limón de la Consejería** (apuntado el 4/11/2026)
   Para qué (Juan Carlos, 4/11/2026): nuestro limón es tardío y conviene cortar en los meses de mejor precio.
   Objetivo: un gráfico del precio semana a semana de varias campañas, con la media por mes, para ver qué
