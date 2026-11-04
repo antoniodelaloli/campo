@@ -3,7 +3,16 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-export type Rol = "admin" | "editor" | "lector";
+/**
+ * admin y editor apuntan de todo; «administrativo» (oficina) lo ve todo pero solo
+ * apunta lo de administración (facturas, compras y pagos); lector solo consulta.
+ */
+export type Rol = "admin" | "editor" | "administrativo" | "lector";
+
+/** Puede apuntar facturas, compras y pagos (migración 0016). */
+export function puedeAdministrarRol(rol: Rol | undefined) {
+  return rol === "admin" || rol === "editor" || rol === "administrativo";
+}
 
 export type Perfil = {
   id: string;
@@ -39,6 +48,7 @@ export const obtenerContexto = cache(async () => {
     supabase,
     perfil,
     puedeEditar: perfil.rol === "admin" || perfil.rol === "editor",
+    puedeAdministrar: puedeAdministrarRol(perfil.rol),
   };
 });
 
@@ -57,6 +67,7 @@ export async function contextoEscritura() {
 
   const puedeEditar =
     !!perfil?.activo && (perfil.rol === "admin" || perfil.rol === "editor");
+  const puedeAdministrar = !!perfil?.activo && puedeAdministrarRol(perfil.rol);
 
-  return { supabase, perfil, puedeEditar };
+  return { supabase, perfil, puedeEditar, puedeAdministrar };
 }

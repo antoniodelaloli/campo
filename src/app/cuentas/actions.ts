@@ -20,8 +20,8 @@ function importe(v: FormDataEntryValue | null): number | null {
  * subido el navegador al cajón «facturas»; aquí llega solo su ruta.
  */
 export async function guardarFactura(_prev: EstadoFormCuentas, formData: FormData): Promise<EstadoFormCuentas> {
-  const { supabase, puedeEditar } = await contextoEscritura();
-  if (!puedeEditar) return { ok: false, mensaje: "Tu usuario solo puede consultar." };
+  const { supabase, puedeAdministrar } = await contextoEscritura();
+  if (!puedeAdministrar) return { ok: false, mensaje: "Tu usuario solo puede consultar." };
 
   const tipo = formData.get("tipo") === "gasto" ? "gasto" : "venta";
   const titular = String(formData.get("titular") ?? "");
@@ -78,8 +78,8 @@ export async function guardarFactura(_prev: EstadoFormCuentas, formData: FormDat
 }
 
 export async function anularFactura(formData: FormData) {
-  const { supabase, puedeEditar } = await contextoEscritura();
-  if (!puedeEditar) return;
+  const { supabase, puedeAdministrar } = await contextoEscritura();
+  if (!puedeAdministrar) return;
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   await supabase.from("facturas").update({ anulado: true }).eq("id", id);
@@ -88,8 +88,8 @@ export async function anularFactura(formData: FormData) {
 
 /** Una venta prevista ya se ha facturado: pasa a emitida. */
 export async function marcarEmitida(formData: FormData) {
-  const { supabase, puedeEditar } = await contextoEscritura();
-  if (!puedeEditar) return;
+  const { supabase, puedeAdministrar } = await contextoEscritura();
+  if (!puedeAdministrar) return;
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   await supabase.from("facturas").update({ estado: "emitida" }).eq("id", id);

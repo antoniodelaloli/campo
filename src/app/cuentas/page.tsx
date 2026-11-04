@@ -79,7 +79,7 @@ function Archivo({ f, enlaces }: { f: Factura; enlaces: Map<string, string> }) {
 }
 
 async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["searchParams"] }) {
-  const { supabase, puedeEditar } = await obtenerContexto();
+  const { supabase, puedeAdministrar: puedeEditar } = await obtenerContexto();
   const sp = await searchParams;
   const hoy = hoyISO();
   const anioHoy = Number(hoy.slice(0, 4));
