@@ -5,6 +5,13 @@ Cuando algo se haga, se tacha y se pone la fecha.
 
 ## Pendiente
 
+- [ ] **Gastos en tiempo real** (apuntado el 4/11/2026)
+  Ir metiendo los gastos según se hacen (facturas de abonos y productos, agua, luz, gasoil,
+  jornales, reparaciones…), por finca y por campaña, y ver en todo momento cuánto se lleva gastado.
+  Apuntarlos fácil: por voz desde ChatGPT o con una foto de la factura.
+  Enlaza con las facturas de venta (abajo): ingresos menos gastos = cómo va cada finca, y
+  los gastos que entren en el reparto de cada socio.
+
 - [ ] **Facturas de venta claras, para los módulos y las cuentas de cada socio** (apuntado el 4/11/2026)
   Tener en Campo todas las facturas y liquidaciones de venta del limón (Citrisol y otros compradores),
   por finca y por campaña, con fecha de factura, kilos, precio y total. Con eso:
