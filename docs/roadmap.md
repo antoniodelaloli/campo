@@ -21,6 +21,9 @@ Cuando algo se haga, se tacha y se pone la fecha.
   factura) y qué gastos entran en el reparto. Ojo: una misma campaña se factura en dos años fiscales.
 
 - [ ] **Precios del limón de la Consejería** (apuntado el 4/11/2026)
+  Para qué (Juan Carlos, 4/11/2026): nuestro limón es tardío y conviene cortar en los meses de mejor precio.
+  Objetivo: un gráfico del precio semana a semana de varias campañas, con la media por mes, para ver qué
+  meses pagan más; marcar en él cuándo cortamos nosotros y a cuánto, y un «dato del día» cuando suba o baje.
   Revisar los precios que publica la Consejería de Agricultura de la Región de Murcia en su web
   (precios agrarios semanales / de referencia) y ver cómo traerlos a Campo: precio del limón
   Fino y Verna por semana, para compararlo con lo que liquidan Citrisol y los compradores.
