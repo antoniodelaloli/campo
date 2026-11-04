@@ -3,6 +3,8 @@ import { Marco } from "@/components/Marco";
 import { CabeceraSeccion, Cargando, Chip, ChipFinca, Panel } from "@/components/ui";
 import { FormLectura, FormNivel } from "./FormulariosAgua";
 import { ListaAvisos } from "@/components/ListaAvisos";
+import { RiegosPedidos } from "@/components/RiegosPedidos";
+import { cargarRiegos } from "@/lib/riegos";
 import { obtenerContexto } from "@/lib/sesion";
 import {
   cargarAvisos,
@@ -72,13 +74,23 @@ function DibujoPantano({ pantano }: { pantano: Pantano }) {
 async function Agua() {
   const { supabase, puedeEditar } = await obtenerContexto();
   const hoy = hoyISO();
-  const [{ fincas, error }, contadores, suministros, fuentes, avisos] = await Promise.all([
+  const [{ fincas, error }, contadores, suministros, fuentes, avisos, riegos] = await Promise.all([
     cargarFincas(supabase),
     cargarContadores(supabase),
     cargarSuministros(supabase),
     cargarFuentesAgua(supabase),
     cargarAvisos(supabase, "agua"),
+    cargarRiegos(supabase),
   ]);
+  // lecturas válidas de los contadores de entrada del trasvase, para ver si llega el agua pedida
+  const lecturasEntrada = contadores
+    .filter((c) => c.tipo === "entrada" && c.origen_agua === "trasvase")
+    .map((c) => ({
+      contador: c.nombre,
+      lecturas: c.lecturas_contador
+        .filter((l) => !l.anulada && !l.pendiente_conciliar)
+        .map((l) => ({ fecha: l.fecha, lectura_m3: Number(l.lectura_m3) })),
+    }));
 
   const nombreFinca = new Map(fincas.map((f) => [f.id, f.nombre]));
   const pantanos = fincas.flatMap((f) => f.pantanos.map((p) => ({ ...p, finca: f.nombre })));
@@ -121,6 +133,8 @@ async function Agua() {
           );
         })}
       </div>
+
+      <RiegosPedidos riegos={riegos.riegos} lecturasEntrada={lecturasEntrada} hoy={hoy} falta={riegos.falta} />
 
       <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
         {/* De dónde viene el agua */}

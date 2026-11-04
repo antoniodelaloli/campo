@@ -5,6 +5,8 @@ import { obtenerContexto } from "@/lib/sesion";
 import { cargarAvisos, cargarFincas } from "@/lib/datos";
 import { KpisCosecha } from "@/components/KpisCosecha";
 import { ListaAvisos } from "@/components/ListaAvisos";
+import { GastosCampana } from "@/components/RiegosPedidos";
+import { cargarRiegos } from "@/lib/riegos";
 import Link from "next/link";
 import {
   CONTRATO_MANDARINAS_2024,
@@ -184,7 +186,11 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
   const campana: IdCampana = CAMPANAS.some((c) => c.id === sp.campana)
     ? (sp.campana as IdCampana)
     : campanaPorDefecto(hoy);
-  const [avisos, { fincas }] = await Promise.all([cargarAvisos(supabase, "cosecha"), cargarFincas(supabase)]);
+  const [avisos, { fincas }, agua] = await Promise.all([
+    cargarAvisos(supabase, "cosecha"),
+    cargarFincas(supabase),
+    cargarRiegos(supabase),
+  ]);
 
   const liq = LIQUIDACION_2526;
   const total = liq.filas.reduce((s, f) => s + f.kgTotal, 0);
@@ -268,6 +274,8 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
             </ul>
           </Panel>
         </div>
+
+        <GastosCampana riegos={agua.riegos} hoy={hoy} inicio={2026} falta={agua.falta} />
 
         <KpisCosecha fincas={fincas} campana={est.campana} filas={est.filas} estimada />
       </main>
@@ -404,6 +412,14 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
           </Panel>
         </div>
       </div>
+
+      <GastosCampana
+        riegos={agua.riegos}
+        hoy={hoy}
+        inicio={2025}
+        kgValladolises={liq.filas.find((f) => f.finca === "Valladolises")?.kgTotal}
+        falta={agua.falta}
+      />
 
       <KpisCosecha fincas={fincas} campana={liq.campana} filas={liq.filas} />
     </main>

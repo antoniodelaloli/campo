@@ -43,6 +43,7 @@ Cuando algo se haga, se tacha y se pone la fecha.
 
 ## Hecho
 
+- [x] Riegos pedidos a la Comunidad de Regantes (talones, migración 0013): gasto por campaña y año fiscal, comparación con el año pasado, por meses y por arqueta; «Gastos de la campaña» en Cosecha (4/11/2026). Falta: apuntar lecturas del contador de entrada para comprobar si llega toda el agua.
 - [x] Diario a la vista: página /diario y últimas notas en cada ficha; herramienta «ver_diario» en el conector (4/11/2026).
 - [x] Lobosillo con los límites del Catastro, en dos trozos (3/11/2026).
 - [x] Mapa de inicio: Valladolises solo con el bloque de la casa; arreglo de los carteles en el móvil (3/11/2026).
