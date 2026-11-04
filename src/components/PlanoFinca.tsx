@@ -235,16 +235,17 @@ export function PlanoFinca({
           if (!trozo) return null;
           return (
             <g key={s.id} pointerEvents="none">
-              {trozo.poligono && (
+              {(trozo.poligonos ?? (trozo.poligono ? [trozo.poligono] : [])).map((pz) => (
                 <polygon
-                  points={trozo.poligono}
+                  key={pz}
+                  points={pz}
                   fill={colorSector(s.numero)}
                   fillOpacity={0.42}
                   stroke={colorSector(s.numero)}
                   strokeWidth={2}
                   strokeLinejoin="round"
                 />
-              )}
+              ))}
               <rect x={trozo.etiqueta.x - 17} y={trozo.etiqueta.y - 15} width={34} height={22} rx={4} fill="#ffffff" stroke="#3b2a1a" strokeWidth={2} />
               <text x={trozo.etiqueta.x} y={trozo.etiqueta.y + 1} textAnchor="middle" fontSize={14} fontWeight={700} fill="#3b2a1a">
                 S{s.numero}

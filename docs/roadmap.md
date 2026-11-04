@@ -30,8 +30,8 @@ Cuando algo se haga, se tacha y se pone la fecha.
 
 - [ ] **Que la app funcione sin cobertura en el campo** (apuntar sin red y enviar al volver la cobertura).
 
-- [ ] **Sectores de riego en los planos**: falta la tabla de qué zonas riega cada sector
-  (Valladolises y Corvera) para pintarlos.
+- [ ] **Sectores de riego en los planos**: Valladolises hecho (4/11/2026, migración 0017). Falta Corvera:
+  confirmar cuál de las dos franjas es el sector 1 y cuál el 2.
 
 - [ ] **Atajo de Siri «Incidencia» en el iPhone de Juan Carlos**: crear su clave en /atajos y montarle el atajo.
 

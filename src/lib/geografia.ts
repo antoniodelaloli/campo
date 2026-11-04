@@ -311,6 +311,8 @@ export function claveDeFinca(nombre: string): ClaveFinca | null {
 export type TrozoPlano = {
   /** polígono en unidades de dibujo; sin él, solo se pone el cartel */
   poligono?: string;
+  /** varios trozos (un sector que riega bloques separados); manda sobre «poligono» */
+  poligonos?: string[];
   /** dónde va el cartel */
   etiqueta: { x: number; y: number };
 };
@@ -349,9 +351,13 @@ export const PLANOS: Record<ClaveFinca, PlanoDeFinca> = {
       trivino: { poligono: VALL_TRIVINO, etiqueta: { x: 360, y: 272 } },
       "la mari": { poligono: VALL_LA_MARI, etiqueta: { x: 402, y: 24 } },
     },
-    sectores: {},
+    sectores: {
+      // Juan Carlos / Antonio (4/11/2026): la bomba no llega tan lejos de una vez
+      1: { poligonos: [VALL_LA_CASA, VALL_BLOQUE_OLIVOS], etiqueta: { x: 118, y: 92 } }, // casa, mandarinos y Los Olivos
+      2: { poligono: VALL_BLOQUE_ABAJO, etiqueta: { x: 330, y: 170 } }, // Del Pozo, Abajo, La Mari y Triviño
+    },
     nota:
-      "Zonas dibujadas por Antonio en Google Earth (3/11/2026), aproximadas. Provisional, por confirmar con Juan Carlos: los nombres de los bloques, que «Nuevos Pozo» sea Del Pozo / Los Nuevos y los tres trozos de mandarinos (en la ficha, Los Olivos figura como mandarinos y en el dibujo como limoneros).",
+      "Sectores (4/11/2026): el 1 riega la casa y lo que está a su derecha (La Casa, los tres trozos de mandarinos y Los Olivos); el 2, a partir del salto entre fincas, lo más lejano al pantano (Del Pozo, Abajo, La Mari y Triviño), porque la bomba no tiene fuerza para regar tan lejos a la vez. Zonas dibujadas por Antonio en Google Earth (3/11/2026), aproximadas. Provisional, por confirmar con Juan Carlos: los nombres de los bloques, que «Nuevos Pozo» sea Del Pozo / Los Nuevos y los tres trozos de mandarinos (en la ficha, Los Olivos figura como mandarinos y en el dibujo como limoneros).",
   },
   lobosillo: {
     zonas: {},
