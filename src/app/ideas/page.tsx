@@ -4,7 +4,7 @@ import { CabeceraSeccion, Cargando, Chip, ChipFinca } from "@/components/ui";
 import { obtenerContexto } from "@/lib/sesion";
 import { fechaCorta, hoyISO } from "@/lib/texto";
 import { nombreMes } from "@/lib/agenda";
-import { cambiarEstadoIdea } from "./actions";
+import { cambiarEstadoIdea, convertirIdeaEnTarea } from "./actions";
 
 // Libreta de ideas y reflexiones (migración 0007). Página discreta: no está en el
 // menú; se llega desde un enlace pequeño en Tareas. Casi todo llega por voz desde
@@ -19,6 +19,7 @@ type Idea = {
   tipo: "idea" | "reflexion" | "duda" | "plan" | "aprendizaje";
   temas: string[];
   estado: "nueva" | "revisada" | "convertida" | "descartada";
+  nota_revision: string | null;
   origen: string;
   created_at: string;
   fincas: { nombre: string } | null;
@@ -51,7 +52,7 @@ async function Ideas({ searchParams }: { searchParams: PageProps<"/ideas">["sear
 
   let q = supabase
     .from("ideas")
-    .select("id, titulo, texto, tipo, temas, estado, origen, created_at, fincas(nombre), profiles:created_by(nombre)")
+    .select("id, titulo, texto, tipo, temas, estado, nota_revision, origen, created_at, fincas(nombre), profiles:created_by(nombre)")
     .order("created_at", { ascending: false })
     .limit(300);
   if (!verDescartadas) q = q.neq("estado", "descartada");
@@ -104,7 +105,9 @@ async function Ideas({ searchParams }: { searchParams: PageProps<"/ideas">["sear
                     {TIPO[i.tipo] ?? i.tipo}
                   </Chip>
                   {i.fincas && <ChipFinca nombre={i.fincas.nombre} />}
-                  {i.estado !== "nueva" && <Chip tono={i.estado === "convertida" ? "verde" : "neutro"}>{i.estado}</Chip>}
+                  {i.estado !== "nueva" && (
+                    <Chip tono={i.estado === "convertida" ? "verde" : "neutro"}>{i.estado === "convertida" ? "ya es tarea" : i.estado}</Chip>
+                  )}
                   <span className="ml-auto text-xs text-tinta-suave">
                     {fechaCorta(i.created_at.slice(0, 10), hoy)}
                     {i.profiles?.nombre ? ` · ${i.profiles.nombre}` : ""}
@@ -121,10 +124,29 @@ async function Ideas({ searchParams }: { searchParams: PageProps<"/ideas">["sear
                 {i.temas.length > 0 && (
                   <p className="text-xs text-tinta-suave">{i.temas.map((t) => `#${t}`).join("  ")}</p>
                 )}
+                {i.estado === "convertida" && (
+                  <p className="text-xs text-tinta-suave">
+                    {i.nota_revision ?? "Ya es tarea o fecha clave."}{" "}
+                    <a href="/tareas" className="font-bold underline">
+                      Ver tareas
+                    </a>
+                  </p>
+                )}
                 {puedeEditar && (
                   <div className="flex flex-wrap gap-1.5 pt-1">
-                    {(["revisada", "convertida", "descartada"] as const)
-                      .filter((e) => e !== i.estado)
+                    {i.estado !== "convertida" && (
+                      <form action={convertirIdeaEnTarea}>
+                        <input type="hidden" name="id" value={i.id} />
+                        <button
+                          type="submit"
+                          className="rounded-[3px] border-2 border-hoja-oscura bg-[#eaf5dc] px-2 py-0.5 text-xs font-bold text-hoja-oscura hover:bg-[#d5ebb8]"
+                        >
+                          Convertir en tarea
+                        </button>
+                      </form>
+                    )}
+                    {(["nueva", "revisada", "descartada"] as const)
+                      .filter((e) => e !== i.estado && !(e === "nueva" && i.estado === "revisada"))
                       .map((e) => (
                         <form key={e} action={cambiarEstadoIdea}>
                           <input type="hidden" name="id" value={i.id} />
@@ -133,7 +155,7 @@ async function Ideas({ searchParams }: { searchParams: PageProps<"/ideas">["sear
                             type="submit"
                             className="rounded-[3px] border-2 border-borde-papel bg-papel px-2 py-0.5 text-xs font-bold hover:bg-[#fff2c4]"
                           >
-                            {e === "revisada" ? "Revisada" : e === "convertida" ? "Ya es tarea/fecha" : "Descartar"}
+                            {e === "revisada" ? "Revisada" : e === "nueva" ? "Volver a ideas nuevas" : "Descartar"}
                           </button>
                         </form>
                       ))}
