@@ -38,6 +38,7 @@ Cómo usar estas herramientas:
 - Nada se borra: si algo está mal, se marca como anulado o se corrige apuntándolo de nuevo.
 - IDEAS: está atento a lo que cuenta aunque divague. Si suelta una idea, reflexión, duda, plan o algo aprendido sobre el campo que merezca la pena recordar (sin fecha ni trabajo concreto), guárdala tú con «apuntar_idea» SIN preguntar y con detectada=true; al final de tu respuesta dile en una línea «📝 Apuntado en la libreta de ideas: …». No guardes saludos, quejas sueltas ni cosas que ya estén apuntadas (si dudas, mira «buscar_ideas»). Si es una tarea o una fecha, eso sí pregúntalo antes. Solo lo del campo: nada personal ni familiar.
 - BANCO DE PREGUNTAS: si está contestando las preguntas de Antonio (códigos como LOB-01, AGU-03, NUM-02), antes de empezar mira «preguntas_contestadas» para no repetir las que ya contestó. Hazlas de una en una y, en cuanto conteste cada una, guárdala con «guardar_respuesta» SIN pedir permiso (con el código, la pregunta y lo que dijo completo) y di solo «✅ Guardada» antes de pasar a la siguiente. Si dice «no lo sé», guárdala igual con seguridad «no_sabe». Si corrige una anterior, guarda otra respuesta con el mismo código. Ya no hace falta hacer un acta ni mandarla por WhatsApp.
+- DIARIO: lo que ya ha pasado («hoy ha venido Diego», «se ha terminado de fumigar») se apunta con «nota_diario». Para ver lo apuntado o comprobar que algo se guardó, usa «ver_diario»; no digas que algo está guardado sin haberlo comprobado.
 - INCIDENCIAS (fugas, goteros rotos, averías, plagas, árboles a revisar): apúntalas con «apuntar_incidencia». Si está junto al sitio, dile una vez que con «Oye Siri, incidencia» queda apuntada con la ubicación exacta.
 - Si preguntan qué día se puede fumigar, si hace viento o si va a granizar, usa «tiempo_para_fumigar». Con viento no se fumiga: el caldo se lo lleva el aire. Si van a apuntar un tratamiento para un día con viento, avísalo antes de guardarlo.`;
 
@@ -723,6 +724,49 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
       const { error } = await supabase.from("diario").insert({ texto, finca_id: fincaId, fecha: fecha ?? hoy, origen: ORIGEN });
       if (error) return fallo(`No se pudo guardar: ${error.message}`);
       return ok({ guardado: true, mensaje: "Nota apuntada en el diario." });
+    },
+  );
+
+  server.registerTool(
+    "ver_diario",
+    {
+      title: "Ver el diario",
+      description:
+        "Lee las notas del diario de las fincas (lo apuntado con «nota_diario»): fecha, finca, texto y quién lo apuntó. Úsala para «¿qué apunté ayer?», «¿qué hay en el diario de Corvera?» o para comprobar que una nota se ha guardado.",
+      inputSchema: {
+        finca: z.string().optional().describe("Nombre de la finca (opcional)"),
+        dias: z.number().int().min(1).max(365).default(14).describe("Cuántos días hacia atrás (14 por defecto)"),
+        texto: z.string().max(80).optional().describe("Palabra a buscar (opcional)"),
+      },
+      annotations: LECTURA,
+    },
+    async ({ finca, dias, texto }) => {
+      const desde = sumarDias(hoyISO(), -dias);
+      let q = supabase
+        .from("diario")
+        .select("fecha, texto, created_at, fincas(nombre), profiles:created_by(nombre)")
+        .gte("fecha", desde)
+        .order("fecha", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (finca) {
+        const { fincas } = await cargarFincas(supabase);
+        const r = buscarFinca(fincas, finca);
+        if (r.error) return fallo(r.error);
+        q = q.eq("finca_id", r.finca!.id);
+      }
+      if (texto) q = q.ilike("texto", `%${texto.replace(/[%,()]/g, " ").trim()}%`);
+      const { data, error } = await q;
+      if (error) return fallo(`No se pudo leer el diario: ${error.message}`);
+      if (!data?.length) return ok(`No hay notas en el diario en los últimos ${dias} días${finca ? ` en ${finca}` : ""}.`);
+      return ok(
+        data.map((d) => ({
+          fecha: d.fecha,
+          finca: (d.fincas as unknown as { nombre: string } | null)?.nombre ?? null,
+          texto: d.texto,
+          quien: (d.profiles as unknown as { nombre: string | null } | null)?.nombre ?? null,
+        })),
+      );
     },
   );
 
