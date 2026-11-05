@@ -22,6 +22,13 @@ saldría casi el doble de lo que liquidaron. Con la liquidación encaja este rep
 
 Cuentas: Valladolises 841.836 kg (la liquidación dice 842.025); Corvera 1.005.330 kg (la liquidación dice 1.012.231).
 
+Ojo (Antonio, 5/11/2026): JHSYO es la sociedad de Valladolises y Corvera la venden Maite y Carlos. Si se
+asigna la finca por titular, sale Valladolises 970.520 kg y Corvera 876.646 kg, y no cuadra con la
+liquidación por unos 130.000 kg. Cuadra si en diciembre se **cruzaron** dos hojas: el 1º corte del 1 al 5/12
+(291.432,5 kg) se facturó a JHSYO pero salió de Corvera, y la hoja de Maite del 9 al 12/12 (162.748,5 kg)
+salió de Valladolises. Es lo de «a veces se coge limón de una finca y se factura en otra».
+- [ ] ¿Se cruzaron esas dos hojas? ______________
+
 - **Qué mirar:** el título o el sello de cada hoja impresa (finca o lugar de la explotación).
 - [ ] 1º corte (1 – 5/12): ______________
 - [ ] Maite de diciembre (9 – 12/12): ______________
