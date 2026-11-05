@@ -7,13 +7,14 @@
 --   1. García Aranda → Maite (Mª Teresa Hernández García), Corvera,
 --      361.183,68 kg de limón, base 210.208,91 €, compensación 12 % 25.225,07 €,
 --      retención IRPF 4.708,68 €, total a cobrar 230.725,30 €.
---      OJO: en la foto la fecha está cortada (solo se ve «…3/26»). Se pone el
---      02/03/2026, como la de Carlos; corregir si no es esa.
+--      En la foto la fecha está cortada (solo se ve «…3/26»): es de marzo de 2026
+--      y se pone el 02/03/2026, como la de Carlos. Para el límite da igual el día.
 --   2. García Aranda → Carlos (Juan Carlos Hernández García), 02/03/2026,
 --      352.723,40 kg de limón Primofiori a 0,582 €/kg (albaranes del 2 al 5/2/2026),
 --      base 205.285,00 €, compensación 12 % 24.634,20 €, IRPF 4.598,38 €,
 --      total a cobrar 225.320,82 €. Lugar de la explotación: «MURCIA»; se pone
---      Corvera porque Corvera es la finca que factura Carlos (confirmar).
+--      Corvera. Puede ser parte de Corvera y parte de Valladolises: solo cambia el
+--      coste y el margen por finca, no el límite de Carlos.
 -- GASTO:
 --   3. Axpo SCOMPW-26-0045437 (13/04/2026), luz de marzo de 2026 de Corvera
 --      (Paraje Lomas del Villar), a nombre de Carlos: base 258,32 €, IVA 54,25 €.
@@ -40,11 +41,11 @@ begin
   from (values
     ('venta', v_maite, '2026-03-02', null::text, 'García Aranda, S.L.',
      'Limón (361.183,68 kg buenos)', null::text, 361183.68, 210208.91, 25225.07,
-     'Compensación agraria 12 %. Retención IRPF 4.708,68 €. Total a cobrar 230.725,30 €. Fecha cortada en la foto («…3/26»): confirmar. PDF: https://drive.google.com/file/d/18u3c5Hb7kmCFLjYAzr2f9LD_SrkFOgnL/view'),
+     'Compensación agraria 12 %. Retención IRPF 4.708,68 €. Total a cobrar 230.725,30 €. Fecha cortada en la foto («…3/26»): es de marzo de 2026, el día es aproximado. PDF: https://drive.google.com/file/d/18u3c5Hb7kmCFLjYAzr2f9LD_SrkFOgnL/view'),
     ('venta', v_carlos, '2026-03-02', null::text, 'García Aranda, S.L.',
      'Limón Primofiori, 352.723,40 kg a 0,582 €/kg (albaranes HUE 786 a 840, del 2 al 5/2/2026)', null::text,
      352723.40, 205285.00, 24634.20,
-     'Compensación agraria 12 %. Retención IRPF 4.598,38 €. Total a cobrar 225.320,82 €. Lugar de la explotación «MURCIA»: puesta en Corvera, confirmar. PDF: https://drive.google.com/file/d/1nbUxfqC7t4UENc7HtA_CPMZhKGuT2GtA/view'),
+     'Compensación agraria 12 %. Retención IRPF 4.598,38 €. Total a cobrar 225.320,82 €. Lugar de la explotación «MURCIA»: puesta en Corvera; puede ser parte de Corvera y parte de Valladolises (por mirar). PDF: https://drive.google.com/file/d/1nbUxfqC7t4UENc7HtA_CPMZhKGuT2GtA/view'),
     ('gasto', v_carlos, '2026-04-13', 'SCOMPW-26-0045437', 'Axpo Iberia',
      'Luz de marzo de 2026 (01/03-31/03), tarifa 3.0TD, Paraje Lomas del Villar', 'luz', null::numeric, 258.32, 54.25,
      'IVA 21 %. Total 312,57 €. PDF: https://drive.google.com/file/d/1UwQ3SbO9tK_DsGy_gEmCKr7xdpym3Ueg/view')
