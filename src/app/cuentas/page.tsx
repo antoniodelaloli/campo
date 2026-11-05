@@ -4,7 +4,7 @@ import { Marco } from "@/components/Marco";
 import { CabeceraSeccion, Cargando, ChipFinca, Panel } from "@/components/ui";
 import { obtenerContexto } from "@/lib/sesion";
 import { cargarFincas } from "@/lib/datos";
-import { cargarCuentas, CATEGORIAS_GASTO, enlacesArchivos, situacion, type Factura, type SituacionTitular } from "@/lib/cuentas";
+import { cargarCuentas, CATEGORIAS_GASTO, enlacesArchivos, estadoDe, situacion, type Factura, type SituacionTitular } from "@/lib/cuentas";
 import { fechaCorta, formatoNumero, hoyISO } from "@/lib/texto";
 import { ApuntarFactura, Simulador } from "./FormulariosCuentas";
 import { COLOR_ESTADO } from "@/lib/cuentas-calculo";
@@ -134,8 +134,9 @@ async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["
 
       <p className="ficha-pendiente px-3 py-2 text-[13px] leading-snug">
         <b>Límite de los módulos: 250.000 € de ventas al año por titular</b> (año natural, enero a diciembre; cuenta la
-        base sin IVA ni compensación). A cada socio se le suman <b>todas</b> las ventas de JHSYO, además de las suyas
-        (JHSYO es de Maite, Chelo y Juan Carlos a partes iguales).
+        base sin IVA ni compensación). <b>Por confirmar con el asesor:</b> si a cada socio se le suman todas las ventas de
+        JHSYO (de Maite, Chelo y Juan Carlos a partes iguales). Por si acaso, la barra las suma; debajo sale también la
+        cuenta sin sumarlas.
         {cuentas.falta0021 && " Falta ejecutar la migración 0021 (socios de JHSYO) para que se sumen."}
       </p>
 
@@ -166,6 +167,7 @@ async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["
                 <span className="text-xs leading-snug text-tinta-suave">
                   A su nombre: {eur(t.facturadoPropio)}
                   {t.sociedades.map((x) => ` · ${x.nombre}: ${eur(x.facturado)} (entero; es socio/a de ${formatoNumero(x.participacion * 100, 0)} %)`)}
+                  {`. Si no se suma la sociedad: ${eur(t.facturadoPropio)} (${formatoNumero((t.facturadoPropio / t.limite_eur) * 100, 1)} %, ${COLOR_ESTADO[estadoDe(t, t.facturadoPropio)].etiqueta.toLowerCase()}).`}
                 </span>
               )}
               <BarraLimite t={t} />

@@ -5,6 +5,17 @@ Cuando algo se haga, se tacha y se pone la fecha.
 
 ## Pendiente
 
+- [ ] **Registrar cómo trabajan, corte a corte** (apuntado el 5/11/2026)
+  Objetivo de Antonio: que Campo recoja su forma de hacer (de qué finca sale cada camión y a nombre de quién
+  se factura) para ayudarles con la contabilidad y tener estadísticas reales para decidir.
+  1. **Albaranes del corte en curso, uno a uno:** formulario en Albaranes (nº, fecha, finca, cajas, kilos) y
+     herramienta «apuntar_albaran» en el conector (por voz o con foto del albarán), en vez de esperar al Excel.
+  2. **Plan del corte:** antes de facturar, repartir los kilos previstos entre titulares con el simulador y
+     guardarlo como facturas «previstas»; al llegar la factura, se marca emitida.
+  3. **Cuadre automático:** albaranes ↔ facturas ↔ liquidación de cada corte, con aviso si algo no casa.
+  4. **Regla del límite por confirmar con el asesor:** si se suman las ventas de JHSYO a cada socio (ahora se
+     enseñan las dos cuentas).
+
 - [ ] **Newsletter de los domingos para la familia** (apuntado el 5/11/2026)
   Un resumen semanal por correo, los domingos, para los familiares que se quieran suscribir.
   Qué contaría: lo hecho en la semana (diario, tareas terminadas, tratamientos, cortes), el agua y los
