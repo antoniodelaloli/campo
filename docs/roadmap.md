@@ -8,8 +8,9 @@ Cuando algo se haga, se tacha y se pone la fecha.
 - [ ] **Registrar cómo trabajan, corte a corte** (apuntado el 5/11/2026)
   Objetivo de Antonio: que Campo recoja su forma de hacer (de qué finca sale cada camión y a nombre de quién
   se factura) para ayudarles con la contabilidad y tener estadísticas reales para decidir.
-  1. **Albaranes del corte en curso, uno a uno:** formulario en Albaranes (nº, fecha, finca, cajas, kilos) y
-     herramienta «apuntar_albaran» en el conector (por voz o con foto del albarán), en vez de esperar al Excel.
+  1. **Albaranes del corte en curso, uno a uno:** hecho el formulario (Albaranes → «Apuntar albaranes uno a uno»,
+     con pesada y kg/caja en vivo) y la comparación de dos hojas albarán a albarán (5/11/2026). Falta la
+     herramienta «apuntar_albaran» en el conector (por voz o con foto del albarán).
   2. **Plan del corte:** antes de facturar, repartir los kilos previstos entre titulares con el simulador y
      guardarlo como facturas «previstas»; al llegar la factura, se marca emitida.
   3. **Cuadre automático:** albaranes ↔ facturas ↔ liquidación de cada corte, con aviso si algo no casa.

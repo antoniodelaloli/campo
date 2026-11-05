@@ -346,3 +346,73 @@ export function kilosPorFinca(albaranes: Albaran[], campana: string, nombreFinca
   }
   return [...m.values()];
 }
+
+// ---------------------------------------------------------------- comparar dos hojas
+
+export type DiferenciaAlbaran = {
+  albaran: string;
+  fecha: string;
+  /** qué pasa: solo en una hoja, o en las dos con datos distintos */
+  tipo: "solo_a" | "solo_b" | "distinto";
+  a: Pick<Albaran, "fecha" | "cajas" | "kg_buenos" | "kg_citrica" | "importe_eur"> | null;
+  b: Pick<Albaran, "fecha" | "cajas" | "kg_buenos" | "kg_citrica" | "importe_eur"> | null;
+  campos: string[];
+};
+
+export type Comparacion = {
+  iguales: number;
+  diferencias: DiferenciaAlbaran[];
+  totales: {
+    a: { camiones: number; kgBuenos: number; kgCitrica: number; importe: number };
+    b: { camiones: number; kgBuenos: number; kgCitrica: number; importe: number };
+  };
+};
+
+/**
+ * Compara dos hojas del mismo corte (p. ej. la de Juan Carlos en Excel y la que
+ * se apunta a mano en Campo) albarán a albarán. Se emparejan por nº de albarán;
+ * si un nº sale varias veces, por orden.
+ */
+export function compararHojas(a: Albaran[], b: Albaran[]): Comparacion {
+  const tot = (xs: Albaran[]) => ({
+    camiones: xs.length,
+    kgBuenos: xs.reduce((s, x) => s + x.kg_buenos, 0),
+    kgCitrica: xs.reduce((s, x) => s + x.kg_citrica, 0),
+    importe: xs.reduce((s, x) => s + (x.importe_eur ?? 0), 0),
+  });
+  const grupos = (xs: Albaran[]) => {
+    const m = new Map<string, Albaran[]>();
+    for (const x of [...xs].sort((p, q) => p.fecha.localeCompare(q.fecha))) m.set(x.albaran, [...(m.get(x.albaran) ?? []), x]);
+    return m;
+  };
+  const ga = grupos(a);
+  const gb = grupos(b);
+  const datos = (x: Albaran) => ({ fecha: x.fecha, cajas: x.cajas, kg_buenos: x.kg_buenos, kg_citrica: x.kg_citrica, importe_eur: x.importe_eur });
+  const casi = (p: number | null, q: number | null, tol: number) => Math.abs((p ?? 0) - (q ?? 0)) <= tol;
+  const diferencias: DiferenciaAlbaran[] = [];
+  let iguales = 0;
+  for (const n of new Set([...ga.keys(), ...gb.keys()])) {
+    const la = ga.get(n) ?? [];
+    const lb = gb.get(n) ?? [];
+    for (let i = 0; i < Math.max(la.length, lb.length); i++) {
+      const x = la[i];
+      const y = lb[i];
+      if (x && !y) diferencias.push({ albaran: n, fecha: x.fecha, tipo: "solo_a", a: datos(x), b: null, campos: [] });
+      else if (!x && y) diferencias.push({ albaran: n, fecha: y.fecha, tipo: "solo_b", a: null, b: datos(y), campos: [] });
+      else if (x && y) {
+        const campos = [
+          x.fecha !== y.fecha && "fecha",
+          (x.cajas ?? 0) !== (y.cajas ?? 0) && "cajas",
+          !casi(x.kg_buenos, y.kg_buenos, 0.5) && "kilos buenos",
+          !casi(x.kg_citrica, y.kg_citrica, 0.5) && "kilos de cítrica",
+          // el importe solo se compara si las dos hojas lo traen
+          x.importe_eur != null && y.importe_eur != null && !casi(x.importe_eur, y.importe_eur, 0.05) && "importe",
+        ].filter((c): c is string => !!c);
+        if (campos.length) diferencias.push({ albaran: n, fecha: x.fecha, tipo: "distinto", a: datos(x), b: datos(y), campos });
+        else iguales++;
+      }
+    }
+  }
+  diferencias.sort((p, q) => p.fecha.localeCompare(q.fecha) || p.albaran.localeCompare(q.albaran));
+  return { iguales, diferencias, totales: { a: tot(a), b: tot(b) } };
+}

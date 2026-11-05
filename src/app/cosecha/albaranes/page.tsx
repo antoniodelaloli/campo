@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { Marco } from "@/components/Marco";
 import { CabeceraSeccion, Cargando, Panel } from "@/components/ui";
 import { obtenerContexto } from "@/lib/sesion";
@@ -91,7 +92,12 @@ function FilaHoja({
   return (
     <tr className="border-t border-dotted border-borde-papel align-top">
       <td className="py-1.5 pr-2">
-        <span className="font-bold">{g.hoja ?? "—"}</span>
+        <Link
+          href={`/cosecha/albaranes/apuntar?campana=${encodeURIComponent(g.campana)}&hoja=${encodeURIComponent(g.hoja ?? "")}`}
+          className="font-bold underline-offset-2 hover:underline"
+        >
+          {g.hoja ?? "—"}
+        </Link>
         <span className="block text-xs text-tinta-suave">
           {fecha(g.desde)}
           {g.hasta !== g.desde && ` – ${fecha(g.hasta)}`} · {g.camiones} camiones
@@ -173,6 +179,12 @@ async function Albaranes() {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5">
       <CabeceraSeccion titulo="Albaranes" subtitulo="Las hojas de cada corte: camión a camión, por finca y a nombre de quién" volver="/cosecha" />
+
+      {!datos.falta && puedeAdministrar && (
+        <Link href="/cosecha/albaranes/apuntar" className="boton self-start">
+          ✍ Apuntar albaranes uno a uno
+        </Link>
+      )}
 
       {datos.falta && (
         <p role="alert" className="border-2 border-aviso bg-papel p-3 text-sm">
