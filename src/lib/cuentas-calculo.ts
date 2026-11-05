@@ -34,11 +34,21 @@ export type Factura = {
 
 export type EstadoLimite = "bien" | "aviso" | "tope" | "pasado";
 
+/** Socio de una sociedad titular (migración 0021): JHSYO = Maite, Chelo y Carlos, 1/3 cada uno. */
+export type Socio = { sociedad_id: string; socio_id: string; participacion: number };
+
 export type SituacionTitular = Titular & {
-  /** ventas emitidas que cuentan para el límite (base, sin impuestos) */
+  /** ventas emitidas que cuentan para el límite (base, sin impuestos): las suyas + las de sus sociedades */
   facturado: number;
-  /** ventas previstas (cortes que faltan) */
+  /** ventas previstas (cortes que faltan), también con las de sus sociedades */
   previsto: number;
+  /** solo lo facturado a su nombre */
+  facturadoPropio: number;
+  previstoPropio: number;
+  /** sociedades de las que es socio: sus ventas cuentan enteras para su límite */
+  sociedades: { id: string; nombre: string; participacion: number; facturado: number; previsto: number }[];
+  /** ids de las sociedades (incluida ella misma si es una) a las que afecta una factura a su nombre */
+  socios: string[];
   /** lo que queda hasta el tope de seguridad */
   margenTope: number;
   estado: EstadoLimite;
@@ -52,15 +62,38 @@ export function estadoDe(t: Titular, importe: number): EstadoLimite {
   return "bien";
 }
 
-export function situacion(titulares: Titular[], facturas: Factura[]): SituacionTitular[] {
+/**
+ * Cómo va cada titular frente al límite. A cada socio se le suman las ventas
+ * enteras de las sociedades de las que es socio (Antonio, 5/11/2026: «suma la
+ * sociedad + el personal»).
+ */
+export function situacion(titulares: Titular[], facturas: Factura[], socios: Socio[] = []): SituacionTitular[] {
+  const propio = (id: string) => {
+    const ventas = facturas.filter((f) => f.titular_id === id && f.tipo === "venta" && f.cuenta_limite);
+    return {
+      facturado: ventas.filter((f) => f.estado === "emitida").reduce((s, f) => s + f.base_eur, 0),
+      previsto: ventas.filter((f) => f.estado === "prevista").reduce((s, f) => s + f.base_eur, 0),
+    };
+  };
   return titulares.map((t) => {
-    const ventas = facturas.filter((f) => f.titular_id === t.id && f.tipo === "venta" && f.cuenta_limite);
-    const facturado = ventas.filter((f) => f.estado === "emitida").reduce((s, f) => s + f.base_eur, 0);
-    const previsto = ventas.filter((f) => f.estado === "prevista").reduce((s, f) => s + f.base_eur, 0);
+    const mio = propio(t.id);
+    const sociedades = socios
+      .filter((x) => x.socio_id === t.id)
+      .map((x) => {
+        const soc = titulares.find((y) => y.id === x.sociedad_id);
+        return { id: x.sociedad_id, nombre: soc?.nombre ?? "—", participacion: x.participacion, ...propio(x.sociedad_id) };
+      });
+    const facturado = mio.facturado + sociedades.reduce((s, x) => s + x.facturado, 0);
+    const previsto = mio.previsto + sociedades.reduce((s, x) => s + x.previsto, 0);
     return {
       ...t,
       facturado,
       previsto,
+      facturadoPropio: mio.facturado,
+      previstoPropio: mio.previsto,
+      sociedades,
+      // una factura a nombre de una sociedad sube también a todos sus socios
+      socios: socios.filter((x) => x.sociedad_id === t.id).map((x) => x.socio_id),
       margenTope: t.tope_seguridad_eur - facturado - previsto,
       estado: estadoDe(t, facturado),
       estadoConPrevistas: estadoDe(t, facturado + previsto),

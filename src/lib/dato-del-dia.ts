@@ -180,7 +180,7 @@ export async function datoDelDia(supabase: SupabaseClient, hoy: string): Promise
       hoy,
       riegos,
       fincas,
-      titulares: cuentas.falta ? [] : situacion(cuentas.titulares, cuentas.facturas),
+      titulares: cuentas.falta ? [] : situacion(cuentas.titulares, cuentas.facturas, cuentas.socios),
       ideasSemana: ideas.count ?? 0,
     });
   } catch (e) {

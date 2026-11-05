@@ -1,6 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Factura, Titular } from "@/lib/cuentas-calculo";
+import type { Factura, Socio, Titular } from "@/lib/cuentas-calculo";
 export * from "@/lib/cuentas-calculo";
 
 /*
@@ -23,14 +23,17 @@ export async function cargarCuentas(supabase: SupabaseClient, anio: number) {
       .order("fecha", { ascending: false })
       .limit(2000);
 
-  const [t, f0] = await Promise.all([
+  const [t, f0, so] = await Promise.all([
     supabase
       .from("titulares")
       .select("id, nombre, nombre_completo, tipo, limite_eur, tope_seguridad_eur, aviso_pct, notas")
       .eq("activo", true)
       .order("nombre"),
     facturasDe(`${COLUMNAS}, categoria, archivo_url`),
+    // socios de las sociedades (migración 0021); sin ella, lista vacía
+    supabase.from("titular_socios").select("sociedad_id, socio_id, participacion"),
   ]);
+  const socios: Socio[] = (so.data ?? []).map((x) => ({ ...x, participacion: Number(x.participacion) }));
   // sin la migración 0015 no hay «categoria» ni archivos: se lee lo de antes
   let f = f0;
   let falta0015 = false;
@@ -59,7 +62,7 @@ export async function cargarCuentas(supabase: SupabaseClient, anio: number) {
     categoria: x.categoria ?? null,
     archivo_url: x.archivo_url ?? null,
   }));
-  return { titulares, facturas, falta, falta0015, error: t.error?.message ?? f.error?.message ?? null };
+  return { titulares, facturas, socios, falta, falta0015, falta0021: !!so.error, error: t.error?.message ?? f.error?.message ?? null };
 }
 
 /** Enlaces temporales (1 hora) para ver los archivos de las facturas. */

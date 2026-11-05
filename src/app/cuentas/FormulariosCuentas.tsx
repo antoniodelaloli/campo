@@ -261,7 +261,7 @@ export function ApuntarFactura(props: {
 export function Simulador({
   titulares,
 }: {
-  titulares: (Titular & { facturado: number; previsto: number })[];
+  titulares: (Titular & { facturado: number; previsto: number; socios: string[] })[];
 }) {
   const [kg, setKg] = useState("");
   const [precio, setPrecio] = useState("");
@@ -287,20 +287,28 @@ export function Simulador({
       {importe > 0 ? (
         <>
           <p className="text-sm">
-            Factura de <b>{eur(importe)}</b> (base). Así quedaría cada uno este año, contando lo ya facturado y lo previsto:
+            Factura de <b>{eur(importe)}</b> (base). Así quedaría cada uno este año, contando lo ya facturado y lo previsto
+            (una factura de una sociedad sube también a todos sus socios):
           </p>
           <ul className="flex flex-col gap-2">
             {titulares.map((t) => {
-              const total = t.facturado + t.previsto + importe;
-              const e = estadoDe(t, total);
-              const c = COLOR_ESTADO[e];
+              // a quién le sube el límite si se factura a nombre de t
+              const afectados = [t, ...titulares.filter((x) => t.socios.includes(x.id))];
               return (
-                <li key={t.id} className="ficha flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm">
+                <li key={t.id} className="ficha flex flex-col gap-1 px-3 py-2 text-sm">
                   <b>A nombre de {t.nombre}</b>
-                  <span>
-                    {eur(total)} · <span style={{ color: c.texto }} className="font-bold">{c.etiqueta}</span>
-                    {e === "bien" || e === "aviso" ? ` · le quedarían ${eur(t.tope_seguridad_eur - total)} hasta el tope` : ""}
-                  </span>
+                  {afectados.map((a) => {
+                    const total = a.facturado + a.previsto + importe;
+                    const e = estadoDe(a, total);
+                    const c = COLOR_ESTADO[e];
+                    return (
+                      <span key={a.id}>
+                        {afectados.length > 1 && <>{a.nombre}: </>}
+                        {eur(total)} · <span style={{ color: c.texto }} className="font-bold">{c.etiqueta}</span>
+                        {e === "bien" || e === "aviso" ? ` · le quedarían ${eur(a.tope_seguridad_eur - total)} hasta el tope` : ""}
+                      </span>
+                    );
+                  })}
                 </li>
               );
             })}

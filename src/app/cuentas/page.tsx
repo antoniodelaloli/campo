@@ -88,7 +88,7 @@ async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["
   const [{ fincas }, cuentas] = await Promise.all([cargarFincas(supabase), cargarCuentas(supabase, anio)]);
   const nombreFinca = new Map(fincas.map((f) => [f.id, f.nombre]));
   const nombreTitular = new Map(cuentas.titulares.map((t) => [t.id, t.nombre]));
-  const sit = situacion(cuentas.titulares, cuentas.facturas);
+  const sit = situacion(cuentas.titulares, cuentas.facturas, cuentas.socios);
   const ventas = cuentas.facturas.filter((f) => f.tipo === "venta");
   const gastos = cuentas.facturas.filter((f) => f.tipo === "gasto");
   const enlaces = await enlacesArchivos(
@@ -134,14 +134,17 @@ async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["
 
       <p className="ficha-pendiente px-3 py-2 text-[13px] leading-snug">
         <b>Límite de los módulos: 250.000 € de ventas al año por titular</b> (año natural, enero a diciembre; cuenta la
-        base sin IVA ni compensación). Ojo: al límite de cada persona se le pueden sumar las ventas de su cónyuge, hijos y
-        padres, y las de las sociedades en las que participe (como JHSYO). Confirmadlo con el gestor.
+        base sin IVA ni compensación). A cada socio se le suman <b>todas</b> las ventas de JHSYO, además de las suyas
+        (JHSYO es de Maite, Chelo y Juan Carlos a partes iguales).
+        {cuentas.falta0021 && " Falta ejecutar la migración 0021 (socios de JHSYO) para que se sumen."}
       </p>
 
       {/* Un bloque por titular */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {sit.map((t) => {
           const c = COLOR_ESTADO[t.estado];
+          // una persona sin ventas y sin sociedades (no factura) no necesita tarjeta
+          if (t.tipo === "persona" && t.facturado === 0 && t.previsto === 0 && t.sociedades.length === 0) return null;
           return (
             <section key={t.id} className="panel flex flex-col gap-2 px-4 py-3.5">
               <div className="flex items-start justify-between gap-2">
@@ -155,9 +158,16 @@ async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["
               </div>
               <span className="titulo-pixel text-[28px]">{eur(t.facturado)}</span>
               <span className="text-[13px] text-tinta-suave">
-                facturado en {anio} · {formatoNumero((t.facturado / t.limite_eur) * 100, 1)} % del límite
+                {t.sociedades.length ? "cuenta para su límite en " : "facturado en "}
+                {anio} · {formatoNumero((t.facturado / t.limite_eur) * 100, 1)} % del límite
                 {t.previsto > 0 ? ` · + ${eur(t.previsto)} previsto` : ""}
               </span>
+              {t.sociedades.length > 0 && (
+                <span className="text-xs leading-snug text-tinta-suave">
+                  A su nombre: {eur(t.facturadoPropio)}
+                  {t.sociedades.map((x) => ` · ${x.nombre}: ${eur(x.facturado)} (entero; es socio/a de ${formatoNumero(x.participacion * 100, 0)} %)`)}
+                </span>
+              )}
               <BarraLimite t={t} />
             </section>
           );
