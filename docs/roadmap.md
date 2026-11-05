@@ -57,6 +57,7 @@ Cuando algo se haga, se tacha y se pone la fecha.
 
 ## Hecho
 
+- [x] KPI «¿Cuánto nos cuesta cada kilo?» en Cosecha: gastos de la campaña (facturas de gasto + agua de la Comunidad) entre kilos vendidos = precio mínimo; precio de venta y margen por kilo, por finca (5/11/2026). Será fiable cuando estén metidos todos los gastos.
 - [x] «Dato del día» en el aviso de cada mañana y en el resumen del conector: agua de la campaña frente al año pasado, últimos 30 días, ahorro por precio, pantanos, ventas por titular (y aviso si alguien se acerca al límite), ideas de la semana y fase de la campaña (4/11/2026).
 - [x] Cuentas, primera parte (migración 0014): titulares (Maite, Carlos, JHSYO), facturas de venta con titular y finca de origen, contador del límite de 250.000 € por año y simulador «¿a nombre de quién facturo este corte?» en /cuentas (4/11/2026). Falta: meter las facturas de 2026, gastos con foto, reparto por socio y exportar para el gestor.
 - [x] Riegos pedidos a la Comunidad de Regantes (talones, migración 0013): gasto por campaña y año fiscal, comparación con el año pasado, por meses y por arqueta; «Gastos de la campaña» en Cosecha (4/11/2026). Falta: apuntar lecturas del contador de entrada para comprobar si llega toda el agua.

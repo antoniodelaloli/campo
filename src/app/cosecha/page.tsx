@@ -7,6 +7,9 @@ import { KpisCosecha } from "@/components/KpisCosecha";
 import { ListaAvisos } from "@/components/ListaAvisos";
 import { GastosCampana } from "@/components/RiegosPedidos";
 import { cargarRiegos } from "@/lib/riegos";
+import { cargarFacturasCampana } from "@/lib/cuentas";
+import { costePorKilo } from "@/lib/coste-por-kilo";
+import { CostePorKilo } from "@/components/CostePorKilo";
 import Link from "next/link";
 import {
   CONTRATO_MANDARINAS_2024,
@@ -189,11 +192,16 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
   const campana: IdCampana = CAMPANAS.some((c) => c.id === sp.campana)
     ? (sp.campana as IdCampana)
     : campanaPorDefecto(hoy);
-  const [avisos, { fincas }, agua] = await Promise.all([
+  const nombreCampana = campana.replace("-", "/").replace(/\/(\d{2})\d{2}$/, "/$1");
+  const [avisos, { fincas }, agua, { facturas: facturasCampana }] = await Promise.all([
     cargarAvisos(supabase, "cosecha"),
     cargarFincas(supabase),
     cargarRiegos(supabase),
+    cargarFacturasCampana(supabase, nombreCampana),
   ]);
+  const nombreFinca = new Map(fincas.map((f) => [f.id, f.nombre]));
+  const coste = (referencia: { finca: string; kg: number; precioKg: number }[]) =>
+    costePorKilo({ campana: nombreCampana, facturas: facturasCampana, riegos: agua.riegos, referencia, nombreFinca });
 
   const liq = LIQUIDACION_2526;
   const total = liq.filas.reduce((s, f) => s + f.kgTotal, 0);
@@ -279,6 +287,11 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
         </div>
 
         <GastosCampana riegos={agua.riegos} hoy={hoy} inicio={2026} falta={agua.falta} />
+
+        <CostePorKilo
+          d={coste(est.filas.map((f) => ({ finca: f.finca, kg: f.kgLiquidables, precioKg: est.precioEurKg })))}
+          estimada
+        />
 
         <KpisCosecha fincas={fincas} campana={est.campana} filas={est.filas} estimada />
       </main>
@@ -422,6 +435,10 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
         inicio={2025}
         kgValladolises={liq.filas.find((f) => f.finca === "Valladolises")?.kgTotal}
         falta={agua.falta}
+      />
+
+      <CostePorKilo
+        d={coste(liq.filas.map((f) => ({ finca: f.finca, kg: f.kgLiquidables, precioKg: f.importeEur / f.kgLiquidables })))}
       />
 
       <KpisCosecha fincas={fincas} campana={liq.campana} filas={liq.filas} />

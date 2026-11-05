@@ -70,3 +70,28 @@ export async function enlacesArchivos(supabase: SupabaseClient, rutas: string[])
   for (const d of data ?? []) if (d.path && d.signedUrl) mapa.set(d.path, d.signedUrl);
   return mapa;
 }
+
+/** Facturas (ventas y gastos) de una campaña, sea cual sea su año fiscal. */
+export async function cargarFacturasCampana(supabase: SupabaseClient, campana: string) {
+  const de = (columnas: string) =>
+    supabase.from("facturas").select(columnas).eq("anulado", false).eq("campana", campana).limit(5000);
+  let r = await de(`${COLUMNAS}, categoria, archivo_url`);
+  if (r.error && /categoria|archivo_url/.test(r.error.message)) r = await de(COLUMNAS);
+  if (r.error) return { facturas: [] as Factura[], falta: true };
+  const filas = (r.data ?? []) as unknown as (Omit<Factura, "categoria" | "archivo_url"> & {
+    categoria?: string | null;
+    archivo_url?: string | null;
+  })[];
+  return {
+    facturas: filas.map((x) => ({
+      ...x,
+      kg: x.kg != null ? Number(x.kg) : null,
+      base_eur: Number(x.base_eur),
+      impuesto_eur: Number(x.impuesto_eur),
+      total_eur: Number(x.total_eur),
+      categoria: x.categoria ?? null,
+      archivo_url: x.archivo_url ?? null,
+    })),
+    falta: false,
+  };
+}
