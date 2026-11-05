@@ -3,7 +3,7 @@
 -- Leídas de la carpeta de Drive de Antonio (5/11/2026). El PDF de cada una está
 -- en Drive (enlace en las notas). Se puede ejecutar más de una vez: no duplica.
 --   1. Pozo Villalba nº 101 (30/09/2026): agua de riego, 21.990 m³ a 0,85 €/m³ → Corvera
---   2. Ruraltech 26F3789 (30/09/2026): productos (tratamientos) y abonos → sin finca concreta
+--   2. Ruraltech 26F3789 (30/09/2026): productos (tratamientos) y abonos → sin finca: 50 % Valladolises, 50 % Corvera
 --   3. Axpo SCOMPW-26-0132239 (10/09/2026): luz de agosto de Valladolises
 -- Requiere las migraciones 0014 y 0015.
 -- =====================================================================
@@ -31,7 +31,7 @@ begin
     ('gasto', null::uuid, '2026-09-30', '26F3789', 'Ruraltech, S.L.U.',
      'Productos fitosanitarios y abonos (Quassar, Azupec, Suporter, Dorian, Torcha, Adur, Spintor cebo, Jalisco, Mullo, Codasal, Codasil)',
      'productos', 8677.64, 867.76,
-     'IVA 10 %. Total 9.545,40 €. Incluye unos 2.143 € de abonos (Codasal Premium 1.000 L y Codasil). Sin finca: por confirmar a cuál va. PDF: https://drive.google.com/file/d/1-uRik9fV2PC5VImrG19Zo1DIxpCVG5XN/view'),
+     'IVA 10 %. Total 9.545,40 €. Incluye unos 2.143 € de abonos (Codasal Premium 1.000 L y Codasil). Sin finca a propósito: los tratamientos se imputan al 50 % a Valladolises y Corvera. PDF: https://drive.google.com/file/d/1-uRik9fV2PC5VImrG19Zo1DIxpCVG5XN/view'),
     ('gasto', v_vall, '2026-09-10', 'SCOMPW-26-0132239', 'Axpo Iberia',
      'Luz de agosto de 2026 (01/08-31/08), tarifa 6.1TD', 'luz', 1174.35, 246.61,
      'IVA 21 %. Total 1.420,96 €. Suministro en C/ Los Morenos 15, Fuente Álamo (Valladolises). PDF: https://drive.google.com/file/d/1JeBye50s0VyESmJcaWyvEUM60-h4WcIF/view')

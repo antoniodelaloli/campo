@@ -103,8 +103,9 @@ export function CostePorKilo({ d, estimada = false }: { d: Datos; estimada?: boo
             </table>
           </div>
           <p className="text-xs text-tinta-suave">
-            * Kilos {estimada ? "previstos" : "de la liquidación"}: cuando haya facturas de venta con kilos, se usan esas.
-            {d.gastosComunes > 0 && ` Los gastos sin finca (${eur(d.gastosComunes)}) se reparten entre las fincas según sus kilos.`}
+            * Kilos {estimada ? "previstos" : "de la liquidación"}: cuando las facturas de venta lleguen a esos kilos, se usan las facturas.
+            {d.gastosMitad > 0 && ` Los tratamientos sin finca (${eur(d.gastosMitad)}) van al 50 % entre Valladolises y Corvera.`}
+            {d.gastosPorKilos > 0 && ` El resto de gastos sin finca (${eur(d.gastosPorKilos)}) se reparte según los kilos de cada finca.`}
           </p>
         </Panel>
 
@@ -120,7 +121,8 @@ export function CostePorKilo({ d, estimada = false }: { d: Datos; estimada?: boo
             </p>
           )}
           <p className="text-[13px] leading-snug">
-            Corvera también paga agua (Pozo Villalba) y luz del bombeo: hay que meter esas facturas en Cuentas.
+            Corvera paga su agua al Pozo Villalba y la luz del bombeo: hay que meter todas esas facturas de la campaña en Cuentas, no
+            solo alguna.
           </p>
         </section>
       </div>

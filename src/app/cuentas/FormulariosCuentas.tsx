@@ -112,7 +112,7 @@ function FormFactura({
         <label className="flex flex-col gap-1 text-sm font-bold">
           {venta ? "Limón de la finca" : "Para la finca"}
           <select name="finca" className="campo" defaultValue="">
-            <option value="">{venta ? "—" : "Todas / ninguna"}</option>
+            <option value="">{venta ? "—" : "Las dos (tratamientos 50 %) / todas"}</option>
             {fincas.map((f) => (
               <option key={f.id} value={f.id}>
                 {f.nombre}
