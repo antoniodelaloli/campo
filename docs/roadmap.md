@@ -5,6 +5,21 @@ Cuando algo se haga, se tacha y se pone la fecha.
 
 ## Pendiente
 
+- [ ] **Newsletter de los domingos para la familia** (apuntado el 5/11/2026)
+  Un resumen semanal por correo, los domingos, para los familiares que se quieran suscribir.
+  Qué contaría: lo hecho en la semana (diario, tareas terminadas, tratamientos, cortes), el agua y los
+  pantanos, el tiempo de la semana que viene, cómo va la campaña (kilos, precio, gastos por kilo),
+  las ideas nuevas de la libreta y un «dato de la semana».
+  Por decidir: quién se apunta (lista de correos y botón para darse de baja), qué datos se pueden enseñar
+  a toda la familia y cuáles no (cuentas de cada titular, límites de ventas), y si lo revisa Antonio antes de enviarlo.
+  Cómo: el mismo servidor que manda el aviso de las 7:00, un envío semanal con el servicio de correo (Resend).
+
+- [ ] **Estilo «sobrio» (sin videojuego) para quien lo prefiera** (apuntado el 5/11/2026)
+  Juan Carlos prefiere un aspecto más realista. Boceto: lienzo de diseño, «Inicio · versión realista».
+  Un ajuste «estilo» por usuario (granja / sobrio), que cada uno puede cambiar en su perfil.
+  Fase 1: colores, letras, paneles y botones (variables de la app). Fase 2: el mapa de inicio y el
+  plano de cada finca dibujados como plano (mismos contornos del Catastro). Fase 3: foto aérea del PNOA en «Satélite».
+
 - [ ] **Gastos en tiempo real** (apuntado el 4/11/2026)
   Ir metiendo los gastos según se hacen (facturas de abonos y productos, agua, luz, gasoil,
   jornales, reparaciones…), por finca y por campaña, y ver en todo momento cuánto se lleva gastado.
