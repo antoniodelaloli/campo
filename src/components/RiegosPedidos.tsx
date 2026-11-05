@@ -386,7 +386,7 @@ export function GastosCampana({
               />
               <Tarjeta
                 k="Agua por kilo cosechado"
-                v={kgValladolises && m ? `${formatoNumero((e / kgValladolises) * 100, 2)} cént/kg` : "—"}
+                v={kgValladolises && m ? `${formatoNumero(e / kgValladolises, 3)} €/kg` : "—"}
                 s={
                   kgValladolises
                     ? `${eur(e)} entre ${formatoNumero(kgValladolises)} kg de Valladolises${parcial ? " (gasto incompleto: saldrá algo más)" : ""}`
