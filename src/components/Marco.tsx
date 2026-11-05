@@ -1,6 +1,7 @@
 import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
-import { cerrarSesion } from "@/app/auth/actions";
+import { cambiarEstilo, cerrarSesion } from "@/app/auth/actions";
+import { AplicarEstilo } from "@/components/AplicarEstilo";
 import { obtenerContexto } from "@/lib/sesion";
 import { cargarCampanaActual } from "@/lib/datos";
 import { fechaLarga, hoyISO } from "@/lib/texto";
@@ -25,12 +26,16 @@ async function BarraConSesion() {
   const { supabase, perfil } = await obtenerContexto();
   const campana = await cargarCampanaActual(supabase);
   return (
-    <Barra
-      fecha={fechaLarga(hoyISO())}
-      campana={campana?.nombre ?? null}
-      usuario={perfil.nombre ?? "Usuario"}
-      rol={perfil.rol}
-    />
+    <>
+      <AplicarEstilo estilo={perfil.estilo} />
+      <Barra
+        fecha={fechaLarga(hoyISO())}
+        campana={campana?.nombre ?? null}
+        usuario={perfil.nombre ?? "Usuario"}
+        rol={perfil.rol}
+        estilo={perfil.estilo}
+      />
+    </>
   );
 }
 
@@ -50,11 +55,13 @@ function Barra({
   campana,
   usuario,
   rol,
+  estilo,
 }: {
   fecha?: string;
   campana?: string | null;
   usuario?: string;
   rol?: string;
+  estilo?: "granja" | "sobrio";
 }) {
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b-4 border-madera-oscura bg-madera px-3 shadow-[inset_0_4px_0_#b07a40] sm:px-5">
@@ -89,6 +96,18 @@ function Barra({
         >
           {(usuario ?? "·").charAt(0).toUpperCase()}
         </span>
+        {usuario && estilo && (
+          <form action={cambiarEstilo}>
+            <input type="hidden" name="estilo" value={estilo === "sobrio" ? "granja" : "sobrio"} />
+            <button
+              type="submit"
+              title={estilo === "sobrio" ? "Cambiar al estilo granja (dibujos)" : "Cambiar al estilo sobrio (más realista)"}
+              className="hidden min-h-[40px] border-2 border-pergamino/70 px-2.5 font-pixel text-sm text-pergamino hover:bg-madera-clara/50 sm:inline-flex sm:items-center"
+            >
+              {estilo === "sobrio" ? "Estilo granja" : "Estilo sobrio"}
+            </button>
+          </form>
+        )}
         {usuario && (
           <form action={cerrarSesion}>
             <button

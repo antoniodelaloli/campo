@@ -30,7 +30,7 @@ export default function InicioPage() {
 }
 
 async function Inicio() {
-  const { supabase, puedeEditar } = await obtenerContexto();
+  const { supabase, puedeEditar, perfil } = await obtenerContexto();
   const hoy = hoyISO();
   const momento = momentoDelDia();
 
@@ -65,7 +65,7 @@ async function Inicio() {
   const pantanos = fincas.flatMap((f) => f.pantanos.map((p) => ({ ...p, finca: f.nombre })));
   const totalAvisos = avisos.length + incidencias.length;
 
-  const props = { fincas, incidencias, tratamientosEnCurso: enCurso, tareasEnCurso: tareasActivas, momento };
+  const props = { fincas, incidencias, tratamientosEnCurso: enCurso, tareasEnCurso: tareasActivas, momento, sobrio: perfil.estilo === "sobrio" };
 
   return (
     <div className="relative flex flex-1 flex-col lg:block lg:h-[calc(100dvh-56px)] lg:flex-none lg:overflow-hidden">

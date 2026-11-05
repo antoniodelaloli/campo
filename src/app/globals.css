@@ -5,7 +5,9 @@
    Colores fijos (la app no cambia con el modo oscuro del sistema:
    el mapa ya tiene su propia luz de día / atardecer / noche).
    --------------------------------------------------------------- */
-@theme inline {
+/* Colores sin «inline»: las clases usan var(--color-…), así el estilo «sobrio»
+   (más abajo) los puede cambiar para un usuario sin tocar los componentes. */
+@theme {
   --color-pergamino: #f6e7c1;
   --color-papel: #fff8e2;
   --color-borde-papel: #c9a468;
@@ -25,7 +27,9 @@
   --color-agua-oscura: #1d4a80;
   --color-aviso: #c8473a;
   --color-alerta: #c98a2a;
+}
 
+@theme {
   --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
     Roboto, "Helvetica Neue", Arial, sans-serif;
   /* Geist Pixel (Square), de Vercel: se carga con next/font en layout.tsx */
@@ -299,4 +303,127 @@ body {
     font-feature-settings: "liga" 0, "clig" 0;
     font-synthesis-weight: none;
   }
+}
+
+/* ===============================================================
+   Estilo «sobrio» (migración 0022): más realista, sin videojuego.
+   Se activa con <html data-estilo="sobrio"> (ver AplicarEstilo y layout.tsx).
+   Mismo diseño que el boceto «Inicio · versión realista»: fondo claro,
+   paneles blancos con borde fino, verde oscuro y letra IBM Plex Sans.
+   =============================================================== */
+[data-estilo="sobrio"] {
+  --color-pergamino: #f3f5f1;
+  --color-papel: #ffffff;
+  --color-borde-papel: #dfe3dc;
+  --color-tinta: #1f2a24;
+  --color-tinta-suave: #5b675f;
+  --color-madera: #ffffff;
+  --color-madera-clara: #ffffff;
+  --color-madera-oscura: #c7cec2;
+  --color-madera-sombra: transparent;
+  --color-marco: #dfe3dc;
+  --color-marco-sombra: transparent;
+  --color-hierba: #8fbf86;
+  --color-hoja: #2e6b4f;
+  --color-hoja-oscura: #1d4a36;
+  --color-sol: #e8efe9;
+  --color-agua: #2f7fb0;
+  --color-agua-oscura: #1f5f88;
+  --color-aviso: #c8473a;
+  --color-alerta: #c98a2a;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-pixel: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --radio-panel: 10px;
+  --radio: 6px;
+}
+[data-estilo="sobrio"] body {
+  font-size: 15px;
+}
+[data-estilo="sobrio"] .panel {
+  background: #ffffff;
+  border: 1px solid #dfe3dc;
+  box-shadow: 0 1px 2px rgb(31 42 36 / 0.05);
+}
+[data-estilo="sobrio"] .ficha {
+  border-width: 1px;
+}
+[data-estilo="sobrio"] .ficha-pendiente {
+  border-width: 1px;
+  background: #fafbf8;
+}
+[data-estilo="sobrio"] .boton {
+  border: 1px solid #1d4a36;
+  box-shadow: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-shadow: none;
+}
+[data-estilo="sobrio"] .boton:active,
+[data-estilo="sobrio"] .boton-madera:active {
+  transform: none;
+}
+[data-estilo="sobrio"] .boton-madera {
+  background: #ffffff;
+  border: 1px solid #c7cec2;
+  box-shadow: none;
+  border-radius: 8px;
+  color: #1f2a24;
+  font-weight: 600;
+}
+[data-estilo="sobrio"] .pestana {
+  background: #ffffff;
+  border: 1px solid #c7cec2;
+  color: #46534b;
+  border-radius: 8px;
+  font-weight: 600;
+}
+[data-estilo="sobrio"] .pestana[aria-current="page"],
+[data-estilo="sobrio"] .pestana[aria-selected="true"] {
+  background: #e8efe9;
+  border-color: #2e6b4f;
+  color: #2e6b4f;
+}
+[data-estilo="sobrio"] .campo {
+  border: 1px solid #c7cec2;
+}
+[data-estilo="sobrio"] .campo:focus,
+[data-estilo="sobrio"] :where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid #2e6b4f;
+  outline-offset: 1px;
+}
+[data-estilo="sobrio"] .titulo-pixel {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+[data-estilo="sobrio"] :is(.font-pixel, .titulo-pixel, .boton, .boton-madera, .pestana, svg text) {
+  letter-spacing: normal;
+  font-synthesis-weight: auto;
+}
+/* fuera relieves de videojuego: sombras duras, bordes gordos y texto con sombra */
+[data-estilo="sobrio"] [class*="shadow-[0_"],
+[data-estilo="sobrio"] [class*="shadow-[inset"] {
+  box-shadow: 0 1px 2px rgb(31 42 36 / 0.06) !important;
+}
+[data-estilo="sobrio"] [class*="text-shadow"],
+[data-estilo="sobrio"] [class*="[text-shadow"] {
+  text-shadow: none !important;
+}
+[data-estilo="sobrio"] :is(.border-4, .border-\[3px\], .border-\[4px\], .border-b-4, .border-t-4) {
+  border-width: 1px;
+}
+/* barra de arriba: blanca, con el texto oscuro */
+[data-estilo="sobrio"] header.sticky {
+  border-bottom: 1px solid #dfe3dc;
+}
+[data-estilo="sobrio"] .text-pergamino,
+[data-estilo="sobrio"] .text-\[\#fff4d6\] {
+  color: #1f2a24;
+}
+[data-estilo="sobrio"] .border-pergamino\/70 {
+  border-color: #c7cec2;
+}
+[data-estilo="sobrio"] .pixel {
+  image-rendering: auto;
+  shape-rendering: auto;
 }

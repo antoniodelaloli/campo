@@ -14,12 +14,24 @@ export function puedeAdministrarRol(rol: Rol | undefined) {
   return rol === "admin" || rol === "editor" || rol === "administrativo";
 }
 
+/** Aspecto de la app (migración 0022): «granja» (pixel art) o «sobrio» (realista). */
+export type Estilo = "granja" | "sobrio";
+
 export type Perfil = {
   id: string;
   nombre: string | null;
   rol: Rol;
   activo: boolean;
+  estilo: Estilo;
 };
+
+/** Lee el perfil; sin la migración 0022 (no hay «estilo»), con el estilo de siempre. */
+async function leerPerfil(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<Perfil | null> {
+  const r = await supabase.from("profiles").select("id, nombre, rol, activo, estilo").eq("id", userId).maybeSingle<Perfil>();
+  if (!r.error) return r.data ? { ...r.data, estilo: r.data.estilo === "sobrio" ? "sobrio" : "granja" } : null;
+  const v = await supabase.from("profiles").select("id, nombre, rol, activo").eq("id", userId).maybeSingle<Omit<Perfil, "estilo">>();
+  return v.data ? { ...v.data, estilo: "granja" } : null;
+}
 
 /**
  * Lee la sesión y el perfil UNA vez por petición (React cache).
@@ -36,11 +48,7 @@ export const obtenerContexto = cache(async () => {
   const userId = claims?.claims?.sub;
   if (!userId) redirect("/login");
 
-  const { data: perfil } = await supabase
-    .from("profiles")
-    .select("id, nombre, rol, activo")
-    .eq("id", userId)
-    .maybeSingle<Perfil>();
+  const perfil = await leerPerfil(supabase, userId);
 
   if (!perfil?.activo) redirect("/pendiente");
 
@@ -59,11 +67,7 @@ export async function contextoEscritura() {
   const userId = claims?.claims?.sub;
   if (!userId) redirect("/login");
 
-  const { data: perfil } = await supabase
-    .from("profiles")
-    .select("id, nombre, rol, activo")
-    .eq("id", userId)
-    .maybeSingle<Perfil>();
+  const perfil = await leerPerfil(supabase, userId);
 
   const puedeEditar =
     !!perfil?.activo && (perfil.rol === "admin" || perfil.rol === "editor");

@@ -30,10 +30,10 @@ Cuando algo se haga, se tacha y se pone la fecha.
   Cómo: el mismo servidor que manda el aviso de las 7:00, un envío semanal con el servicio de correo (Resend).
 
 - [ ] **Estilo «sobrio» (sin videojuego) para quien lo prefiera** (apuntado el 5/11/2026)
-  Juan Carlos prefiere un aspecto más realista. Boceto: lienzo de diseño, «Inicio · versión realista».
-  Un ajuste «estilo» por usuario (granja / sobrio), que cada uno puede cambiar en su perfil.
-  Fase 1: colores, letras, paneles y botones (variables de la app). Fase 2: el mapa de inicio y el
-  plano de cada finca dibujados como plano (mismos contornos del Catastro). Fase 3: foto aérea del PNOA en «Satélite».
+  Hecho (5/11/2026, migración 0022): ajuste «estilo» por usuario (granja / sobrio), botón para cambiarlo en la
+  barra de arriba, colores, letra (IBM Plex Sans), paneles y botones sobrios en toda la app, y el mapa de
+  inicio como plano (contornos del Catastro con filas de árboles, sin 3D). Juan Carlos, en sobrio.
+  Falta: fase 3, foto aérea del PNOA en «Satélite»; repasar colores fijos sueltos de algunas pantallas.
 
 - [ ] **Gastos en tiempo real** (apuntado el 4/11/2026)
   Ir metiendo los gastos según se hacen (facturas de abonos y productos, agua, luz, gasoil,

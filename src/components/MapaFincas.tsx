@@ -15,6 +15,7 @@ type Props = {
   tratamientosEnCurso: Tratamiento[];
   tareasEnCurso: Tarea[];
   momento: "dia" | "atardecer" | "noche";
+  sobrio?: boolean;
 };
 
 function resumenFinca(f: Finca): string {
@@ -35,7 +36,7 @@ function resumenFinca(f: Finca): string {
   return partes.join(" · ");
 }
 
-export function MapaFincas({ fincas, incidencias, tratamientosEnCurso, tareasEnCurso, momento }: Props) {
+export function MapaFincas({ fincas, incidencias, tratamientosEnCurso, tareasEnCurso, momento, sobrio = false }: Props) {
   const enMapa: FincaEnMapa[] = [];
   for (const f of fincas) {
     const clave = normalizar(f.nombre) as ClaveFinca;
@@ -84,5 +85,5 @@ export function MapaFincas({ fincas, incidencias, tratamientosEnCurso, tareasEnC
     });
   }
 
-  return <MapaInteractivo fincas={enMapa} actividades={actividades} momento={momento} />;
+  return <MapaInteractivo fincas={enMapa} actividades={actividades} momento={momento} sobrio={sobrio} />;
 }

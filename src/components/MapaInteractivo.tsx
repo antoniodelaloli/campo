@@ -119,14 +119,14 @@ function unir(cajas: Caja[], margen: number): Caja {
 }
 
 /** Huecos que dejan libres los paneles flotantes (para encuadrar). */
-function margenes(ancho: number) {
+function margenes(ancho: number, plano = false) {
   return ancho >= 1024
-    ? { izq: 350, der: 360, arr: 70, aba: 110 }
+    ? { izq: 350, der: 360, arr: plano ? 120 : 70, aba: 110 } // en plano, sitio arriba para los carteles
     : { izq: 30, der: 70, arr: 110, aba: 150 }; // arriba, sitio para los carteles
 }
 
-function encuadrar(caja: Caja, w: number, h: number): Vista {
-  const m = margenes(w);
+function encuadrar(caja: Caja, w: number, h: number, plano = false): Vista {
+  const m = margenes(w, plano);
   const libreW = Math.max(80, w - m.izq - m.der);
   const libreH = Math.max(80, h - m.arr - m.aba);
   const mpp = limitar(Math.max((caja.x1 - caja.x0) / libreW, (caja.y1 - caja.y0) / libreH));
@@ -143,9 +143,10 @@ function encuadrar(caja: Caja, w: number, h: number): Vista {
  * inclinado lo de arriba se aleja y encoge, así que sobra sitio para agrandarlas.
  */
 const ACERCAR_3D = 0.78;
-function encuadrarTodas(caja: Caja, w: number, h: number): Vista {
-  const v = encuadrar(caja, w, h);
-  if (w < 1024) return v;
+function encuadrarTodas(caja: Caja, w: number, h: number, plano = false): Vista {
+  const v = encuadrar(caja, w, h, plano);
+  // en plano (estilo sobrio) no hay perspectiva que compense: tal cual
+  if (w < 1024 || plano) return v;
   // las fincas suben un poco: abajo, cerca de la «cámara», se ven más grandes
   return { mpp: limitar(v.mpp * ACERCAR_3D), cx: v.cx, cy: v.cy + h * 0.06 * v.mpp * ACERCAR_3D };
 }
@@ -162,10 +163,13 @@ export function MapaInteractivo({
   fincas,
   actividades,
   momento,
+  sobrio = false,
 }: {
   fincas: FincaEnMapa[];
   actividades: ActividadEnMapa[];
   momento: "dia" | "atardecer" | "noche";
+  /** estilo «sobrio» (migración 0022): plano realista, sin 3D, sin cielo ni avioneta */
+  sobrio?: boolean;
 }) {
   const colocadas = useMemo(() => fincas.map(colocar), [fincas]);
   const puntosTiempo = useMemo(
@@ -236,14 +240,14 @@ export function MapaInteractivo({
   useLayoutEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
     const aplicar = () => {
-      setPuede3d(mq.matches);
-      if (!mq.matches) inclinarA(0, false);
+      setPuede3d(mq.matches && !sobrio);
+      if (!mq.matches || sobrio) inclinarA(0, false);
     };
     aplicar();
-    if (mq.matches) inclinarA(ANGULO_3D, false);
+    if (mq.matches && !sobrio) inclinarA(ANGULO_3D, false);
     mq.addEventListener("change", aplicar);
     return () => mq.removeEventListener("change", aplicar);
-  }, [inclinarA]);
+  }, [inclinarA, sobrio]);
 
   // ---------- salvapantallas ----------
   const [salvapantallas, setSalvapantallas] = useState(false);
@@ -258,11 +262,11 @@ export function MapaInteractivo({
       const t = { w: width, h: height };
       tamRef.current = t;
       setTam(t);
-      if (!tocado.current || !vistaRef.current) ponerVista(encuadrarTodas(cajaTodas, width, height));
+      if (!tocado.current || !vistaRef.current) ponerVista(encuadrarTodas(cajaTodas, width, height, sobrio));
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, [cajaTodas, ponerVista]);
+  }, [cajaTodas, ponerVista, sobrio]);
 
   const pararAnimacion = () => {
     if (animacion.current != null) cancelAnimationFrame(animacion.current);
@@ -457,14 +461,14 @@ export function MapaInteractivo({
     const t = tamRef.current;
     if (!t) return;
     tocado.current = false;
-    animarA(encuadrarTodas(cajaTodas, t.w, t.h));
+    animarA(encuadrarTodas(cajaTodas, t.w, t.h, sobrio));
   };
 
   const irA = (c: Colocada) => {
     const t = tamRef.current;
     if (!t) return;
     tocado.current = true;
-    animarA(encuadrar(unir([c.caja], 40), t.w, t.h));
+    animarA(encuadrar(unir([c.caja], 40), t.w, t.h, sobrio));
   };
 
   const centroZoom = (factor: number) => {
@@ -545,13 +549,13 @@ export function MapaInteractivo({
 
   // el nivel de detalle del dibujo depende de la vista ya pintada (no cambia a mitad de gesto)
   const pxPorUnidad = (c: Colocada) => (vSvg ? c.k / vSvg.mpp : 0);
-  const luz = LUZ[momento];
+  const luz = sobrio ? { color: "transparent", opacidad: 0 } : LUZ[momento];
   const escala = vista ? escalaBonita(vista.mpp) : null;
 
   return (
     <div
       ref={contRef}
-      className="relative h-full w-full cursor-grab touch-none overflow-hidden bg-[#cbbb90] outline-none select-none active:cursor-grabbing"
+      className={`relative h-full w-full cursor-grab touch-none overflow-hidden outline-none select-none active:cursor-grabbing ${sobrio ? "bg-[#e9ece4]" : "bg-[#cbbb90]"}`}
       role="application"
       aria-label="Mapa de las fincas. Arrastra para moverte, rueda o pellizca para hacer zoom. Teclas: flechas, + y −, 0 para verlas todas."
       tabIndex={0}
@@ -581,7 +585,7 @@ export function MapaInteractivo({
       <svg
         viewBox={viewBox}
         preserveAspectRatio="xMidYMid meet"
-        className="pixel absolute"
+        className={sobrio ? "absolute" : "pixel absolute"}
         style={
           tam
             ? {
@@ -598,11 +602,40 @@ export function MapaInteractivo({
         }
         aria-hidden="true"
       >
-        <Patrones />
-        {/* paisaje del entorno (apagado, para que destaquen las fincas) */}
-        <Paisaje />
+        {sobrio ? <PatronesSobrios /> : <Patrones />}
+        {/* paisaje del entorno (apagado, para que destaquen las fincas); en sobrio, campos lisos */}
+        {sobrio ? <rect x={-60000} y={-60000} width={140000} height={140000} fill="url(#sobrio-campos)" /> : <Paisaje />}
         {colocadas.map((c) => {
           const detalle = pxPorUnidad(c) >= 0.75;
+          if (sobrio) {
+            const piezas = piezasInicio(c.clave);
+            const caja = cajaInicio(c.clave);
+            return (
+              <g key={c.id} transform={`translate(${c.tx} ${c.ty}) scale(${c.k})`} className="cursor-pointer" onClick={() => router.push(`/fincas/${c.id}`)}>
+                {piezas ? (
+                  piezas.map((pz, i) => (
+                    <polygon
+                      key={pz}
+                      points={pz}
+                      fill={`url(#sobrio-filas-${i % 2})`}
+                      stroke="#2e6b4f"
+                      strokeWidth={2}
+                      strokeLinejoin="round"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  ))
+                ) : (
+                  <rect x={caja.x} y={caja.y} width={caja.w} height={caja.h} fill="url(#sobrio-filas-0)" stroke="#2e6b4f" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+                )}
+                {actividades
+                  .filter((a) => a.fincaId === c.id)
+                  .map((a) => {
+                    const p = (FORMAS[c.clave].inicio ?? FORMAS[c.clave])[a.tipo];
+                    return <circle key={a.id} cx={p.x} cy={p.y} r={6} fill={a.tipo === "tractor" ? "#c98a2a" : "#2e6b4f"} stroke="#fff" strokeWidth={2} vectorEffect="non-scaling-stroke" />;
+                  })}
+              </g>
+            );
+          }
           return (
             // tocar el dibujo de la finca también abre su ficha (en el móvil el cartel puede quedar tapado)
             <g
@@ -716,19 +749,32 @@ export function MapaInteractivo({
                 key={c.id}
                 href={`/fincas/${c.id}`}
                 draggable={false}
-                className="absolute z-10 flex flex-col rounded-[5px] border-4 border-madera-oscura bg-madera-clara px-2.5 pt-1 pb-1.5 whitespace-nowrap shadow-[0_4px_0_#3b2412] hover:brightness-105"
+                className={
+                  sobrio
+                    ? "absolute z-10 flex flex-col rounded-lg border border-[#d3d9cf] bg-white px-3 py-1.5 whitespace-nowrap hover:border-[#2e6b4f]"
+                    : "absolute z-10 flex flex-col rounded-[5px] border-4 border-madera-oscura bg-madera-clara px-2.5 pt-1 pb-1.5 whitespace-nowrap shadow-[0_4px_0_#3b2412] hover:brightness-105"
+                }
                 style={{ left: p.x, top: p.y, transform: "translate(-50%, calc(-100% - 8px))" }}
                 aria-label={`Abrir la finca ${c.nombre}: ${c.subtitulo}`}
               >
-                <span className="font-pixel text-lg leading-tight font-bold text-[#fff4d6] [text-shadow:0_2px_0_#5a3a1a] sm:text-xl">
-                  {c.nombre.toUpperCase()}
-                </span>
-                <span className="text-xs font-bold text-tinta">{c.subtitulo}</span>
-                {/* piquito que señala la finca */}
-                <span
-                  aria-hidden="true"
-                  className="absolute -bottom-[10px] left-1/2 h-3.5 w-3.5 -translate-x-1/2 rotate-45 border-r-4 border-b-4 border-madera-oscura bg-madera-clara"
-                />
+                {sobrio ? (
+                  <>
+                    <span className="text-[15px] leading-tight font-bold text-[#1f2a24]">{c.nombre}</span>
+                    <span className="text-xs text-[#5b675f]">{c.subtitulo}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-pixel text-lg leading-tight font-bold text-[#fff4d6] [text-shadow:0_2px_0_#5a3a1a] sm:text-xl">
+                      {c.nombre.toUpperCase()}
+                    </span>
+                    <span className="text-xs font-bold text-tinta">{c.subtitulo}</span>
+                    {/* piquito que señala la finca */}
+                    <span
+                      aria-hidden="true"
+                      className="absolute -bottom-[10px] left-1/2 h-3.5 w-3.5 -translate-x-1/2 rotate-45 border-r-4 border-b-4 border-madera-oscura bg-madera-clara"
+                    />
+                  </>
+                )}
                 {c.avisos > 0 && (
                   <span className="absolute -top-3 -right-3 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-aviso font-pixel text-sm font-bold text-white">
                     {c.avisos}
@@ -746,7 +792,11 @@ export function MapaInteractivo({
                 <span
                   key={l.id}
                   className={`pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap [text-shadow:0_0_3px_#fff,0_0_3px_#fff,0_0_6px_#fff] ${
-                    l.tipo === "paraje"
+                    sobrio
+                      ? l.tipo === "paraje"
+                        ? "text-[12px] tracking-[0.12em] text-[#6b7a6f] uppercase"
+                        : "text-xs text-[#7a857d]"
+                      : l.tipo === "paraje"
                       ? "font-pixel text-[15px] tracking-[0.2em] text-[#4f5a35] uppercase"
                       : l.tipo === "infra"
                         ? "text-xs font-bold text-[#4a4a52]"
@@ -780,7 +830,11 @@ export function MapaInteractivo({
             return (
               <span
                 key={a.id}
-                className="burbuja-flota pointer-events-none absolute z-[5] rounded-[3px] border-2 border-tinta bg-white px-2 py-0.5 font-pixel text-[13px] font-semibold whitespace-nowrap text-tinta"
+                className={
+                  sobrio
+                    ? "pointer-events-none absolute z-[5] rounded-md border border-[#d3d9cf] bg-white px-2 py-0.5 text-[13px] whitespace-nowrap text-[#1f2a24]"
+                    : "burbuja-flota pointer-events-none absolute z-[5] rounded-[3px] border-2 border-tinta bg-white px-2 py-0.5 font-pixel text-[13px] font-semibold whitespace-nowrap text-tinta"
+                }
                 style={{ left: p.x, top: p.y, transform: "translate(-50%, calc(-100% - 10px))" }}
               >
                 {a.texto.length > 32 ? `${a.texto.slice(0, 31)}…` : a.texto}
@@ -971,6 +1025,30 @@ function BotonMapa({
         {children}
       </svg>
     </button>
+  );
+}
+
+// ------------------------------------------------------------------
+// Estilo sobrio: campos lisos y filas de árboles (como el boceto realista)
+// ------------------------------------------------------------------
+function PatronesSobrios() {
+  return (
+    <defs>
+      <pattern id="sobrio-filas-0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-38)">
+        <rect width="6" height="6" fill="#8fbf86" />
+        <rect width="2.2" height="6" fill="#3f7a55" opacity="0.55" />
+      </pattern>
+      <pattern id="sobrio-filas-1" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(28)">
+        <rect width="6" height="6" fill="#8fbf86" />
+        <rect width="2.2" height="6" fill="#3f7a55" opacity="0.55" />
+      </pattern>
+      <pattern id="sobrio-campos" width="480" height="480" patternUnits="userSpaceOnUse">
+        <rect width="480" height="480" fill="#e9ece4" />
+        <rect x="12" y="12" width="210" height="456" fill="#e2e6d9" />
+        <rect x="246" y="12" width="222" height="210" fill="#edeee6" />
+        <rect x="246" y="246" width="222" height="222" fill="#dfe5d6" />
+      </pattern>
+    </defs>
   );
 }
 
