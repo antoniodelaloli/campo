@@ -14,7 +14,10 @@ Cuando algo se haga, se tacha y se pone la fecha.
   2. **Plan del corte:** antes de facturar, repartir los kilos previstos entre titulares con el simulador y
      guardarlo como facturas «previstas»; al llegar la factura, se marca emitida.
   3. **Cuadre automático:** albaranes ↔ facturas ↔ liquidación de cada corte, con aviso si algo no casa.
-  4. **Regla del límite por confirmar con el asesor:** si se suman las ventas de JHSYO a cada socio (ahora se
+  4. **Fotos (para más adelante, a posteriori):** adjuntar a cada hoja de Albaranes la foto o el PDF de la hoja
+     impresa, firmada y sellada (una por corte, como prueba). Más adelante, si compensa: foto de cada albarán que
+     rellene sola la línea (nº, cajas, pesada) para revisarla, en vez de teclearla.
+  5. **Regla del límite por confirmar con el asesor:** si se suman las ventas de JHSYO a cada socio (ahora se
      enseñan las dos cuentas).
 
 - [ ] **Newsletter de los domingos para la familia** (apuntado el 5/11/2026)
