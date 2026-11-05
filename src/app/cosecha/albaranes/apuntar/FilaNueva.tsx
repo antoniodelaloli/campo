@@ -28,6 +28,8 @@ export function FilaNueva({
   corte,
   fechaInicial,
   precioInicial,
+  fincas,
+  titulares,
 }: {
   campana: string;
   hoja: string;
@@ -36,7 +38,13 @@ export function FilaNueva({
   corte: string;
   fechaInicial: string;
   precioInicial: string;
+  fincas: { id: string; nombre: string }[];
+  titulares: { id: string; nombre: string }[];
 }) {
+  // de dónde sale el limón y a quién se factura: se eligen en cada albarán y se
+  // quedan para el siguiente (lo normal es que no cambien en todo el corte)
+  const [fincaSel, setFincaSel] = useState(finca);
+  const [titularSel, setTitularSel] = useState(titular);
   const [fecha, setFecha] = useState(fechaInicial);
   const [precio, setPrecio] = useState(precioInicial);
   const [albaran, setAlbaran] = useState("");
@@ -75,9 +83,31 @@ export function FilaNueva({
     <form action={accion} className="flex flex-col gap-2">
       <input type="hidden" name="campana" value={campana} />
       <input type="hidden" name="hoja" value={hoja} />
-      <input type="hidden" name="finca" value={finca} />
-      <input type="hidden" name="titular" value={titular} />
       <input type="hidden" name="corte" value={corte} />
+      <div className="grid grid-cols-2 gap-2 sm:max-w-xl">
+        <label className="flex flex-col gap-0.5 text-xs font-bold">
+          Finca de donde sale el limón
+          <select name="finca" value={fincaSel} onChange={(e) => setFincaSel(e.target.value)} className={campo}>
+            <option value="">Por confirmar</option>
+            {fincas.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.nombre}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-0.5 text-xs font-bold">
+          Se factura a
+          <select name="titular" value={titularSel} onChange={(e) => setTitularSel(e.target.value)} className={campo}>
+            <option value="">Por confirmar</option>
+            {titulares.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.nombre}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-[1fr_1.2fr_0.8fr_1fr_1fr_0.9fr_1fr_1fr_0.8fr]">
         <label className="flex flex-col gap-0.5 text-xs font-bold">
           Albarán

@@ -145,8 +145,11 @@ async function Apuntar({ searchParams }: { searchParams: Busqueda }) {
     .filter((a) => a.hoja === hoja)
     .sort((a, b) => a.fecha.localeCompare(b.fecha) || a.albaran.localeCompare(b.albaran));
   const primera = filas[0];
-  const finca = uno(sp.finca) || primera?.finca_id || "";
-  const titular = uno(sp.titular) || primera?.titular_id || "";
+  // por defecto, los del último albarán apuntado (o los de la hoja al empezarla)
+  const finca = (filas.length ? filas[filas.length - 1].finca_id : uno(sp.finca)) || uno(sp.finca) || primera?.finca_id || "";
+  const titular = (filas.length ? filas[filas.length - 1].titular_id : uno(sp.titular)) || uno(sp.titular) || primera?.titular_id || "";
+  const fincasHoja = [...new Set(filas.map((a) => (a.finca_id ? (nombreFinca.get(a.finca_id) ?? "—") : "por confirmar")))];
+  const titularesHoja = [...new Set(filas.map((a) => (a.titular_id ? (nombreTitular.get(a.titular_id) ?? "—") : "por confirmar")))];
   const corte = uno(sp.corte) || (primera?.corte ? String(primera.corte) : "");
   const ultima = filas[filas.length - 1];
   const precioUltimo = ultima?.importe_eur && ultima.kg_buenos ? (ultima.importe_eur / ultima.kg_buenos).toFixed(3).replace(".", ",") : "";
@@ -166,7 +169,9 @@ async function Apuntar({ searchParams }: { searchParams: Busqueda }) {
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5">
       <CabeceraSeccion
         titulo={hoja}
-        subtitulo={`Campaña ${campana} · ${finca ? (nombreFinca.get(finca) ?? "—") : "finca por confirmar"} · a nombre de ${titular ? (nombreTitular.get(titular) ?? "—") : "por confirmar"}${corte ? ` · ${corte}º corte` : ""}`}
+        subtitulo={`Campaña ${campana} · ${
+          fincasHoja.length ? `limón de ${fincasHoja.join(" y ")}` : finca ? (nombreFinca.get(finca) ?? "—") : "finca por confirmar"
+        } · se factura a ${titularesHoja.length ? titularesHoja.join(" y ") : titular ? (nombreTitular.get(titular) ?? "—") : "por confirmar"}${corte ? ` · ${corte}º corte` : ""}`}
         volver="/cosecha/albaranes/apuntar"
       />
 
@@ -180,6 +185,8 @@ async function Apuntar({ searchParams }: { searchParams: Busqueda }) {
             corte={corte}
             fechaInicial={ultima?.fecha ?? hoy}
             precioInicial={precio}
+            fincas={fincas.map((f) => ({ id: f.id, nombre: f.nombre }))}
+            titulares={titulares}
           />
         </Panel>
       ) : (
@@ -208,11 +215,13 @@ async function Apuntar({ searchParams }: { searchParams: Busqueda }) {
       </div>
 
       <div className="panel overflow-x-auto p-3.5">
-        <table className="w-full min-w-[760px] text-[13px] tabular-nums">
+        <table className="w-full min-w-[900px] text-[13px] tabular-nums">
           <thead>
             <tr className="text-left text-tinta-suave">
               <th className="py-1">Albarán</th>
               <th className="py-1">Fecha</th>
+              <th className="py-1">Finca</th>
+              <th className="py-1">Se factura a</th>
               <th className="py-1 text-right">Cajas</th>
               <th className="py-1 text-right">Bruto</th>
               <th className="py-1 text-right">Tara</th>
@@ -229,6 +238,8 @@ async function Apuntar({ searchParams }: { searchParams: Busqueda }) {
               <tr key={a.id} className="border-t border-dotted border-borde-papel">
                 <td className="py-1 font-bold">{a.albaran}</td>
                 <td className="py-1">{fechaCorta(a.fecha)}</td>
+                <td className="py-1">{a.finca_id ? nombreFinca.get(a.finca_id) : <i className="text-[#7d1a10]">por confirmar</i>}</td>
+                <td className="py-1">{a.titular_id ? nombreTitular.get(a.titular_id) : <i className="text-[#7d1a10]">por confirmar</i>}</td>
                 <td className="py-1 text-right">{a.cajas ?? ""}</td>
                 <td className="py-1 text-right">{a.bruto_kg ? kg(a.bruto_kg) : ""}</td>
                 <td className="py-1 text-right">{a.tara_camion_kg ? kg(a.tara_camion_kg) : ""}</td>
@@ -251,7 +262,7 @@ async function Apuntar({ searchParams }: { searchParams: Busqueda }) {
             ))}
             {filas.length > 0 && (
               <tr className="border-t-2 border-tinta font-bold">
-                <td className="py-1" colSpan={2}>
+                <td className="py-1" colSpan={4}>
                   Total
                 </td>
                 <td className="py-1 text-right">{tot.cajas || ""}</td>

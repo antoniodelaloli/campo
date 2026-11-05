@@ -403,6 +403,9 @@ export function compararHojas(a: Albaran[], b: Albaran[]): Comparacion {
         const campos = [
           x.fecha !== y.fecha && "fecha",
           (x.cajas ?? 0) !== (y.cajas ?? 0) && "cajas",
+          // finca y titular solo si las dos hojas lo dicen
+          x.finca_id && y.finca_id && x.finca_id !== y.finca_id && "finca",
+          x.titular_id && y.titular_id && x.titular_id !== y.titular_id && "a quién se factura",
           !casi(x.kg_buenos, y.kg_buenos, 0.5) && "kilos buenos",
           !casi(x.kg_citrica, y.kg_citrica, 0.5) && "kilos de cítrica",
           // el importe solo se compara si las dos hojas lo traen
