@@ -12,9 +12,12 @@
 //   - los tratamientos (categoría «productos») van SIEMPRE al 50 % entre
 //     Valladolises y Corvera (así lo imputa la familia, 5/11/2026);
 //   - el resto se reparte entre las fincas según sus kilos.
-// Kilos: los de las facturas de venta de la campaña cuando ya cubren al menos los
-// de referencia; mientras falten facturas, los de referencia (liquidación o
-// previstos), para no calcular el coste con media cosecha.
+// Kilos de cada finca, por este orden:
+//   1. los de los albaranes de báscula (dicen de qué finca sale el limón);
+//   2. los de las facturas de venta con finca;
+//   3. los de referencia (liquidación o previstos).
+// Los de albaranes o facturas solo se usan cuando ya cubren al menos los de
+// referencia, para no calcular el coste con media cosecha.
 import { CATEGORIAS_GASTO, type Factura } from "@/lib/cuentas-calculo";
 
 export type RiegoCoste = { finca_id: string; fecha: string; coste_eur: number };
@@ -59,9 +62,12 @@ export function costePorKilo({
   riegos,
   referencia,
   nombreFinca,
+  albaranes = [],
 }: {
   campana: string;
   facturas: Factura[];
+  /** kilos buenos e importe por finca de los albaranes de la campaña */
+  albaranes?: { finca: string; kg: number; eur: number; kgConImporte: number }[];
   riegos: RiegoCoste[];
   /** kilos y precio de referencia por finca (liquidación o estimación) */
   referencia: { finca: string; kg: number; precioKg: number }[];
@@ -80,12 +86,23 @@ export function costePorKilo({
     aguaCampana.filter((r) => nombreFinca.get(r.finca_id) === finca).reduce((s, r) => s + r.coste_eur, 0);
 
   const filaDe = (finca: string, gastosFinca: number): FilaCoste => {
-    const v = ventas.filter((f) => f.finca_id && nombreFinca.get(f.finca_id) === finca && (f.kg ?? 0) > 0);
-    const kgReal = v.reduce((s, f) => s + (f.kg ?? 0), 0);
     const ref = referencia.find((r) => r.finca === finca);
-    const usarReal = kgReal > 0 && (!ref || kgReal >= ref.kg);
-    const kilos = usarReal ? kgReal : (ref?.kg ?? 0);
-    const precioKg = usarReal ? v.reduce((s, f) => s + f.base_eur, 0) / kgReal : (ref?.precioKg ?? null);
+    const alb = albaranes.find((a) => a.finca === finca && a.kg > 0);
+    const v = ventas.filter((f) => f.finca_id && nombreFinca.get(f.finca_id) === finca && (f.kg ?? 0) > 0);
+    const kgFact = v.reduce((s, f) => s + (f.kg ?? 0), 0);
+    const cubre = (k: number) => k > 0 && (!ref || k >= ref.kg);
+    let kilos = ref?.kg ?? 0;
+    let precioKg: number | null = ref?.precioKg ?? null;
+    let usarReal = false;
+    if (alb && cubre(alb.kg)) {
+      usarReal = true;
+      kilos = alb.kg;
+      if (alb.kgConImporte > 0) precioKg = alb.eur / alb.kgConImporte;
+    } else if (cubre(kgFact)) {
+      usarReal = true;
+      kilos = kgFact;
+      precioKg = v.reduce((s, f) => s + f.base_eur, 0) / kgFact;
+    }
     // sin ningún gasto apuntado no hay coste que calcular (no es «0 €/kg»)
     const costeKg = kilos > 0 && gastosFinca > 0 ? gastosFinca / kilos : null;
     return {

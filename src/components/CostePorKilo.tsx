@@ -103,7 +103,8 @@ export function CostePorKilo({ d, estimada = false }: { d: Datos; estimada?: boo
             </table>
           </div>
           <p className="text-xs text-tinta-suave">
-            * Kilos {estimada ? "previstos" : "de la liquidación"}: cuando las facturas de venta lleguen a esos kilos, se usan las facturas.
+            * Kilos {estimada ? "previstos" : "de la liquidación"}: cuando los albaranes (o las facturas de venta) lleguen a esos kilos, se usan
+            esos.
             {d.gastosMitad > 0 && ` Los tratamientos sin finca (${eur(d.gastosMitad)}) van al 50 % entre Valladolises y Corvera.`}
             {d.gastosPorKilos > 0 && ` El resto de gastos sin finca (${eur(d.gastosPorKilos)}) se reparte según los kilos de cada finca.`}
           </p>

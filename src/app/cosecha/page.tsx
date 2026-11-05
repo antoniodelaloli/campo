@@ -9,6 +9,8 @@ import { GastosCampana } from "@/components/RiegosPedidos";
 import { cargarRiegos } from "@/lib/riegos";
 import { cargarFacturasCampana } from "@/lib/cuentas";
 import { costePorKilo } from "@/lib/coste-por-kilo";
+import { cargarAlbaranes } from "@/lib/albaranes-datos";
+import { kilosPorFinca } from "@/lib/albaranes";
 import { CostePorKilo } from "@/components/CostePorKilo";
 import Link from "next/link";
 import {
@@ -72,6 +74,9 @@ function Pestanas({ actual }: { actual: IdCampana }) {
           </Link>
         );
       })}
+      <Link href="/cosecha/albaranes" className="pestana gap-1.5 whitespace-nowrap">
+        🚚 Albaranes
+      </Link>
       <Link href="/cuentas" className="pestana gap-1.5 whitespace-nowrap">
         € Cuentas y límites
       </Link>
@@ -193,15 +198,23 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
     ? (sp.campana as IdCampana)
     : campanaPorDefecto(hoy);
   const nombreCampana = campana.replace("-", "/").replace(/\/(\d{2})\d{2}$/, "/$1");
-  const [avisos, { fincas }, agua, { facturas: facturasCampana }] = await Promise.all([
+  const [avisos, { fincas }, agua, { facturas: facturasCampana }, { albaranes }] = await Promise.all([
     cargarAvisos(supabase, "cosecha"),
     cargarFincas(supabase),
     cargarRiegos(supabase),
     cargarFacturasCampana(supabase, nombreCampana),
+    cargarAlbaranes(supabase, nombreCampana),
   ]);
   const nombreFinca = new Map(fincas.map((f) => [f.id, f.nombre]));
   const coste = (referencia: { finca: string; kg: number; precioKg: number }[]) =>
-    costePorKilo({ campana: nombreCampana, facturas: facturasCampana, riegos: agua.riegos, referencia, nombreFinca });
+    costePorKilo({
+      campana: nombreCampana,
+      facturas: facturasCampana,
+      riegos: agua.riegos,
+      referencia,
+      nombreFinca,
+      albaranes: kilosPorFinca(albaranes, nombreCampana, nombreFinca),
+    });
 
   const liq = LIQUIDACION_2526;
   const total = liq.filas.reduce((s, f) => s + f.kgTotal, 0);

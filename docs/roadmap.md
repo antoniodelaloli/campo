@@ -72,6 +72,8 @@ Cuando algo se haga, se tacha y se pone la fecha.
 
 ## Hecho
 
+- [x] Albaranes de báscula (migración 0020): página /cosecha/albaranes para pegar las hojas de Excel de cada corte (una fila por camión), con campaña, finca, corte y titular deducidos del título; resumen por finca y titular; el coste por kilo usa sus kilos por finca. Metidas las tres primeras hojas (5/11/2026). Falta: el resto de hojas de 2024/25 y 2025/26, y confirmar la finca del 3er corte de JHSYO 2026.
+- [x] Tratamientos sin finca al 50 % entre Valladolises y Corvera en el coste por kilo (5/11/2026).
 - [x] KPI «¿Cuánto nos cuesta cada kilo?» en Cosecha: gastos de la campaña (facturas de gasto + agua de la Comunidad) entre kilos vendidos = precio mínimo; precio de venta y margen por kilo, por finca (5/11/2026). Será fiable cuando estén metidos todos los gastos.
 - [x] «Dato del día» en el aviso de cada mañana y en el resumen del conector: agua de la campaña frente al año pasado, últimos 30 días, ahorro por precio, pantanos, ventas por titular (y aviso si alguien se acerca al límite), ideas de la semana y fase de la campaña (4/11/2026).
 - [x] Cuentas, primera parte (migración 0014): titulares (Maite, Carlos, JHSYO), facturas de venta con titular y finca de origen, contador del límite de 250.000 € por año y simulador «¿a nombre de quién facturo este corte?» en /cuentas (4/11/2026). Falta: meter las facturas de 2026, gastos con foto, reparto por socio y exportar para el gestor.
