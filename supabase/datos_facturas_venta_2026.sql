@@ -4,10 +4,12 @@
 -- una vez: no duplica. Requiere las migraciones 0014 y 0015.
 --
 -- VENTAS (cuentan para el límite de módulos de 2026, año natural):
---   1. García Aranda → Maite (Mª Teresa Hernández García), 361.183,68 kg de limón
---      de VALLADOLISES: la factura dice «Corvera» como lugar de la explotación, pero
---      los kilos son los de la hoja de albaranes «VALLADOLISES.--MªTERESA»
---      (361.174 kg, del 2 al 11/2/2026). Base 210.208,91 €, compensación 12 % 25.225,07 €,
+--   1. García Aranda → Maite (Mª Teresa Hernández García), 361.183,68 kg de limón.
+--      La factura dice «Corvera» y así se guarda. Sus kilos son los de la hoja de
+--      albaranes «VALLADOLISES.--MªTERESA» (361.174 kg, del 2 al 11/2/2026), pero
+--      el análisis de todos los Excel apunta a que esa hoja es de Corvera (la
+--      liquidación de 2025/26 no cuadra si fuera de Valladolises). Por confirmar.
+--      Base 210.208,91 €, compensación 12 % 25.225,07 €,
 --      retención IRPF 4.708,68 €, total a cobrar 230.725,30 €.
 --      En la foto la fecha está cortada (solo se ve «…3/26»): es de marzo de 2026
 --      y se pone el 02/03/2026, como la de Carlos. Para el límite da igual el día.
@@ -43,9 +45,9 @@ begin
   select v.tipo, 'emitida', v.titular, v.finca, '2025/26', v.fecha::date, v.numero, v.contraparte, v.concepto,
          v.categoria, v.kg, v.base, v.imp, v.tipo = 'venta', 'import', v.notas
   from (values
-    ('venta', v_maite, v_vall, '2026-03-02', null::text, 'García Aranda, S.L.',
+    ('venta', v_maite, v_corvera, '2026-03-02', null::text, 'García Aranda, S.L.',
      'Limón (361.183,68 kg buenos)', null::text, 361183.68, 210208.91, 25225.07,
-     'Compensación agraria 12 %. Retención IRPF 4.708,68 €. Total a cobrar 230.725,30 €. Fecha cortada en la foto («…3/26»): es de marzo de 2026, el día es aproximado. La factura pone «Corvera», pero los kilos son los de la hoja de albaranes de Valladolises de febrero (361.174 kg). PDF: https://drive.google.com/file/d/18u3c5Hb7kmCFLjYAzr2f9LD_SrkFOgnL/view'),
+     'Compensación agraria 12 %. Retención IRPF 4.708,68 €. Total a cobrar 230.725,30 €. Fecha cortada en la foto («…3/26»): es de marzo de 2026, el día es aproximado. La factura pone «Corvera». Sus kilos son los de la hoja de albaranes «VALLADOLISES.--MªTERESA» de febrero (361.174 kg): finca por confirmar con Juan Carlos. PDF: https://drive.google.com/file/d/18u3c5Hb7kmCFLjYAzr2f9LD_SrkFOgnL/view'),
     ('venta', v_carlos, v_corvera, '2026-03-02', null::text, 'García Aranda, S.L.',
      'Limón Primofiori, 352.723,40 kg a 0,582 €/kg (albaranes HUE 786 a 840, del 2 al 5/2/2026)', null::text,
      352723.40, 205285.00, 24634.20,
@@ -60,10 +62,12 @@ begin
       and f.fecha = v.fecha::date and f.base_eur = v.base and not f.anulado
   );
 
-  -- Venta de Maite: si ya se metió en Corvera, se pasa a Valladolises
+  -- Venta de Maite: si una versión anterior de este archivo la pasó a Valladolises,
+  -- vuelve a Corvera (lo que dice la factura)
   update public.facturas
-     set finca_id = v_vall
-   where tipo = 'venta' and titular_id = v_maite and base_eur = 210208.91 and finca_id is distinct from v_vall;
+     set finca_id = v_corvera,
+         notas = 'Compensación agraria 12 %. Retención IRPF 4.708,68 €. Total a cobrar 230.725,30 €. Fecha cortada en la foto («…3/26»): es de marzo de 2026, el día es aproximado. La factura pone «Corvera». Sus kilos son los de la hoja de albaranes «VALLADOLISES.--MªTERESA» de febrero (361.174 kg): finca por confirmar con Juan Carlos. PDF: https://drive.google.com/file/d/18u3c5Hb7kmCFLjYAzr2f9LD_SrkFOgnL/view'
+   where tipo = 'venta' and titular_id = v_maite and base_eur = 210208.91 and finca_id is distinct from v_corvera;
 
   -- Ruraltech (si ya se metió con la nota antigua): tratamientos al 50 %
   update public.facturas
