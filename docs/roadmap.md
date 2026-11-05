@@ -27,7 +27,7 @@ Cuando algo se haga, se tacha y se pone la fecha.
   las ideas nuevas de la libreta y un «dato de la semana».
   Por decidir: quién se apunta (lista de correos y botón para darse de baja), qué datos se pueden enseñar
   a toda la familia y cuáles no (cuentas de cada titular, límites de ventas), y si lo revisa Antonio antes de enviarlo.
-  Cómo: el mismo servidor que manda el aviso de las 7:00, un envío semanal con el servicio de correo (Resend).
+  Cómo: el mismo servidor que manda el aviso de las 7:50, un envío semanal con el servicio de correo (Resend).
 
 - [ ] **Estilo «sobrio» (sin videojuego) para quien lo prefiera** (apuntado el 5/11/2026)
   Hecho (5/11/2026, migración 0022): ajuste «estilo» por usuario (granja / sobrio), botón para cambiarlo en la

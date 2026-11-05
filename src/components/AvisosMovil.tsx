@@ -163,7 +163,7 @@ export function AvisosMovil() {
   return (
     <div className="flex flex-col gap-2.5 text-sm">
       <p className="text-tinta-suave">
-        Cada mañana temprano (entre las 7 y las 9) te avisa de las fechas clave que tocan (una semana antes, el día antes y el mismo día,
+        Cada mañana a las 7:50 te avisa de las fechas clave que tocan (una semana antes, el día antes y el mismo día,
         o lo que pongas en «Avisar») y de las tareas apuntadas para ese día. Los lunes, repaso de la semana.
       </p>
 

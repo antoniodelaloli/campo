@@ -7,8 +7,12 @@ import { previsionFincas } from "@/lib/alertas-tiempo";
 import { datoDelDia } from "@/lib/dato-del-dia";
 import { hoyISO, sumarDias } from "@/lib/texto";
 
-// Aviso de cada mañana. Lo llama el cron de Vercel (vercel.json) con la
-// cabecera «Authorization: Bearer CRON_SECRET». Sin esa cabecera, 401.
+// Aviso de cada mañana, a las 7:50 (hora de España). Lo llama el cron de Vercel
+// (vercel.json) con la cabecera «Authorization: Bearer CRON_SECRET». Sin esa
+// cabecera, 401.
+// El cron va en hora UTC, así que hay dos (5:50 y 6:50 UTC): en invierno vale el
+// segundo y en verano el primero. Solo se envía si en Madrid son las 7 y pico
+// (con ?forzar=1 se envía a cualquier hora, para probar).
 // Se puede ejecutar más de una vez al día: cada persona recibe como mucho
 // un aviso diario (lo controla la tabla envios_push).
 
@@ -21,6 +25,14 @@ export async function GET(request: Request) {
   }
   if (request.headers.get("authorization") !== `Bearer ${secreto}`) {
     return Response.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  const horaMadrid = Number(
+    new Intl.DateTimeFormat("es-ES", { timeZone: "Europe/Madrid", hour: "2-digit", hourCycle: "h23" }).format(new Date()),
+  );
+  const forzar = new URL(request.url).searchParams.get("forzar") === "1";
+  if (horaMadrid !== 7 && !forzar) {
+    return Response.json({ enviado: false, motivo: `En Madrid son las ${horaMadrid} h: el aviso sale a las 7:50` });
   }
 
   try {

@@ -3,7 +3,11 @@
   "crons": [
     {
       "path": "/api/avisos/diario",
-      "schedule": "0 6 * * *"
+      "schedule": "50 5 * * *"
+    },
+    {
+      "path": "/api/avisos/diario",
+      "schedule": "50 6 * * *"
     }
   ]
 }

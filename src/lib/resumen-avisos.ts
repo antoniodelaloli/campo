@@ -87,7 +87,15 @@ const MAX_LINEAS = 5;
 export const URL_ALERTAS_CARM =
   "https://www.carm.es/web/pagina?IDCONTENIDO=66972&IDTIPO=100&RASTRO=c3039$m64522";
 
+/** cada = días entre un aviso y el siguiente; 0 = solo ese día. */
 const RECORDATORIOS: { desde: string; cada: number; texto: string; url: string }[] = [
+  {
+    desde: "2026-11-06",
+    cada: 0,
+    texto:
+      "🦠 Ojo, virus CYVCV (clorosis nervial amarilla) en cítricos: ataca sobre todo al limonero. Si veis hojas con los nervios amarillos o deformadas, foto y apuntarlo. Lo pasan la mosca blanca y el pulgón, y las tijeras de poda: desinfectarlas. Más en Campo → Avisos.",
+    url: "/",
+  },
   {
     desde: "2026-11-05",
     cada: 15,
@@ -101,7 +109,7 @@ const RECORDATORIOS: { desde: string; cada: number; texto: string; url: string }
 function recordatoriosDeHoy(hoy: string) {
   return RECORDATORIOS.filter((r) => {
     const d = diasEntre(r.desde, hoy);
-    return d >= 0 && d % r.cada === 0;
+    return r.cada === 0 ? d === 0 : d >= 0 && d % r.cada === 0;
   });
 }
 
