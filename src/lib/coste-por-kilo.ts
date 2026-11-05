@@ -43,6 +43,8 @@ export type CostePorKilo = {
   gastosMitad: number;
   /** gastos sin finca repartidos por kilos */
   gastosPorKilos: number;
+  /** gastos de cada finca por tipo de gasto (clave de CATEGORIAS_GASTO), con los repartos ya hechos */
+  categoriasPorFinca: Record<string, Record<string, number>>;
   porCategoria: { categoria: string; eur: number }[];
   /** tipos de gasto sin nada apuntado todavía */
   faltan: string[];
@@ -136,6 +138,31 @@ export function costePorKilo({
   const gastosComunes = gastosMitad + gastosPorKilos;
 
   const kgTotalRef = nombres.reduce((s, n) => s + (filaDe(n, 0).kilos || 0), 0);
+
+  // gastos de cada finca por tipo, con los mismos repartos que el total
+  const categoriasPorFinca: Record<string, Record<string, number>> = {};
+  const sumar = (finca: string, cat: string, eur: number) => {
+    const m = (categoriasPorFinca[finca] ??= {});
+    m[cat] = (m[cat] ?? 0) + eur;
+  };
+  for (const n of nombres) {
+    for (const g of gastos.filter((g) => g.finca_id && nombreFinca.get(g.finca_id) === n)) sumar(n, g.categoria ?? "otros", g.base_eur);
+    const agua = aguaCampana.filter((r) => nombreFinca.get(r.finca_id) === n).reduce((s, r) => s + r.coste_eur, 0);
+    if (agua > 0) sumar(n, "agua", agua);
+    const kgN = filaDe(n, 0).kilos || 0;
+    for (const g of sinFinca) {
+      const reparto = REPARTO_FIJO[g.categoria ?? ""];
+      const presentes = reparto ? Object.entries(reparto).filter(([f]) => nombres.includes(f)) : [];
+      const suma = presentes.reduce((s, [, p]) => s + p, 0);
+      if (presentes.length && suma > 0) {
+        const p = reparto?.[n];
+        if (p) sumar(n, g.categoria ?? "otros", (g.base_eur * p) / suma);
+      } else if (kgTotalRef > 0) {
+        sumar(n, g.categoria ?? "otros", (g.base_eur * kgN) / kgTotalRef);
+      }
+    }
+  }
+
   const fincas = nombres.map((n) => {
     const base = filaDe(n, 0);
     const parteKilos = kgTotalRef > 0 ? (gastosPorKilos * base.kilos) / kgTotalRef : 0;
@@ -171,6 +198,7 @@ export function costePorKilo({
     gastosComunes,
     gastosMitad,
     gastosPorKilos,
+    categoriasPorFinca,
     porCategoria: [...cat.entries()]
       .map(([k, eur]) => ({ categoria: CATEGORIAS_GASTO[k] ?? k, eur }))
       .sort((a, b) => b.eur - a.eur),

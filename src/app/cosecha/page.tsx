@@ -236,6 +236,7 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
 
   if (campana === "2026-27") {
     const est = ESTIMACION_2627;
+    const costeEst = coste(est.filas.map((f) => ({ finca: f.finca, kg: f.kgLiquidables, precioKg: est.precioEurKg })));
     const importeEst = est.filas.reduce((s, f) => s + f.importeEur, 0);
     const bajo = 1 - est.margen;
     const alto = 1 + est.margen;
@@ -301,15 +302,14 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
 
         <GastosCampana riegos={agua.riegos} hoy={hoy} inicio={2026} falta={agua.falta} />
 
-        <CostePorKilo
-          d={coste(est.filas.map((f) => ({ finca: f.finca, kg: f.kgLiquidables, precioKg: est.precioEurKg })))}
-          estimada
-        />
+        <CostePorKilo d={costeEst} estimada />
 
-        <KpisCosecha fincas={fincas} campana={est.campana} filas={est.filas} estimada />
+        <KpisCosecha fincas={fincas} campana={est.campana} filas={est.filas} estimada coste={costeEst} />
       </main>
     );
   }
+
+  const costeLiq = coste(liq.filas.map((f) => ({ finca: f.finca, kg: f.kgLiquidables, precioKg: f.importeEur / f.kgLiquidables })));
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5">
@@ -450,11 +450,9 @@ async function Cosecha({ searchParams }: { searchParams: PageProps<"/cosecha">["
         falta={agua.falta}
       />
 
-      <CostePorKilo
-        d={coste(liq.filas.map((f) => ({ finca: f.finca, kg: f.kgLiquidables, precioKg: f.importeEur / f.kgLiquidables })))}
-      />
+      <CostePorKilo d={costeLiq} />
 
-      <KpisCosecha fincas={fincas} campana={liq.campana} filas={liq.filas} />
+      <KpisCosecha fincas={fincas} campana={liq.campana} filas={liq.filas} coste={costeLiq} />
     </main>
   );
 }

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Panel } from "@/components/ui";
 import type { Finca } from "@/lib/datos";
 import { CONTRATO_MANDARINAS_2024, type FilaCosecha } from "@/lib/cosecha-documentos";
+import type { CostePorKilo } from "@/lib/coste-por-kilo";
 import { formatoNumero } from "@/lib/texto";
 
 /*
@@ -193,6 +194,131 @@ function Kpi({
 
 
 // ------------------------------------------------------------------
+// Un árbol en euros: lo que se cobra frente a cada gasto, por árbol
+// ------------------------------------------------------------------
+const GASTOS_ARBOL: { clave: string; nombre: string; icono: keyof typeof ICONOS; falta: Record<string, string> }[] = [
+  {
+    clave: "agua",
+    nombre: "Agua",
+    icono: "gota",
+    falta: { Corvera: "faltan las facturas del Pozo Villalba", Valladolises: "faltan los riegos de la Comunidad" },
+  },
+  { clave: "luz", nombre: "Luz del bombeo", icono: "rayo", falta: {} },
+  { clave: "abonos", nombre: "Abonos", icono: "saco", falta: {} },
+  { clave: "productos", nombre: "Tratamientos", icono: "pulverizador", falta: {} },
+  { clave: "mano_obra", nombre: "Mano de obra", icono: "manos", falta: {} },
+];
+const CLAVES_PRINCIPALES = new Set(GASTOS_ARBOL.map((g) => g.clave));
+
+function ArbolEnEuros({
+  finca,
+  arboles,
+  venta,
+  categorias,
+  estimada,
+  eurFmt,
+}: {
+  finca: string;
+  arboles: number | null;
+  venta: number;
+  categorias: Record<string, number>;
+  estimada: boolean;
+  eurFmt: (n: number, d?: number) => string;
+}) {
+  const porArbol = (n: number) => (arboles ? n / arboles : 0);
+  const ventaArbol = arboles ? venta / arboles : null;
+  const otros = Object.entries(categorias)
+    .filter(([k]) => !CLAVES_PRINCIPALES.has(k))
+    .reduce((s, [, v]) => s + v, 0);
+  const filas = [
+    ...GASTOS_ARBOL.map((g) => ({ ...g, eur: categorias[g.clave] ?? 0 })),
+    ...(otros > 0 ? [{ clave: "otros", nombre: "Otros (gasoil, maquinaria…)", icono: "bascula" as const, falta: {}, eur: otros }] : []),
+  ];
+  const gastos = filas.reduce((s, f) => s + f.eur, 0);
+  const faltan = filas.filter((f) => f.eur <= 0 && f.clave !== "otros").map((f) => f.nombre.toLowerCase());
+  const escala = Math.max(ventaArbol ?? 0, porArbol(gastos), 0.01);
+  const ancho = (n: number) => `${Math.max(4, Math.min(100, (n / escala) * 100))}%`;
+  const queda = ventaArbol != null ? ventaArbol - porArbol(gastos) : null;
+
+  return (
+    <Panel titulo={`Un árbol de ${finca}, en euros`} extra={estimada ? "estimación" : "media de la campaña"}>
+      {!arboles ? (
+        <p className="ficha-pendiente p-3 text-sm text-tinta-suave">Falta el número de árboles de {finca}.</p>
+      ) : (
+        <>
+          <div className="flex flex-col gap-2.5">
+            <div className="flex items-center gap-2">
+              <Icono>{ICONOS.moneda}</Icono>
+              <div className="flex flex-1 flex-col gap-1">
+                <div className="flex items-baseline justify-between text-sm">
+                  <b>{estimada ? "Lo que daría (venta)" : "Lo que da (venta)"}</b>
+                  <span className="titulo-pixel text-lg">{ventaArbol != null ? eurFmt(ventaArbol, 2) : "—"}</span>
+                </div>
+                <div
+                  className="h-6 rounded-[3px] border-[3px] border-hoja-oscura bg-hoja"
+                  style={{ width: ancho(ventaArbol ?? 0) }}
+                  role="img"
+                  aria-label={`Venta por árbol: ${ventaArbol != null ? eurFmt(ventaArbol, 2) : "sin datos"}`}
+                />
+              </div>
+            </div>
+            {filas.map((c) => {
+              const v = porArbol(c.eur);
+              return (
+                <div key={c.clave} className="flex items-center gap-2">
+                  <Icono>{ICONOS[c.icono]}</Icono>
+                  <div className="flex flex-1 flex-col gap-1">
+                    <div className="flex items-baseline justify-between gap-2 text-sm">
+                      <b>{c.nombre}</b>
+                      {c.eur > 0 ? (
+                        <span className="text-right">
+                          <span className="titulo-pixel text-lg">−{formatoNumero(v, 2)} €</span>
+                          <span className="block text-[11px] text-tinta-suave">{formatoNumero(Math.round(c.eur))} € en total</span>
+                        </span>
+                      ) : (
+                        <span className="text-right text-xs text-tinta-suave italic">
+                          {c.falta[finca] ?? "sin facturas apuntadas"}
+                        </span>
+                      )}
+                    </div>
+                    {c.eur > 0 ? (
+                      <div
+                        className="h-4 rounded-[3px] border-[3px] border-[#8a2a20] bg-[#c8473a]"
+                        style={{ width: ancho(v) }}
+                        role="img"
+                        aria-label={`${c.nombre}: ${formatoNumero(v, 2)} € por árbol`}
+                      />
+                    ) : (
+                      <div className="h-4 w-1/3 rounded-[3px] border-[3px] border-dashed border-[#c8473a]/50" aria-hidden="true" />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex items-baseline justify-between gap-2 rounded-[3px] border-2 border-borde-papel bg-papel px-3 py-2 text-sm">
+            <b>Lo que queda por árbol</b>
+            {queda != null && gastos > 0 ? (
+              <span className="titulo-pixel text-lg" style={faltan.length ? undefined : { color: queda >= 0 ? "#2f5a1c" : "#c8473a" }}>
+                {faltan.length ? "≤ " : ""}
+                {eurFmt(queda, 2)}
+              </span>
+            ) : (
+              <span className="font-semibold text-tinta-suave italic">cuando se apunten los gastos</span>
+            )}
+          </div>
+          <p className="text-[13px] leading-snug text-tinta-suave">
+            Gastos de la campaña entre los ~{formatoNumero(arboles)} árboles. Los tratamientos sin finca van al 50 % con la otra
+            finca.
+            {faltan.length > 0 && ` Aún sin apuntar: ${faltan.join(", ")}, así que lo que queda será menos.`}
+          </p>
+        </>
+      )}
+    </Panel>
+  );
+}
+
+// ------------------------------------------------------------------
 // Sección completa
 // ------------------------------------------------------------------
 export function KpisCosecha({
@@ -200,10 +326,13 @@ export function KpisCosecha({
   campana,
   filas,
   estimada = false,
+  coste,
 }: {
   fincas: Finca[];
   campana: string;
   filas: FilaCosecha[];
+  /** gastos de la campaña por finca (de «¿Cuánto nos cuesta cada kilo?») */
+  coste?: CostePorKilo;
   /** true = estimación: los valores llevan «≈» y los textos hablan en futuro */
   estimada?: boolean;
 }) {
@@ -231,7 +360,6 @@ export function KpisCosecha({
     ? " * Con un número de árboles antiguo (de cuando se compró la finca): puede haber cambiado."
     : "";
   const corvera = datos.find((d) => d.finca === "Corvera");
-  const eurosArbolCorvera = corvera?.arboles ? corvera.euros / corvera.arboles : null;
   const kgArbolCorvera = corvera?.arboles ? corvera.kg / corvera.arboles : null;
 
   // Variedades: barras de kg por árbol (solo lo que se puede calcular)
@@ -241,15 +369,6 @@ export function KpisCosecha({
     { nombre: "Mandarina Clemenvilla / Nova · Valladolises", valor: null, falta: "faltan los kilos y los árboles" },
   ];
   const maxVar = Math.max(...variedades.map((v) => v.valor ?? 0), 1);
-
-  // Un árbol en euros: ingresos frente a costes
-  const costes: { nombre: string; icono: keyof typeof ICONOS; falta: string }[] = [
-    { nombre: "Agua", icono: "gota", falta: "falta saber los m³ del año (Pozo Villalba, ~0,85 €/m³)" },
-    { nombre: "Luz del bombeo", icono: "rayo", falta: "solo hay una factura (agosto: 1.654 €)" },
-    { nombre: "Abonos", icono: "saco", falta: "sin facturas apuntadas" },
-    { nombre: "Tratamientos", icono: "pulverizador", falta: "sin facturas apuntadas" },
-    { nombre: "Mano de obra", icono: "manos", falta: "sin datos" },
-  ];
 
   return (
     <section className="flex flex-col gap-4" aria-labelledby="titulo-kpis">
@@ -344,45 +463,24 @@ export function KpisCosecha({
           </p>
         </Panel>
 
-        {/* Un árbol en euros */}
-        <Panel titulo="Un árbol de Corvera, en euros" extra={estimada ? "estimación" : "media de la campaña"}>
-          <div className="flex flex-col gap-2.5">
-            <div className="flex items-center gap-2">
-              <Icono>{ICONOS.moneda}</Icono>
-              <div className="flex flex-1 flex-col gap-1">
-                <div className="flex items-baseline justify-between text-sm">
-                  <b>{estimada ? "Lo que daría (venta)" : "Lo que da (venta)"}</b>
-                  <span className="titulo-pixel text-lg">{eurosArbolCorvera ? eurFmt(eurosArbolCorvera, 2) : "—"}</span>
-                </div>
-                <div
-                  className="h-6 w-full rounded-[3px] border-[3px] border-hoja-oscura bg-hoja"
-                  role="img"
-                  aria-label={`Ingresos por árbol: ${eurosArbolCorvera ? eurFmt(eurosArbolCorvera, 2) : "sin datos"}`}
-                />
-              </div>
-            </div>
-            {costes.map((c) => (
-              <div key={c.nombre} className="flex items-center gap-2">
-                <Icono>{ICONOS[c.icono]}</Icono>
-                <div className="flex flex-1 flex-col gap-1">
-                  <div className="flex items-baseline justify-between gap-2 text-sm">
-                    <b>{c.nombre}</b>
-                    <span className="text-right text-xs text-tinta-suave italic">{c.falta}</span>
-                  </div>
-                  <div className="h-4 w-1/3 rounded-[3px] border-[3px] border-dashed border-[#c8473a]/50" aria-hidden="true" />
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex items-baseline justify-between rounded-[3px] border-2 border-borde-papel bg-papel px-3 py-2 text-sm">
-            <b>Lo que queda por árbol</b>
-            <span className="font-semibold text-tinta-suave italic">cuando se apunten los gastos</span>
-          </div>
-          <p className="text-[13px] leading-snug text-tinta-suave">
-            En verde lo que se cobra; en rojo, cada gasto repartido entre los ~6.000 árboles. Las barras de gastos se
-            rellenarán solas al ir apuntando lecturas de contador y facturas.
-          </p>
-        </Panel>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+        {["Corvera", "Valladolises"].map((nombre) => {
+          const d = datos.find((x) => x.finca === nombre);
+          if (!d) return null;
+          return (
+            <ArbolEnEuros
+              key={nombre}
+              finca={nombre}
+              arboles={d.arboles}
+              venta={d.euros}
+              categorias={coste?.categoriasPorFinca[nombre] ?? {}}
+              estimada={estimada}
+              eurFmt={eurFmt}
+            />
+          );
+        })}
       </div>
     </section>
   );
