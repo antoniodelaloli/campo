@@ -312,25 +312,28 @@ body {
    paneles blancos con borde fino, verde oscuro y letra IBM Plex Sans.
    =============================================================== */
 [data-estilo="sobrio"] {
-  --color-pergamino: #f3f5f1;
-  --color-papel: #ffffff;
-  --color-borde-papel: #dfe3dc;
+  /* verde oscuro (barra de arriba y de abajo, títulos), limón de acento y
+     arcilla de color secundario, sobre un fondo de piedra verdosa */
+  --color-pergamino: #e9ede4;
+  --color-papel: #f7f8f4;
+  --color-borde-papel: #d8ded3;
   --color-tinta: #1f2a24;
-  --color-tinta-suave: #5b675f;
-  --color-madera: #ffffff;
-  --color-madera-clara: #ffffff;
-  --color-madera-oscura: #c7cec2;
+  --color-tinta-suave: #56625a;
+  --color-madera: #24543f;
+  --color-madera-clara: #2e6b4f;
+  --color-madera-oscura: #1a3f2f;
   --color-madera-sombra: transparent;
-  --color-marco: #dfe3dc;
+  --color-marco: #d8ded3;
   --color-marco-sombra: transparent;
   --color-hierba: #8fbf86;
   --color-hoja: #2e6b4f;
   --color-hoja-oscura: #1d4a36;
-  --color-sol: #e8efe9;
+  --color-sol: #ecc94b;
   --color-agua: #2f7fb0;
   --color-agua-oscura: #1f5f88;
   --color-aviso: #c8473a;
   --color-alerta: #c98a2a;
+  --color-arcilla: #b8673c;
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   --font-pixel: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   --radio-panel: 10px;
@@ -341,15 +344,24 @@ body {
 }
 [data-estilo="sobrio"] .panel {
   background: #ffffff;
-  border: 1px solid #dfe3dc;
-  box-shadow: 0 1px 2px rgb(31 42 36 / 0.05);
+  border: 1px solid #d8ded3;
+  box-shadow: 0 1px 3px rgb(31 42 36 / 0.08);
+}
+/* título de cada panel en verde, con una raya corta de arcilla debajo */
+[data-estilo="sobrio"] .panel h2.titulo-pixel {
+  color: #24543f;
+}
+[data-estilo="sobrio"] .panel > div.h-1 {
+  height: 3px;
+  width: 44px;
+  border-radius: 2px;
+  background: var(--color-arcilla);
 }
 [data-estilo="sobrio"] .ficha {
   border-width: 1px;
 }
 [data-estilo="sobrio"] .ficha-pendiente {
   border-width: 1px;
-  background: #fafbf8;
 }
 [data-estilo="sobrio"] .boton {
   border: 1px solid #1d4a36;
@@ -380,9 +392,9 @@ body {
 }
 [data-estilo="sobrio"] .pestana[aria-current="page"],
 [data-estilo="sobrio"] .pestana[aria-selected="true"] {
-  background: #e8efe9;
-  border-color: #2e6b4f;
-  color: #2e6b4f;
+  background: #24543f;
+  border-color: #24543f;
+  color: #ffffff;
 }
 [data-estilo="sobrio"] .campo {
   border: 1px solid #c7cec2;
@@ -403,7 +415,7 @@ body {
 /* fuera relieves de videojuego: sombras duras, bordes gordos y texto con sombra */
 [data-estilo="sobrio"] [class*="shadow-[0_"],
 [data-estilo="sobrio"] [class*="shadow-[inset"] {
-  box-shadow: 0 1px 2px rgb(31 42 36 / 0.06) !important;
+  box-shadow: 0 1px 3px rgb(31 42 36 / 0.1) !important;
 }
 [data-estilo="sobrio"] [class*="text-shadow"],
 [data-estilo="sobrio"] [class*="[text-shadow"] {
@@ -412,16 +424,12 @@ body {
 [data-estilo="sobrio"] :is(.border-4, .border-\[3px\], .border-\[4px\], .border-b-4, .border-t-4) {
   border-width: 1px;
 }
-/* barra de arriba: blanca, con el texto oscuro */
+/* barra de arriba y de abajo: verde oscuro con letra clara */
 [data-estilo="sobrio"] header.sticky {
-  border-bottom: 1px solid #dfe3dc;
-}
-[data-estilo="sobrio"] .text-pergamino,
-[data-estilo="sobrio"] .text-\[\#fff4d6\] {
-  color: #1f2a24;
+  border-bottom: 0;
 }
 [data-estilo="sobrio"] .border-pergamino\/70 {
-  border-color: #c7cec2;
+  border-color: rgb(255 255 255 / 0.35);
 }
 [data-estilo="sobrio"] .pixel {
   image-rendering: auto;

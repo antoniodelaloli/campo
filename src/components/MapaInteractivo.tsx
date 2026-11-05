@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { aMapa, AUMENTO_MAPA, DESPLAZAMIENTO_MAPA, FORMAS, GEO, metrosPorUnidad, type ClaveFinca } from "@/lib/geografia";
 import { DibujoCorvera, DibujoLobosillo, DibujoValladolises, Patrones } from "@/components/DibujosFincas";
-import { LUGARES, Paisaje } from "@/components/Paisaje";
+import { LUGARES, Paisaje, PaisajeSobrio } from "@/components/Paisaje";
 import { BotonTiempo } from "@/components/Tiempo";
 import { Avioneta } from "@/components/Avioneta";
 import { useRouter } from "next/navigation";
@@ -604,7 +604,7 @@ export function MapaInteractivo({
       >
         {sobrio ? <PatronesSobrios /> : <Patrones />}
         {/* paisaje del entorno (apagado, para que destaquen las fincas); en sobrio, campos lisos */}
-        {sobrio ? <rect x={-60000} y={-60000} width={140000} height={140000} fill="url(#sobrio-campos)" /> : <Paisaje />}
+        {sobrio ? <PaisajeSobrio /> : <Paisaje />}
         {colocadas.map((c) => {
           const detalle = pxPorUnidad(c) >= 0.75;
           if (sobrio) {
@@ -612,6 +612,10 @@ export function MapaInteractivo({
             const caja = cajaInicio(c.clave);
             return (
               <g key={c.id} transform={`translate(${c.tx} ${c.ty}) scale(${c.k})`} className="cursor-pointer" onClick={() => router.push(`/fincas/${c.id}`)}>
+                {/* halo blanco: la finca se despega de los campos de alrededor */}
+                {piezas?.map((pz) => (
+                  <polygon key={`h-${pz}`} points={pz} fill="none" stroke="#ffffff" strokeWidth={7} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                ))}
                 {piezas ? (
                   piezas.map((pz, i) => (
                     <polygon
@@ -1041,12 +1045,6 @@ function PatronesSobrios() {
       <pattern id="sobrio-filas-1" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(28)">
         <rect width="6" height="6" fill="#8fbf86" />
         <rect width="2.2" height="6" fill="#3f7a55" opacity="0.55" />
-      </pattern>
-      <pattern id="sobrio-campos" width="480" height="480" patternUnits="userSpaceOnUse">
-        <rect width="480" height="480" fill="#e9ece4" />
-        <rect x="12" y="12" width="210" height="456" fill="#e2e6d9" />
-        <rect x="246" y="12" width="222" height="210" fill="#edeee6" />
-        <rect x="246" y="246" width="222" height="222" fill="#dfe5d6" />
       </pattern>
     </defs>
   );

@@ -538,3 +538,127 @@ function PaisajeBase() {
 
 /** Capa de paisaje: no depende de nada, así que React no la vuelve a pintar al mover el mapa. */
 export const Paisaje = memo(PaisajeBase);
+
+// ------------------------------------------------------------------
+// Estilo «sobrio» (migración 0022): la misma geografía, pintada como un mapa
+// topográfico (colores suaves, carreteras blancas, autovía amarilla, sierra
+// sombreada en verde), sin pixel art.
+// ------------------------------------------------------------------
+const RELLENO_SOBRIO: Record<TipoParcela, string> = {
+  citricos: "url(#ps-citricos)",
+  hortalizas: "#e0e8cc",
+  labrado: "#e9e1cf",
+  secano: "#ece8d8",
+  invernadero: "#f2f2ee",
+  erial: "#e5e4d5",
+  balsa: "#e5e4d5",
+};
+
+function PatronesSobrios() {
+  return (
+    <defs>
+      <pattern id="ps-citricos" width="16" height="16" patternUnits="userSpaceOnUse">
+        <rect width="16" height="16" fill="#d3e2c6" />
+        <circle cx="8" cy="8" r="4.2" fill="#b8d0a6" />
+      </pattern>
+    </defs>
+  );
+}
+
+function PaisajeSobrioBase() {
+  return (
+    <g>
+      <PatronesSobrios />
+      {/* suelo */}
+      <rect x={-20000} y={-20000} width={52000} height={52000} fill="#ebede3" />
+
+      {/* parcelas */}
+      <g transform={`translate(${CENTRO_MALLA.x} ${CENTRO_MALLA.y}) rotate(${ANGULO})`}>
+        {PARCELAS.map((p, i) =>
+          p.tipo === "balsa" ? (
+            <g key={i}>
+              <rect x={p.u} y={p.v} width={p.w} height={p.h} fill={RELLENO_SOBRIO.erial} />
+              <rect
+                x={p.u + p.w * 0.18}
+                y={p.v + p.h * 0.18}
+                width={p.w * 0.64}
+                height={p.h * 0.64}
+                rx={4}
+                fill="#a9cfe4"
+                stroke="#8fbad3"
+                strokeWidth={3}
+              />
+            </g>
+          ) : (
+            <rect key={i} x={p.u} y={p.v} width={p.w} height={p.h} fill={RELLENO_SOBRIO[p.tipo]} />
+          ),
+        )}
+        {PARCELAS.filter((p) => p.casa).map((p, i) => (
+          <rect key={`c-${i}`} x={p.u + p.w - 30} y={p.v + 8} width={20} height={14} rx={2} fill="#d9d5cc" stroke="#b9b3a6" strokeWidth={1.5} />
+        ))}
+      </g>
+
+      {/* Sierra de Carrascoy: bandas de verde más oscuras hacia la cresta (como el sombreado de un mapa) */}
+      <polygon points={SIERRA.pie} fill="#dbe3cf" />
+      <polygon points={SIERRA.ladera} fill="#c9d6bb" />
+      <polygon points={SIERRA.cresta} fill="#b7c8a8" />
+      <polygon points={SIERRA.norte} fill="#c9d6bb" />
+      {ROCAS.map((r, i) => (
+        <ellipse key={i} cx={r.x} cy={r.y} rx={40} ry={16} fill="#a9b99b" opacity={0.7} />
+      ))}
+
+      {/* rambla: cauce seco con su vegetación de ribera */}
+      <path d={ruta(RAMBLA)} fill="none" stroke="#dfe6d3" strokeWidth={80} strokeLinejoin="round" strokeLinecap="round" />
+      <path d={ruta(RAMBLA)} fill="none" stroke="#bcd7e6" strokeWidth={16} strokeLinejoin="round" strokeLinecap="round" />
+      {TARAJES.map((t, i) => (
+        <circle key={i} cx={t.x} cy={t.y} r={7} fill="#a9c49a" />
+      ))}
+
+      {/* caminos de tierra */}
+      {CAMINOS.map((c, i) => (
+        <path key={i} d={ruta(c)} fill="none" stroke="#d6cbb2" strokeWidth={7} strokeLinecap="round" strokeDasharray="18 10" />
+      ))}
+
+      {/* carreteras: blancas con borde gris */}
+      {CARRETERAS.map((c, i) => (
+        <g key={i} fill="none" strokeLinejoin="round" strokeLinecap="round">
+          <path d={ruta(c)} stroke="#c3c7bd" strokeWidth={16} />
+          <path d={ruta(c)} stroke="#ffffff" strokeWidth={11} />
+        </g>
+      ))}
+
+      {/* autovía: amarilla, como en los mapas de carreteras */}
+      <g fill="none" strokeLinejoin="round" strokeLinecap="round">
+        <path d={ruta(AUTOVIA)} stroke="#c9a64a" strokeWidth={34} />
+        <path d={ruta(AUTOVIA)} stroke="#f2d77e" strokeWidth={27} />
+        <path d={ruta(AUTOVIA)} stroke="#c9a64a" strokeWidth={2} />
+      </g>
+
+      {/* aeropuerto */}
+      <g transform={`translate(${AEROPUERTO.x} ${AEROPUERTO.y}) rotate(-40)`}>
+        <rect x={-430} y={-150} width={860} height={300} rx={14} fill="#e2e6dc" stroke="#cdd3c6" strokeWidth={3} />
+        <rect x={-330} y={-22} width={660} height={44} rx={4} fill="#a3a7a6" />
+        <line x1={-300} y1={0} x2={300} y2={0} stroke="#ffffff" strokeWidth={3} strokeDasharray="26 22" />
+        <rect x={-300} y={60} width={600} height={14} rx={3} fill="#b6bab8" />
+        <rect x={-120} y={76} width={240} height={66} rx={4} fill="#c3c7c4" />
+        <rect x={-90} y={110} width={180} height={34} rx={4} fill="#d9d5cc" stroke="#b9b3a6" strokeWidth={2} />
+      </g>
+
+      {/* pueblos: manzanas de casas en gris cálido */}
+      {PUEBLOS.map((p) => (
+        <g key={p.id}>
+          <circle cx={p.c.x} cy={p.c.y} r={185} fill="#e6e1d6" />
+          <rect x={p.c.x - 170} y={p.c.y - 6} width={340} height={12} fill="#ffffff" />
+          <rect x={p.c.x - 6} y={p.c.y - 170} width={12} height={340} fill="#ffffff" />
+          {CASAS[p.id].map((k, i) => (
+            <rect key={i} x={k.x - k.w / 2} y={k.y - k.h / 2} width={k.w} height={k.h} rx={1.5} fill="#d4cec2" stroke="#bbb4a6" strokeWidth={1} />
+          ))}
+          <rect x={p.c.x - 18} y={p.c.y - 12} width={36} height={26} rx={2} fill="#cfc6b6" stroke="#ab9f8b" strokeWidth={1.5} />
+        </g>
+      ))}
+    </g>
+  );
+}
+
+/** Paisaje del estilo sobrio (misma geografía, otro dibujo). */
+export const PaisajeSobrio = memo(PaisajeSobrioBase);
