@@ -5,6 +5,7 @@ import { CabeceraSeccion, Cargando, Panel } from "@/components/ui";
 import { obtenerContexto } from "@/lib/sesion";
 import { cargarFincas } from "@/lib/datos";
 import { cargarAlbaranes } from "@/lib/albaranes-datos";
+import { cargarTitulares } from "@/lib/cuentas";
 import { agrupar, type GrupoAlbaranes } from "@/lib/albaranes";
 import { formatoNumero } from "@/lib/texto";
 import { ImportarHoja } from "./ImportarHoja";
@@ -165,14 +166,15 @@ async function Albaranes() {
   const [{ fincas }, datos, t] = await Promise.all([
     cargarFincas(supabase),
     cargarAlbaranes(supabase),
-    supabase.from("titulares").select("id, nombre").eq("activo", true).order("nombre"),
+    cargarTitulares(supabase),
   ]);
   const opFincas: Opcion[] = fincas.map((f) => ({ id: f.id, nombre: f.nombre }));
-  const opTitulares: Opcion[] = (t.data ?? []).map((x) => ({ id: x.id, nombre: x.nombre }));
+  // en los desplegables solo los que facturan (Chelo no está en módulos)
+  const opTitulares: Opcion[] = t.facturan;
   const grupos = agrupar(
     datos.albaranes,
     new Map(opFincas.map((f) => [f.id, f.nombre])),
-    new Map(opTitulares.map((x) => [x.id, x.nombre])),
+    new Map(t.todos.map((x) => [x.id, x.nombre])),
   );
   const campanas = [...new Set(grupos.map((g) => g.campana))].sort().reverse();
 

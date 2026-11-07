@@ -1,6 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Factura, Socio, Titular } from "@/lib/cuentas-calculo";
+import { enModulosPorDefecto, type Factura, type Socio, type Titular } from "@/lib/cuentas-calculo";
 export * from "@/lib/cuentas-calculo";
 
 /*
@@ -23,16 +23,21 @@ export async function cargarCuentas(supabase: SupabaseClient, anio: number) {
       .order("fecha", { ascending: false })
       .limit(2000);
 
-  const [t, f0, so] = await Promise.all([
-    supabase
-      .from("titulares")
-      .select("id, nombre, nombre_completo, tipo, limite_eur, tope_seguridad_eur, aviso_pct, notas")
-      .eq("activo", true)
-      .order("nombre"),
+  const titularesCon = (columnas: string) => supabase.from("titulares").select(columnas).eq("activo", true).order("nombre");
+  const BASE_T = "id, nombre, nombre_completo, tipo, limite_eur, tope_seguridad_eur, aviso_pct, notas";
+  const [t0, f0, so] = await Promise.all([
+    titularesCon(`${BASE_T}, en_modulos`),
     facturasDe(`${COLUMNAS}, categoria, archivo_url`),
     // socios de las sociedades (migración 0021); sin ella, lista vacía
     supabase.from("titular_socios").select("sociedad_id, socio_id, participacion"),
   ]);
+  // sin la migración 0023 no hay «en_modulos»: se deduce (Chelo no está en módulos)
+  let t = t0;
+  let falta0023 = false;
+  if (t0.error && /en_modulos/.test(t0.error.message)) {
+    falta0023 = true;
+    t = await titularesCon(BASE_T);
+  }
   const socios: Socio[] = (so.data ?? []).map((x) => ({ ...x, participacion: Number(x.participacion) }));
   // sin la migración 0015 no hay «categoria» ni archivos: se lee lo de antes
   let f = f0;
@@ -43,8 +48,10 @@ export async function cargarCuentas(supabase: SupabaseClient, anio: number) {
   }
 
   const falta = !!t.error || !!f.error;
-  const titulares: Titular[] = (t.data ?? []).map((x) => ({
+  const filasT = (t.data ?? []) as unknown as (Omit<Titular, "en_modulos"> & { en_modulos?: boolean | null })[];
+  const titulares: Titular[] = filasT.map((x) => ({
     ...x,
+    en_modulos: x.en_modulos ?? enModulosPorDefecto(x),
     limite_eur: Number(x.limite_eur),
     tope_seguridad_eur: Number(x.tope_seguridad_eur),
     aviso_pct: Number(x.aviso_pct),
@@ -62,7 +69,28 @@ export async function cargarCuentas(supabase: SupabaseClient, anio: number) {
     categoria: x.categoria ?? null,
     archivo_url: x.archivo_url ?? null,
   }));
-  return { titulares, facturas, socios, falta, falta0015, falta0021: !!so.error, error: t.error?.message ?? f.error?.message ?? null };
+  return { titulares, facturas, socios, falta, falta0015, falta0021: !!so.error, falta0023, error: t.error?.message ?? f.error?.message ?? null };
+}
+
+/**
+ * Titulares a cuyo nombre se puede facturar (para los desplegables de «Se
+ * factura a»): todos menos los que no están en módulos (Chelo). Devuelve también
+ * todos, para poner nombre a lo que ya esté apuntado.
+ */
+export async function cargarTitulares(supabase: SupabaseClient) {
+  let r = await supabase.from("titulares").select("id, nombre, tipo, en_modulos").eq("activo", true).order("nombre");
+  if (r.error && /en_modulos/.test(r.error.message)) {
+    r = (await supabase.from("titulares").select("id, nombre, tipo").eq("activo", true).order("nombre")) as typeof r;
+  }
+  const todos = ((r.data ?? []) as { id: string; nombre: string; tipo: string; en_modulos?: boolean | null }[]).map((x) => ({
+    id: x.id,
+    nombre: x.nombre,
+    en_modulos: x.en_modulos ?? enModulosPorDefecto(x),
+  }));
+  return {
+    todos: todos.map(({ id, nombre }) => ({ id, nombre })),
+    facturan: todos.filter((x) => x.en_modulos).map(({ id, nombre }) => ({ id, nombre })),
+  };
 }
 
 /** Enlaces temporales (1 hora) para ver los archivos de las facturas. */

@@ -5,6 +5,7 @@ import { CabeceraSeccion, Cargando, Panel } from "@/components/ui";
 import { obtenerContexto } from "@/lib/sesion";
 import { cargarFincas } from "@/lib/datos";
 import { cargarAlbaranes } from "@/lib/albaranes-datos";
+import { cargarTitulares } from "@/lib/cuentas";
 import { nombreCampana } from "@/lib/albaranes";
 import { formatoNumero, hoyISO } from "@/lib/texto";
 import { FilaNueva } from "./FilaNueva";
@@ -42,11 +43,12 @@ async function Apuntar({ searchParams }: { searchParams: Busqueda }) {
   const [{ fincas }, datos, t] = await Promise.all([
     cargarFincas(supabase),
     cargarAlbaranes(supabase, campana),
-    supabase.from("titulares").select("id, nombre").eq("activo", true).order("nombre"),
+    cargarTitulares(supabase),
   ]);
-  const titulares = (t.data ?? []) as { id: string; nombre: string }[];
+  // en los desplegables solo los que facturan (Chelo no está en módulos)
+  const titulares = t.facturan;
   const nombreFinca = new Map(fincas.map((f) => [f.id, f.nombre]));
-  const nombreTitular = new Map(titulares.map((x) => [x.id, x.nombre]));
+  const nombreTitular = new Map(t.todos.map((x) => [x.id, x.nombre]));
   const hojas = [...new Set(datos.albaranes.map((a) => a.hoja).filter((h): h is string => !!h))].sort();
 
   if (datos.falta) {

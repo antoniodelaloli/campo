@@ -9,6 +9,8 @@ export type Titular = {
   tope_seguridad_eur: number;
   aviso_pct: number;
   notas: string | null;
+  /** false = no factura a su nombre ni está en módulos: solo es socio de una sociedad (Chelo, migración 0023) */
+  en_modulos: boolean;
 };
 
 export type Factura = {
@@ -63,11 +65,21 @@ export function estadoDe(t: Titular, importe: number): EstadoLimite {
 }
 
 /**
+ * Sin la migración 0023 no existe «en_modulos»: Chelo es la única que no está en
+ * módulos (Antonio, 7/11/2026: «no factura ella sola, solo aparece en la SL»).
+ */
+export function enModulosPorDefecto(t: { nombre: string; tipo: string }) {
+  return !(t.tipo === "persona" && t.nombre.trim().toLowerCase() === "chelo");
+}
+
+/**
  * Cómo va cada titular frente al límite. A cada socio se le suman las ventas
  * enteras de las sociedades de las que es socio (Antonio, 5/11/2026: «suma la
- * sociedad + el personal»).
+ * sociedad + el personal»). Los que no están en módulos (Chelo) no salen: no
+ * tienen límite, aunque sigan siendo socios para el reparto.
  */
 export function situacion(titulares: Titular[], facturas: Factura[], socios: Socio[] = []): SituacionTitular[] {
+  const enModulos = new Set(titulares.filter((t) => t.en_modulos).map((t) => t.id));
   const propio = (id: string) => {
     const ventas = facturas.filter((f) => f.titular_id === id && f.tipo === "venta" && f.cuenta_limite);
     return {
@@ -75,7 +87,7 @@ export function situacion(titulares: Titular[], facturas: Factura[], socios: Soc
       previsto: ventas.filter((f) => f.estado === "prevista").reduce((s, f) => s + f.base_eur, 0),
     };
   };
-  return titulares.map((t) => {
+  return titulares.filter((t) => t.en_modulos).map((t) => {
     const mio = propio(t.id);
     const sociedades = socios
       .filter((x) => x.socio_id === t.id)
@@ -93,7 +105,8 @@ export function situacion(titulares: Titular[], facturas: Factura[], socios: Soc
       previstoPropio: mio.previsto,
       sociedades,
       // una factura a nombre de una sociedad sube también a todos sus socios
-      socios: socios.filter((x) => x.sociedad_id === t.id).map((x) => x.socio_id),
+      // (solo los que están en módulos)
+      socios: socios.filter((x) => x.sociedad_id === t.id && enModulos.has(x.socio_id)).map((x) => x.socio_id),
       margenTope: t.tope_seguridad_eur - facturado - previsto,
       estado: estadoDe(t, facturado),
       estadoConPrevistas: estadoDe(t, facturado + previsto),

@@ -18,7 +18,8 @@ Cuando algo se haga, se tacha y se pone la fecha.
      impresa, firmada y sellada (una por corte, como prueba). Más adelante, si compensa: foto de cada albarán que
      rellene sola la línea (nº, cajas, pesada) para revisarla, en vez de teclearla.
   5. **Regla del límite por confirmar con el asesor:** si se suman las ventas de JHSYO a cada socio (ahora se
-     enseñan las dos cuentas).
+     enseñan las dos cuentas). Chelo no está en módulos ni factura a su nombre: solo es socia de JHSYO, así que no
+     tiene límite ni sale en la calculadora (migración 0023, 7/11/2026).
 
 - [ ] **Newsletter de los domingos para la familia** (apuntado el 5/11/2026)
   Un resumen semanal por correo, los domingos, para los familiares que se quieran suscribir.
