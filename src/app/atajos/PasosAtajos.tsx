@@ -4,7 +4,7 @@ function Cod({ children }: { children: ReactNode }) {
   return <code className="break-all bg-[#f6e7c1] px-1 font-bold">{children}</code>;
 }
 
-/** Pasos para montar los dos atajos en la app Atajos del iPhone. */
+/** Pasos para montar los tres atajos en la app Atajos del iPhone. */
 export function PasosAtajos({ base, clave }: { base: string; clave: string | null }) {
   const c = clave ?? "TU_CLAVE";
   return (
@@ -58,6 +58,37 @@ export function PasosAtajos({ base, clave }: { base: string; clave: string | nul
             <b>Mostrar resultado</b> con «Contenido de la URL».
           </li>
         </ol>
+      </section>
+
+      <section className="flex flex-col gap-1.5">
+        <h3 className="titulo-pixel text-lg">3 · Atajo «Cuaderno»</h3>
+        <p>
+          Se dice <i>«Oye Siri, cuaderno»</i> y se habla todo lo que haga falta, aunque se mezclen cosas. Campo lo reparte
+          solo: tareas, fechas clave, diario, ideas e incidencias. Lo personal no se queda en Campo y lo de la confitería
+          tampoco.
+        </p>
+        <ol className="flex list-decimal flex-col gap-1.5 pl-5">
+          <li>
+            Nuevo atajo con el nombre <b>Cuaderno</b>. No uses «Apunta» ni «Anota»: Siri ya los usa para Notas y
+            Recordatorios.
+          </li>
+          <li>
+            Añade <b>Dictar texto</b>: idioma <b>Español (España)</b> y «Dejar de escuchar» <b>Tras una pausa</b>.
+          </li>
+          <li>
+            Añade <b>Obtener contenido de URL</b> con <Cod>{`${base}/api/atajos/apuntar`}</Cod>, método <b>POST</b>, la misma
+            cabecera <Cod>Authorization</Cod> y en el cuerpo JSON un solo campo de texto: <Cod>texto</Cod> = «Texto
+            dictado».
+          </li>
+          <li>
+            <b>Mostrar resultado</b> con «Contenido de la URL». Siri contesta, por ejemplo: <i>«Apuntado en Campo: una tarea
+            en Corvera para el 12/11 y una idea»</i>.
+          </li>
+        </ol>
+        <p className="text-xs text-tinta-suave">
+          Lo que no queda claro (de qué finca, para cuándo) no se inventa: va a la libreta de ideas con el tema
+          «revisar». Lo dicho se guarda siempre tal cual, y eso solo lo ve quien lo dictó.
+        </p>
       </section>
 
       <p className="text-xs text-tinta-suave">
