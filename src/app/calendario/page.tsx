@@ -115,7 +115,7 @@ async function FechasClave() {
             className="ficha flex items-center justify-between gap-2 px-3 py-2.5 text-sm font-bold hover:bg-[#f6e7c1]"
           >
             <span>
-              Atajos de Siri: <span className="font-normal">«Oye Siri, incidencia»</span>
+              Atajos de Siri: <span className="font-normal">«Oye Siri, cuaderno»</span>
             </span>
             <span aria-hidden="true">→</span>
           </Link>

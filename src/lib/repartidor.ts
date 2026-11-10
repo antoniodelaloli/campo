@@ -9,9 +9,11 @@ import { esFechaISO, fechaLarga } from "@/lib/texto";
  * trocea lo dicho y dice, de cada trozo, a dónde va y qué es:
  *   - campo      → se guarda en Campo (tarea, fecha clave, diario, idea, incidencia)
  *   - personal   → su cuaderno personal (fuera de Campo)
- *   - confiteria → no es de aquí (va al conector «Obrador»)
+ *   - confiteria → la confitería y cafeterías: también a su cuaderno personal,
+ *                  marcado como confitería, para revisarlo de vez en cuando
  *   - dudoso     → no está claro si es del campo o personal: va a lo personal,
  *                  que es suyo, para que nada privado acabe a la vista de la familia
+ * Si el iPhone manda su ubicación y está en una finca, «aquí» es esa finca.
  * Las instrucciones son fijas: siempre ordena igual.
  */
 
@@ -93,7 +95,9 @@ const HERRAMIENTA = {
   },
 } as const;
 
-function instrucciones(fincas: Finca[], hoy: string) {
+export type Aqui = { finca: string; zona: string | null } | null;
+
+function instrucciones(fincas: Finca[], hoy: string, aqui: Aqui) {
   const lista = fincas
     .map((f) => {
       const zonas = f.zonas
@@ -107,6 +111,7 @@ function instrucciones(fincas: Finca[], hoy: string) {
   return `Eres el repartidor del cuaderno de Juan Carlos («Carlos»), agricultor de Murcia. Te llega lo que ha dictado a Siri, sin puntuación y a veces divagando. Trocéalo y llama a «repartir» con un trozo por cada cosa distinta.
 
 Hoy es ${fechaLarga(hoy)}, ${hoy}. Convierte «mañana», «el jueves», «el 15» a AAAA-MM-DD (siempre hacia delante).
+${aqui ? `Ahora mismo está en la finca ${aqui.finca}${aqui.zona ? `, zona ${aqui.zona}` : ""}. Si dice «aquí» o habla del campo sin decir qué finca, es esa${aqui.zona ? " y esa zona" : ""}.` : "No se sabe dónde está: si no dice la finca, finca = null."}
 
 DESTINO de cada trozo:
 - campo: las fincas de limoneros de la familia y su trabajo (riego, pantanos, contadores, fumigar, podar, cortes y cosecha, Citrisol y otros compradores, trabajadores como Pencho o Salah, el técnico Diego Vélez, la Comunidad de Regantes, CHS, SIGPAC, PAC, papeles y facturas de las fincas, nóminas del campo).
@@ -138,7 +143,7 @@ type RespuestaApi = {
 };
 
 /** Pide a Claude el reparto. Lanza un error si la API falla o no hay clave. */
-export async function repartir(texto: string, fincas: Finca[], hoy: string): Promise<Trozo[]> {
+export async function repartir(texto: string, fincas: Finca[], hoy: string, aqui: Aqui = null): Promise<Trozo[]> {
   const clave = process.env.ANTHROPIC_API_KEY;
   if (!clave) throw new Error("Falta ANTHROPIC_API_KEY");
 
@@ -152,7 +157,7 @@ export async function repartir(texto: string, fincas: Finca[], hoy: string): Pro
     body: JSON.stringify({
       model: MODELO_REPARTIDOR,
       max_tokens: 4000,
-      system: instrucciones(fincas, hoy),
+      system: instrucciones(fincas, hoy, aqui),
       tools: [HERRAMIENTA],
       tool_choice: { type: "tool", name: "repartir" },
       messages: [{ role: "user", content: texto }],

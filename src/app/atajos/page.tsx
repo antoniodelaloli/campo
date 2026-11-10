@@ -35,12 +35,12 @@ async function Atajos() {
 
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 py-5">
-      <CabeceraSeccion titulo="Atajos de Siri" subtitulo="«Oye Siri, incidencia» y «¿En qué finca estoy?»" volver="/calendario" />
+      <CabeceraSeccion titulo="Atajos de Siri" subtitulo="«Oye Siri, cuaderno»" volver="/calendario" />
 
       <p className="ficha px-3 py-2.5 text-sm leading-relaxed">
-        Junto al sitio, di <b>«Oye Siri, incidencia»</b> o pulsa el botón: el iPhone manda su ubicación, te pregunta qué es
-        (fuga de agua, árbol a revisar, plaga, avería u otra cosa) y Campo la apunta con su <b>sitio exacto</b>, la finca y
-        la zona. Sale como chincheta en el plano de la finca, con «Cómo llegar».
+        Di <b>«Oye Siri, cuaderno»</b> o pulsa el botón y habla: Campo lo reparte solo en tareas, fechas clave, diario, ideas
+        e incidencias. Si estás en una finca, las incidencias quedan con su <b>sitio exacto</b> en el plano, con «Cómo
+        llegar». Lo personal y lo de la confitería no se guardan en Campo.
       </p>
 
       {error && (
