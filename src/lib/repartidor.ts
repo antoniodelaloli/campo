@@ -129,6 +129,8 @@ TIPO (solo importa si el destino es campo, pero rellénalo siempre):
 FINCAS Y ZONAS (usa SOLO estos nombres exactos; si no dice cuál, null):
 ${lista}
 
+«Antoñico» o «el programa de Antoñico» es esta app, Campo (la hace su sobrino Antonio): «meterlo en el programa de Antoñico» = apuntarlo en Campo, y es del campo.
+
 SIRI ESCRIBE MAL ALGUNOS NOMBRES: «Valladolid» o «Valladolides» es Valladolises; «Los Bolsillos», «Lo Bosillo» o «Lobosillos» es Lobosillo; «Corbera» es Corvera.
 
 REGLAS:
