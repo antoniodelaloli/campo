@@ -129,10 +129,14 @@ TIPO (solo importa si el destino es campo, pero rellénalo siempre):
 FINCAS Y ZONAS (usa SOLO estos nombres exactos; si no dice cuál, null):
 ${lista}
 
+SIRI ESCRIBE MAL ALGUNOS NOMBRES: «Valladolid» o «Valladolides» es Valladolises; «Los Bolsillos», «Lo Bosillo» o «Lobosillos» es Lobosillo; «Corbera» es Corvera.
+
 REGLAS:
 - No inventes nada que no haya dicho. Si no dice fecha, fecha = null.
 - «texto» lleva sus palabras sobre esa cosa, sin resumir ni corregir.
-- Si dudas de qué tipo es, de qué finca o de la fecha, claro = false.
+- Si en la misma frase cuenta algo que ha pasado y algo que hay que hacer, son DOS trozos: una nota_diario con lo que pasó y una tarea con lo que hay que hacer (por ejemplo: «hay caracol, hemos encargado sacos para repetir mañana» = nota_diario + tarea para mañana).
+- claro = true casi siempre. Que no diga fecha NO es dudar (fecha = null y claro = true). Que no diga finca en una gestión, una llamada o un papel tampoco.
+- claro = false SOLO si de verdad no se entiende qué quiere, o si es algo de una finca concreta (una avería, un riego, una plaga) y no se sabe de cuál.
 - Ignora muletillas, saludos y frases sin contenido («bueno», «a ver», «eso es todo»).
 - Si no hay nada que guardar, devuelve trozos vacío.`;
 }
