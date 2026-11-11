@@ -1,4 +1,4 @@
-# Campo · Banco de preguntas para Juan Carlos (v1.2 · 1/11/2026)
+# Campo · Banco de preguntas para Juan Carlos (v1.3 · 11/11/2026)
 
 Preguntas sobre lo que solo sabe la familia. Van por **bloques de 5** (unos 5-10 minutos cada uno), de más a menos importante.
 Cada pregunta tiene un código (no hace falta leerlo en voz alta), **lo que ya creemos** (para confirmar o corregir) y **qué respuesta nos sirve**.
@@ -9,8 +9,8 @@ Se puede contestar «no lo sé», «más o menos» o «eso lo sabe Pencho». Tod
 ## Bloque 1 · Lobosillo (lo básico)
 
 ### LOB-01 · ¿Qué hay plantado en Lobosillo?
-- **Lo que creemos:** nada todavía. Solo sabemos que es nueva y que se describió como ecológica.
-- **Nos sirve:** especie y variedad (o si está sin plantar), número de árboles aproximado y edad.
+- **Lo que creemos:** limoneros Fino 95, Verna y Turco (el Turco se cogió entero para cítrica por la araña), y algunos mandarinos.
+- **Nos sirve:** cuántos árboles hay de cada variedad, dónde está cada una y qué edad tienen.
 
 ### LOB-02 · ¿Cuánto mide Lobosillo?
 - **Lo que creemos:** la escritura dice 2 hectáreas, 13 áreas y 70 centiáreas (unas 2,14 ha).
@@ -27,6 +27,18 @@ Se puede contestar «no lo sé», «más o menos» o «eso lo sabe Pencho». Tod
 ### LOB-05 · ¿Lobosillo es ecológica certificada?
 - **Lo que creemos:** se dijo «ecológica», sin más.
 - **Nos sirve:** si está certificada o en conversión, con qué entidad certificadora y desde cuándo. (Recordatorio: esto **no** afecta a Valladolises ni a Corvera.)
+
+### LOB-09 · Las mandarinas de Lobosillo
+- **Lo que creemos:** hay mandarinos y la fruta está muy buena (la probaron Antonio y su padre).
+- **Nos sirve:** cuántos mandarinos hay, de qué variedad, dónde están y si se venden o son para casa.
+
+### LOB-10 · ¿Junto a la casa o junto al campo de fútbol?
+- **Lo que creemos:** el primer corte de Fino 95 (5 y 6/11) fue en Mis Partos, junto al campo de fútbol. La nota de los albaranes dice «junto a la casa». Puede que estén al lado.
+- **Nos sirve:** si es la misma parcela o son dos, y cómo llamáis a cada trozo.
+
+### LOB-11 · El destrío del 6 de noviembre
+- **Lo que creemos:** el camión del 5/11 tuvo un 1,9 % de destrío y el del 6/11 un 27,7 % (3.773 kg de 13.625).
+- **Nos sirve:** por qué tanta diferencia: otra zona, fruta con araña mezclada, calibre… o un error del albarán.
 
 ---
 
