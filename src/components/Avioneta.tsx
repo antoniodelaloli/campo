@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
  * Si el sistema pide «reducir movimiento», no sale.
  */
 
-const MENSAJE = "Mirad al cielo, nos fumigan";
+const MENSAJE = "Hola mandril";
 const DURACION_S = 16; // lo que tarda en cruzar la pantalla
 const PRIMERA_MS = 4_000;
 const ENTRE_MIN_MS = 30_000;
