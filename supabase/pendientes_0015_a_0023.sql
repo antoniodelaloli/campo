@@ -772,10 +772,11 @@ $$;
 revoke all on function public.cambiar_mi_estilo(text) from public, anon;
 grant execute on function public.cambiar_mi_estilo(text) to authenticated;
 
--- Juan Carlos, con el estilo sobrio. Comprueba abajo que sale él (y solo él);
--- si no, cambia el «where» por su email.
+-- Juan Carlos y Antonio, con el estilo sobrio (Antonio lo pidió el 12/11/2026).
+-- Comprueba abajo que salen ellos dos; si no, cambia el «where» por sus emails.
 update public.profiles set estilo = 'sobrio'
- where lower(coalesce(nombre, '')) like '%carlos%';
+ where lower(coalesce(nombre, '')) like '%carlos%'
+    or lower(coalesce(nombre, '')) like 'antonio%';
 
 select email, nombre, rol, estilo from public.profiles order by nombre;
 
