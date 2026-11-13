@@ -1,4 +1,4 @@
-# Campo · Banco de preguntas para Juan Carlos (v1.3 · 11/11/2026)
+# Campo · Banco de preguntas para Juan Carlos (v1.4 · 13/11/2026)
 
 Preguntas sobre lo que solo sabe la familia. Van por **bloques de 5** (unos 5-10 minutos cada uno), de más a menos importante.
 Cada pregunta tiene un código (no hace falta leerlo en voz alta), **lo que ya creemos** (para confirmar o corregir) y **qué respuesta nos sirve**.
@@ -12,9 +12,9 @@ Se puede contestar «no lo sé», «más o menos» o «eso lo sabe Pencho». Tod
 - **Lo que creemos:** limoneros Fino 95, Verna y Turco (el Turco se cogió entero para cítrica por la araña), y algunos mandarinos.
 - **Nos sirve:** cuántos árboles hay de cada variedad, dónde está cada una y qué edad tienen.
 
-### LOB-02 · ¿Cuánto mide Lobosillo?
-- **Lo que creemos:** la escritura dice 2 hectáreas, 13 áreas y 70 centiáreas (unas 2,14 ha).
-- **Nos sirve:** confirmar que esa escritura es la de Lobosillo, y si se cultiva toda o hay casa, balsa o terreno sin cultivar.
+### LOB-02 · ¿Qué trozos tiene Lobosillo y cuánto mide cada uno?
+- **Lo que creemos:** el Catastro da unas 3,3 ha con las tres parcelas de la escritura: polígono 535, parcela 64 (casa, pista y balsa, 0,73 ha de limonero); polígono 535, parcela 63 (0,56 ha) y polígono 536, parcela 67 (La Casica, 2,02 ha). Carlos calcula unas 5,5 ha, así que faltan unas 2,2 ha.
+- **Nos sirve:** el polígono y la parcela de cada trozo (salen en la escritura, en el recibo del IBI, en la declaración de la PAC o en el certificado de ecológico), qué hay plantado en cada uno y si alguno es arrendado. Con eso se comprueba en el Catastro.
 
 ### LOB-03 · ¿De dónde le viene el agua a Lobosillo?
 - **Lo que creemos:** nada.
