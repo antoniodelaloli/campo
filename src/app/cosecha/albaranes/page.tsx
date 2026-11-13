@@ -169,7 +169,7 @@ async function Albaranes() {
     cargarTitulares(supabase),
   ]);
   const opFincas: Opcion[] = fincas.map((f) => ({ id: f.id, nombre: f.nombre }));
-  // en los desplegables solo los que facturan (Chelo no está en módulos)
+  // en los desplegables solo los que facturan (Chelo no factura)
   const opTitulares: Opcion[] = t.facturan;
   const grupos = agrupar(
     datos.albaranes,

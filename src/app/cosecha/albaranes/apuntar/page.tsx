@@ -45,7 +45,7 @@ async function Apuntar({ searchParams }: { searchParams: Busqueda }) {
     cargarAlbaranes(supabase, campana),
     cargarTitulares(supabase),
   ]);
-  // en los desplegables solo los que facturan (Chelo no está en módulos)
+  // en los desplegables solo los que facturan (Chelo no factura)
   const titulares = t.facturan;
   const nombreFinca = new Map(fincas.map((f) => [f.id, f.nombre]));
   const nombreTitular = new Map(t.todos.map((x) => [x.id, x.nombre]));

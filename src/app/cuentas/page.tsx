@@ -136,7 +136,7 @@ async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["
         <b>Límite de los módulos: 250.000 € de ventas al año por titular</b> (año natural, enero a diciembre; cuenta la
         base sin IVA ni compensación). <b>Por confirmar con el asesor:</b> si a cada socio se le suman todas las ventas de
         JHSYO (de Maite, Chelo y Juan Carlos a partes iguales). Por si acaso, la barra las suma; debajo sale también la
-        cuenta sin sumarlas. Chelo no sale: no está en módulos ni factura a su nombre, solo es socia de JHSYO.
+        cuenta sin sumarlas. Chelo no sale: no está en módulos ni factura a su nombre, solo es socia de JHSYO. Mis Partos, C.B. (Lobosillo) tampoco: es una comunidad de bienes, no va por módulos y sus ventas no suman al límite de sus comuneros.
         {cuentas.falta0021 && " Falta ejecutar la migración 0021 (socios de JHSYO) para que se sumen."}
         {cuentas.falta0023 && " (Falta la migración 0023; mientras tanto, Chelo se deja fuera por su nombre.)"}
       </p>
@@ -185,7 +185,7 @@ async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["
         {puedeEditar && !cuentas.falta && (
           <Panel titulo="Apuntar una factura">
             <ApuntarFactura
-              titulares={cuentas.titulares.filter((t) => t.en_modulos).map((t) => ({ id: t.id, nombre: t.nombre }))}
+              titulares={cuentas.titulares.filter((t) => t.factura).map((t) => ({ id: t.id, nombre: t.nombre }))}
               fincas={fincas.map((f) => ({ id: f.id, nombre: f.nombre }))}
               hoy={hoy}
               conArchivos={!cuentas.falta0015}

@@ -9,8 +9,10 @@ export type Titular = {
   tope_seguridad_eur: number;
   aviso_pct: number;
   notas: string | null;
-  /** false = no factura a su nombre ni está en módulos: solo es socio de una sociedad (Chelo, migración 0023) */
+  /** false = no tiene límite de módulos: Chelo (solo socia), los comuneros de Mis Partos y la propia comunidad de bienes (migraciones 0023 y 0025) */
   en_modulos: boolean;
+  /** false = no factura a su nombre (Chelo, Blanca, Alejandro): no sale en los desplegables de «Se factura a» */
+  factura: boolean;
 };
 
 export type Factura = {
@@ -65,18 +67,21 @@ export function estadoDe(t: Titular, importe: number): EstadoLimite {
 }
 
 /**
- * Sin la migración 0023 no existe «en_modulos»: Chelo es la única que no está en
- * módulos (Antonio, 7/11/2026: «no factura ella sola, solo aparece en la SL»).
+ * Sin la migración 0023 no existen «en_modulos» ni «factura»: Chelo es la única
+ * que ni factura ni está en módulos (Antonio, 7/11/2026: «no factura ella sola,
+ * solo aparece en la SL»).
  */
 export function enModulosPorDefecto(t: { nombre: string; tipo: string }) {
   return !(t.tipo === "persona" && t.nombre.trim().toLowerCase() === "chelo");
 }
+export const facturaPorDefecto = enModulosPorDefecto;
 
 /**
  * Cómo va cada titular frente al límite. A cada socio se le suman las ventas
  * enteras de las sociedades de las que es socio (Antonio, 5/11/2026: «suma la
  * sociedad + el personal»). Los que no están en módulos (Chelo) no salen: no
- * tienen límite, aunque sigan siendo socios para el reparto.
+ * tienen límite, aunque sigan siendo socios para el reparto. Las sociedades que
+ * no están en módulos (Mis Partos, C.B., Antonio 13/11/2026) no suman a sus socios.
  */
 export function situacion(titulares: Titular[], facturas: Factura[], socios: Socio[] = []): SituacionTitular[] {
   const enModulos = new Set(titulares.filter((t) => t.en_modulos).map((t) => t.id));
@@ -90,7 +95,7 @@ export function situacion(titulares: Titular[], facturas: Factura[], socios: Soc
   return titulares.filter((t) => t.en_modulos).map((t) => {
     const mio = propio(t.id);
     const sociedades = socios
-      .filter((x) => x.socio_id === t.id)
+      .filter((x) => x.socio_id === t.id && enModulos.has(x.sociedad_id))
       .map((x) => {
         const soc = titulares.find((y) => y.id === x.sociedad_id);
         return { id: x.sociedad_id, nombre: soc?.nombre ?? "—", participacion: x.participacion, ...propio(x.sociedad_id) };
