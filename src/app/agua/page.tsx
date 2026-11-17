@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import { Marco } from "@/components/Marco";
 import { CabeceraSeccion, Cargando, Chip, ChipFinca, Panel } from "@/components/ui";
 import { FormLectura, FormNivel } from "./FormulariosAgua";
@@ -14,6 +14,7 @@ import {
   cargarSuministros,
   ultimaLectura,
   ultimoNivel,
+  type Contador,
   type Pantano,
 } from "@/lib/datos";
 import { fechaCorta, formatoNumero, hoyISO } from "@/lib/texto";
@@ -68,6 +69,130 @@ function DibujoPantano({ pantano }: { pantano: Pantano }) {
         </>
       )}
     </svg>
+  );
+}
+
+const METODO: Record<string, string> = { a_ojo: "a ojo", sensor: "sensor", calculado: "calculado" };
+
+/** Desplegable bajo un formulario: «Ver últimos niveles (12)». Sin JavaScript. */
+function Desplegable({ titulo, n, children }: { titulo: string; n: number; children: ReactNode }) {
+  return (
+    <details className="group border-t-2 border-dotted border-borde-papel pt-2">
+      <summary className="flex cursor-pointer list-none items-center gap-1.5 text-[13px] font-bold text-tinta-suave hover:text-tinta [&::-webkit-details-marker]:hidden">
+        <span className="inline-block transition-transform group-open:rotate-90" aria-hidden="true">
+          ▸
+        </span>
+        {titulo} ({n})
+      </summary>
+      <div className="mt-2 overflow-x-auto">{children}</div>
+    </details>
+  );
+}
+
+/** Últimos niveles de todos los pantanos, con el cambio desde el anterior del mismo pantano. */
+function UltimosNiveles({ pantanos, hoy }: { pantanos: (Pantano & { finca: string })[]; hoy: string }) {
+  const filas = pantanos.flatMap((p) => {
+    const tope = Number(p.capacidad_util_m3 ?? p.capacidad_m3 ?? 0);
+    const ns = p.niveles_pantano.filter((n) => !n.anulado).sort((a, b) => a.fecha.localeCompare(b.fecha));
+    return ns.map((n, i) => {
+      const antes = ns[i - 1]?.nivel_m3;
+      return {
+        ...n,
+        finca: p.finca,
+        pct: n.nivel_m3 != null && tope ? Math.round((Number(n.nivel_m3) / tope) * 100) : null,
+        cambio: n.nivel_m3 != null && antes != null ? Number(n.nivel_m3) - Number(antes) : null,
+      };
+    });
+  });
+  filas.sort((a, b) => b.fecha.localeCompare(a.fecha));
+  if (filas.length === 0) return <p className="text-[13px] text-tinta-suave">Aún no hay niveles apuntados.</p>;
+  return (
+    <Desplegable titulo="Ver últimos niveles" n={Math.min(filas.length, 15)}>
+      <table className="w-full text-[13px]">
+        <thead>
+          <tr className="text-left text-tinta-suave">
+            <th className="py-1 font-semibold">Fecha</th>
+            <th className="py-1 font-semibold">Pantano</th>
+            <th className="py-1 text-right font-semibold">m³</th>
+            <th className="py-1 text-right font-semibold">Cambio</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filas.slice(0, 15).map((f) => (
+            <tr key={f.id} className="border-t border-dotted border-borde-papel">
+              <td className="py-1 whitespace-nowrap">{fechaCorta(f.fecha, hoy)}</td>
+              <td className="py-1">
+                {f.finca}
+                <span className="text-tinta-suave"> · {METODO[f.metodo] ?? f.metodo}</span>
+              </td>
+              <td className="py-1 text-right whitespace-nowrap">
+                {f.nivel_m3 != null ? formatoNumero(Number(f.nivel_m3)) : "—"}
+                {f.pct != null && <span className="text-tinta-suave"> ({f.pct} %)</span>}
+              </td>
+              <td className="py-1 text-right whitespace-nowrap">
+                {f.cambio == null ? "" : `${f.cambio >= 0 ? "+" : "−"}${formatoNumero(Math.abs(f.cambio))}`}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Desplegable>
+  );
+}
+
+/** Últimas lecturas de todos los contadores, con lo gastado desde la anterior del mismo contador. */
+function UltimasLecturas({
+  contadores,
+  nombreFinca,
+  hoy,
+}: {
+  contadores: Contador[];
+  nombreFinca: Map<string, string>;
+  hoy: string;
+}) {
+  const filas = contadores.flatMap((c) => {
+    const ls = c.lecturas_contador.filter((l) => !l.anulada).sort((a, b) => a.fecha.localeCompare(b.fecha));
+    return ls.map((l, i) => {
+      const antes = ls[i - 1];
+      const m3 = antes ? Number(l.lectura_m3) - Number(antes.lectura_m3) : null;
+      return { ...l, contador: c.nombre, finca: nombreFinca.get(c.finca_id) ?? "", m3: m3 != null && m3 >= 0 ? m3 : null };
+    });
+  });
+  filas.sort((a, b) => b.fecha.localeCompare(a.fecha));
+  if (filas.length === 0) return <p className="text-[13px] text-tinta-suave">Aún no hay lecturas apuntadas.</p>;
+  return (
+    <Desplegable titulo="Ver últimas lecturas" n={Math.min(filas.length, 15)}>
+      <table className="w-full text-[13px]">
+        <thead>
+          <tr className="text-left text-tinta-suave">
+            <th className="py-1 font-semibold">Fecha</th>
+            <th className="py-1 font-semibold">Contador</th>
+            <th className="py-1 text-right font-semibold">Lectura</th>
+            <th className="py-1 text-right font-semibold">Gastado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filas.slice(0, 15).map((f) => (
+            <tr key={f.id} className="border-t border-dotted border-borde-papel">
+              <td className="py-1 whitespace-nowrap">{fechaCorta(f.fecha, hoy)}</td>
+              <td className="py-1">
+                {f.contador}
+                <span className="text-tinta-suave"> · {f.finca}</span>
+                {f.pendiente_conciliar && (
+                  <>
+                    {" "}
+                    <Chip tono="ambar">por confirmar</Chip>
+                  </>
+                )}
+              </td>
+              <td className="py-1 text-right whitespace-nowrap">{formatoNumero(Number(f.lectura_m3))}</td>
+              <td className="py-1 text-right whitespace-nowrap">{f.m3 != null ? `${formatoNumero(f.m3)} m³` : ""}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="mt-1 text-xs text-tinta-suave">«Gastado» es la diferencia con la lectura anterior del mismo contador.</p>
+    </Desplegable>
   );
 }
 
@@ -218,6 +343,7 @@ async function Agua() {
                 pantanos={pantanos.map((p) => ({ id: p.id, etiqueta: `${p.nombre}` }))}
                 hoy={hoy}
               />
+              <UltimosNiveles pantanos={pantanos} hoy={hoy} />
             </Panel>
           )}
           {puedeEditar && contadores.length > 0 && (
@@ -229,6 +355,7 @@ async function Agua() {
                 }))}
                 hoy={hoy}
               />
+              <UltimasLecturas contadores={contadores} nombreFinca={nombreFinca} hoy={hoy} />
             </Panel>
           )}
 
