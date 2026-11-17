@@ -56,7 +56,8 @@ const CANDIDATOS: Record<string, Candidato> = {
     const desdeP = sumarDias(desde, -365);
     const hastaP = sumarDias(hoy, -365);
     if (!riegos.length || riegos[0].fecha > desdeP) return null;
-    const suma = (a: string, b: string) => riegos.filter((x) => x.fecha > a && x.fecha <= b).reduce((s, x) => s + x.volumen_m3, 0);
+    const suma = (a: string, b: string) =>
+      riegos.filter((x) => !x.cesion && x.fecha > a && x.fecha <= b).reduce((s, x) => s + x.volumen_m3, 0);
     const ahora = suma(desde, hoy);
     const antes = suma(desdeP, hastaP);
     if (!ahora && !antes) return null;
@@ -67,8 +68,8 @@ const CANDIDATOS: Record<string, Candidato> = {
   // Lo que se ahorra por el precio del agua frente a la campaña anterior
   agua_precio: ({ riegos, hoy }) => {
     const ini = inicioCampana(hoy);
-    const esta = riegos.filter((x) => x.fecha >= `${ini}-05-01`);
-    const antes = riegos.filter((x) => x.fecha >= `${ini - 1}-05-01` && x.fecha < `${ini}-05-01`);
+    const esta = riegos.filter((x) => !x.cesion && x.fecha >= `${ini}-05-01`);
+    const antes = riegos.filter((x) => !x.cesion && x.fecha >= `${ini - 1}-05-01` && x.fecha < `${ini}-05-01`);
     const precio = (l: Riego[]) => {
       const v = l.reduce((s, x) => s + x.volumen_m3, 0);
       return v ? l.reduce((s, x) => s + x.coste_eur, 0) / v : 0;

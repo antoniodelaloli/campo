@@ -1,15 +1,22 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { Panel } from "@/components/ui";
 import { fechaCorta, formatoNumero } from "@/lib/texto";
 import { mesCorto, nombreMes } from "@/lib/agenda";
 import {
+  ARQUETAS_CESION,
+  M3_EMBALSE,
+  M3_RARO,
   conciliar,
   inicioCampana,
   porArqueta,
   porMes,
   resumenAgua,
+  resumenCampana,
   type Lectura,
+  type PagoAgua,
   type ResumenAgua,
+  type ResumenCampana,
   type Riego,
 } from "@/lib/riegos";
 
@@ -77,6 +84,116 @@ export function TarjetasAgua({ r, hoy }: { r: ResumenAgua; hoy: string }) {
         }
       />
     </div>
+  );
+}
+
+/** «Agosto y Septiembre» → «agosto y septiembre» */
+const mesLargo = (mes: string) => nombreMes(`${mes}-01`).split(" ")[0].toLowerCase();
+const listaMeses = (meses: string[]) =>
+  meses.length <= 1 ? meses.map(mesLargo).join("") : `${meses.slice(0, -1).map(mesLargo).join(", ")} y ${mesLargo(meses.at(-1)!)}`;
+
+function Fila({ k, children, aviso = false }: { k: string; children: ReactNode; aviso?: boolean }) {
+  return (
+    <div className="flex flex-col gap-0.5 border-b-2 border-dotted border-borde-papel pb-1.5 sm:flex-row sm:gap-3">
+      <dt className={`shrink-0 text-[13px] font-bold sm:w-36 ${aviso ? "text-aviso" : "text-tinta-suave"}`}>{k}</dt>
+      <dd className="text-sm leading-snug">{children}</dd>
+    </div>
+  );
+}
+
+/** Barritas de mayo a abril: cómo se reparte el agua en la campaña. */
+function MesesCampana({ c }: { c: ResumenCampana }) {
+  const max = Math.max(1, ...c.meses.map((x) => x.m3));
+  const color = c.cerrada ? AZUL_CLARO : AZUL;
+  return (
+    <div className="flex items-end gap-1" role="img" aria-label={`Agua pedida cada mes de la campaña ${c.campana}`}>
+      {Array.from({ length: 12 }, (_, i) => {
+        const x = c.meses[i];
+        const h = x ? Math.max(x.m3 ? 4 : 0, Math.round((x.m3 / max) * 56)) : 0;
+        const mes = x?.mes ?? `${c.inicio + (i >= 8 ? 1 : 0)}-${String(((4 + i) % 12) + 1).padStart(2, "0")}`;
+        return (
+          <div key={mes} className="flex flex-1 flex-col items-center gap-0.5" title={x ? `${nombreMes(`${mes}-01`)}: ${m3(x.m3)} · ${eur(x.eur)}` : undefined}>
+            <div className="flex h-14 w-full items-end justify-center">
+              <div className="w-full max-w-5 rounded-t-[3px]" style={{ height: h, background: x ? color : "transparent" }} />
+            </div>
+            <span className={`text-[10px] ${x ? "text-tinta" : "text-tinta-suave opacity-50"}`}>{mesCorto(`${mes}-01`).slice(0, 1).toUpperCase()}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Resumen de una campaña: lo gastado, cuándo, el precio, la cesión y lo raro. */
+function ResumenDeCampana({ c, comparacion, hoy }: { c: ResumenCampana; comparacion?: ResumenAgua["comparacion"]; hoy: string }) {
+  const var_ = comparacion ? variacion(comparacion.esteAnio.m3, comparacion.anioPasado.m3) : null;
+  return (
+    <Panel titulo={`Campaña ${c.campana} · ${c.cerrada ? "cerrada" : "en curso"}`}>
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+        <div className="flex flex-col">
+          <span className="titulo-pixel text-[28px]">{eur(c.propios.eur)}</span>
+          <span className="text-[13px] text-tinta-suave">
+            {m3(c.propios.m3)} en {c.propios.n} riegos
+            {c.precioMedio != null ? ` · ${formatoNumero(c.precioMedio, 3)} €/m³ de media` : ""}
+            {c.cerrada ? "" : ` · del 1 de mayo a hoy`}
+          </span>
+        </div>
+        {var_ && comparacion && (
+          <span className="text-[13px] font-bold" title={`${m3(comparacion.esteAnio.m3)} frente a ${m3(comparacion.anioPasado.m3)}`}>
+            {var_} de agua frente al año pasado a estas fechas
+          </span>
+        )}
+      </div>
+
+      {!c.completa && (
+        <p className="ficha-pendiente p-2 text-[13px]">Faltan los riegos de antes del primer dato: el total saldrá algo más alto.</p>
+      )}
+
+      <MesesCampana c={c} />
+
+      <dl className="flex flex-col gap-1.5">
+        {c.fuertes && (
+          <Fila k="Cuándo se gasta">
+            {listaMeses(c.fuertes.meses).replace(/^./, (l) => l.toUpperCase())}: {m3(c.fuertes.m3)}, el{" "}
+            {formatoNumero(Math.round(c.fuertes.parte * 100))} % del agua{c.cerrada ? " de la campaña" : " de lo que va de campaña"}.
+            {c.sinPedir.length > 0 && ` En ${listaMeses(c.sinPedir)} no se pidió nada.`}
+          </Fila>
+        )}
+        {c.embalse > 0 && (
+          <Fila k="Para el embalse">
+            {c.embalse} pedidos de {formatoNumero(M3_EMBALSE)} m³ o más.
+          </Fila>
+        )}
+        {c.precios.length > 0 && (
+          <Fila k="Precio">
+            {c.precios
+              .map((p, i) => `${formatoNumero(p.precio, 2)} €/m³${i > 0 ? ` desde el ${fechaCorta(p.desde, hoy)}` : ""}`)
+              .join("; ")}
+            {c.ahorroPrecio != null &&
+              (c.ahorroPrecio > 0
+                ? `. Unos ${eur(c.ahorroPrecio)} ahorrados frente al precio de la campaña anterior.`
+                : `. Unos ${eur(-c.ahorroPrecio)} más que con el precio de la campaña anterior.`)}
+          </Fila>
+        )}
+        {c.cesion.n > 0 && (
+          <Fila k="Cesión al vecino">
+            {m3(c.cesion.m3)} en {c.cesion.n} pedidos ({eur(c.cesion.eur)}) por la arqueta 22.31.2. No cuenta en el gasto de la
+            finca: la paga él.
+          </Fila>
+        )}
+        {c.ingresos.n > 0 && (
+          <Fila k="Dinero ingresado">
+            {eur(c.ingresos.eur)} en {c.ingresos.n} ingresos en la cuenta de la Comunidad.
+          </Fila>
+        )}
+        {c.raros.length > 0 && (
+          <Fila k="Pedidos raros" aviso>
+            {c.raros.map((r) => `${fechaCorta(r.fecha, hoy)} (${formatoNumero(r.volumen_m3)} m³)`).join(", ")}. Menos de{" "}
+            {M3_RARO} m³: ¿un turno que no llegó a regar? Preguntar a Pencho.
+          </Fila>
+        )}
+      </dl>
+    </Panel>
   );
 }
 
@@ -158,10 +275,13 @@ function GraficoMeses({ riegos, hoy }: { riegos: Riego[]; hoy: string }) {
 export function RiegosPedidos({
   riegos,
   lecturasEntrada,
+  pagos = [],
   hoy,
   falta,
 }: {
   riegos: Riego[];
+  /** ingresos para riego en la cuenta de la Comunidad */
+  pagos?: PagoAgua[];
   /** lecturas del contador de entrada del trasvase, por contador */
   lecturasEntrada: { contador: string; lecturas: Lectura[] }[];
   hoy: string;
@@ -189,6 +309,9 @@ export function RiegosPedidos({
   const ultimos = [...riegos].reverse().slice(0, 12);
   const conciliados = lecturasEntrada.map((c) => ({ contador: c.contador, tramos: conciliar(riegos, c.lecturas) }));
   const hayConciliacion = conciliados.some((c) => c.tramos.length > 0);
+  const ini = inicioCampana(hoy);
+  const campanaActual = resumenCampana(riegos, pagos, ini, hoy);
+  const campanaAnterior = resumenCampana(riegos, pagos, ini - 1, hoy);
 
   return (
     <section className="flex flex-col gap-4" aria-labelledby="riegos-pedidos">
@@ -202,6 +325,11 @@ export function RiegosPedidos({
       </div>
 
       <TarjetasAgua r={r} hoy={hoy} />
+
+      <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+        <ResumenDeCampana c={campanaActual} comparacion={r.comparacion} hoy={hoy} />
+        {campanaAnterior.propios.n + campanaAnterior.cesion.n > 0 && <ResumenDeCampana c={campanaAnterior} hoy={hoy} />}
+      </div>
 
       <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr] lg:items-start">
         <Panel titulo="Agua pedida por meses">
@@ -275,6 +403,9 @@ export function RiegosPedidos({
                 <span className="text-xs text-tinta-suave">
                   {a.n} riegos, del {fechaCorta(a.desde)} al {fechaCorta(a.hasta)}
                 </span>
+                {ARQUETAS_CESION[a.arqueta] && (
+                  <span className="text-xs font-bold text-tinta-suave">{ARQUETAS_CESION[a.arqueta]}. No cuenta en el gasto de la finca.</span>
+                )}
               </li>
             ))}
           </ul>
@@ -296,7 +427,10 @@ export function RiegosPedidos({
                 <tr key={t.id} className="border-t border-dotted border-borde-papel">
                   <td className="py-1">{fechaCorta(t.fecha, hoy)}</td>
                   <td className="py-1">{t.talon}</td>
-                  <td className="py-1">{t.arqueta}</td>
+                  <td className="py-1">
+                    {t.arqueta}
+                    {t.cesion ? " (vecino)" : ""}
+                  </td>
                   <td className="py-1 text-right">{formatoNumero(t.volumen_m3)}</td>
                   <td className="py-1 text-right">{formatoNumero(t.coste_eur, 2)}</td>
                 </tr>
@@ -352,7 +486,7 @@ export function GastosCampana({
   const enCurso = inicio === inicioCampana(hoy);
   const desde = `${inicio}-05-01`;
   const hasta = `${inicio + 1}-04-30`;
-  const deEsta = riegos.filter((x) => x.fecha >= desde && x.fecha <= hasta);
+  const deEsta = riegos.filter((x) => !x.cesion && x.fecha >= desde && x.fecha <= hasta);
   const primer = riegos[0].fecha;
 
   return (
@@ -399,7 +533,7 @@ export function GastosCampana({
       )}
 
       <p className="text-xs text-tinta-suave">
-        Por ahora solo el agua comprada a la Comunidad de Regantes (Valladolises). Los demás gastos (abonos, productos,
+        Por ahora solo el agua comprada a la Comunidad de Regantes (Valladolises), sin la cedida al vecino. Los demás gastos (abonos, productos,
         jornales, luz…) se sumarán aquí cuando se empiecen a meter. Campaña de mayo a abril.
       </p>
     </section>

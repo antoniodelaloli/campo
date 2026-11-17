@@ -134,7 +134,7 @@ async function Agua() {
         })}
       </div>
 
-      <RiegosPedidos riegos={riegos.riegos} lecturasEntrada={lecturasEntrada} hoy={hoy} falta={riegos.falta} />
+      <RiegosPedidos riegos={riegos.riegos} pagos={riegos.pagos} lecturasEntrada={lecturasEntrada} hoy={hoy} falta={riegos.falta} />
 
       <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
         {/* De dónde viene el agua */}

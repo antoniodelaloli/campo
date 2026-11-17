@@ -10,7 +10,21 @@ import { sumarDias } from "@/lib/texto";
  * Campaña del limonero: de mayo a abril (como un curso escolar). Así la explica
  * Juan Carlos (idea del 4/11/2026): la campaña 2026/27 va del 1/5/2026 al 30/4/2027.
  * Año fiscal: de enero a diciembre (para Hacienda y los módulos).
+ *
+ * Cesiones: algunas arquetas no riegan Valladolises. La 22.31.2 enlaza con la
+ * tubería de un vecino: es agua de nuestro cupo que se le cede y que paga él
+ * (Antonio, 17/11/2026). Se ve en la lista y por arqueta, pero no cuenta como
+ * agua ni gasto de la finca, ni en la comparación con el año pasado.
  */
+
+/** Arquetas que no son agua de la finca, con su explicación. */
+export const ARQUETAS_CESION: Record<string, string> = {
+  "22.31.2": "Cesión al vecino: entra por su tubería y la paga él",
+};
+
+export function esCesion(arqueta: string | null | undefined) {
+  return !!arqueta && arqueta in ARQUETAS_CESION;
+}
 
 export type Riego = {
   id: string;
@@ -22,6 +36,8 @@ export type Riego = {
   volumen_m3: number;
   coste_eur: number;
   proveedor: string | null;
+  /** agua cedida a otro (no cuenta como agua ni gasto de la finca) */
+  cesion: boolean;
 };
 
 export type PagoAgua = { id: string; finca_id: string; fecha: string; importe_eur: number };
@@ -49,6 +65,7 @@ export async function cargarRiegos(supabase: SupabaseClient) {
     precio_eur_m3: x.precio_eur_m3 != null ? Number(x.precio_eur_m3) : null,
     volumen_m3: Number(x.volumen_m3 ?? 0),
     coste_eur: Number(x.coste_eur ?? 0),
+    cesion: esCesion(x.arqueta),
   }));
   const pagos: PagoAgua[] = (p.data ?? []).map((x) => ({ ...x, importe_eur: Number(x.importe_eur) }));
   return { riegos, pagos, falta };
@@ -81,7 +98,7 @@ function sumar(riegos: Riego[], desde: string, hasta: string) {
   let eur = 0;
   let n = 0;
   for (const r of riegos) {
-    if (r.fecha < desde || r.fecha > hasta) continue;
+    if (r.cesion || r.fecha < desde || r.fecha > hasta) continue;
     m3 += r.volumen_m3;
     eur += r.coste_eur;
     n++;
@@ -150,7 +167,7 @@ export function resumenAgua(riegos: Riego[], hoy: string): ResumenAgua {
 
   const anio = Number(hoy.slice(0, 4));
   const f = sumar(riegos, `${anio}-01-01`, `${anio}-12-31`);
-  const precios = riegos.filter((r) => r.precio_eur_m3 != null);
+  const precios = riegos.filter((r) => r.precio_eur_m3 != null && !r.cesion);
 
   return {
     campana: nombreCampana(ini),
@@ -184,6 +201,7 @@ export function porMes(riegos: Riego[], hoy: string, meses = 15) {
   }
   const idx = new Map(lista.map((x, i) => [x.mes, i]));
   for (const r of riegos) {
+    if (r.cesion) continue;
     const i = idx.get(r.fecha.slice(0, 7));
     if (i == null) continue;
     lista[i].m3 += r.volumen_m3;
@@ -207,6 +225,127 @@ export function porArqueta(riegos: Riego[]) {
     m.set(k, a);
   }
   return [...m.entries()].map(([arqueta, v]) => ({ arqueta, ...v })).sort((a, b) => b.m3 - a.m3);
+}
+
+// ------------------------------------------------------------------
+// Resumen de una campaña entera (o de lo que va de ella)
+// ------------------------------------------------------------------
+
+/** Un pedido de este tamaño o más suele ser para llenar el embalse. */
+export const M3_EMBALSE = 2500;
+/** Un pedido tan pequeño es raro (¿turno que no llegó a regar?). */
+export const M3_RARO = 200;
+
+type Suma = { m3: number; eur: number; n: number };
+
+export type ResumenCampana = {
+  campana: string;
+  inicio: number;
+  desde: string;
+  /** 30 de abril, o hoy si la campaña sigue abierta */
+  hasta: string;
+  cerrada: boolean;
+  /** hay datos desde el 1 de mayo */
+  completa: boolean;
+  /** agua de la finca (sin cesiones) */
+  propios: Suma;
+  cesion: Suma;
+  precioMedio: number | null;
+  /** precios distintos en orden: [0.34, 0.32] */
+  precios: { precio: number; desde: string }[];
+  /** de mayo a abril (hasta hoy si sigue abierta) */
+  meses: { mes: string; m3: number; eur: number; n: number }[];
+  /** los dos meses con más agua y qué parte de la campaña suponen */
+  fuertes: { meses: string[]; m3: number; parte: number } | null;
+  /** meses ya pasados en los que no se pidió agua */
+  sinPedir: string[];
+  embalse: number;
+  raros: Riego[];
+  ingresos: { n: number; eur: number };
+  /** € ahorrados (+) o de más (−) por el precio frente a la campaña anterior */
+  ahorroPrecio: number | null;
+};
+
+function precioMedio(l: Riego[]) {
+  const v = l.reduce((s, x) => s + x.volumen_m3, 0);
+  return v ? l.reduce((s, x) => s + x.coste_eur, 0) / v : null;
+}
+
+export function resumenCampana(riegos: Riego[], pagos: PagoAgua[], inicio: number, hoy: string): ResumenCampana {
+  const desde = `${inicio}-05-01`;
+  const fin = `${inicio + 1}-04-30`;
+  const cerrada = hoy > fin;
+  const hasta = cerrada ? fin : hoy;
+  const deEsta = riegos.filter((r) => r.fecha >= desde && r.fecha <= fin);
+  const propios = deEsta.filter((r) => !r.cesion);
+  const cesiones = deEsta.filter((r) => r.cesion);
+  const suma = (l: Riego[]): Suma => ({
+    m3: l.reduce((s, x) => s + x.volumen_m3, 0),
+    eur: l.reduce((s, x) => s + x.coste_eur, 0),
+    n: l.length,
+  });
+
+  const precios: ResumenCampana["precios"] = [];
+  for (const r of propios) {
+    if (r.precio_eur_m3 == null) continue;
+    if (precios.at(-1)?.precio !== r.precio_eur_m3) precios.push({ precio: r.precio_eur_m3, desde: r.fecha });
+  }
+
+  // meses de mayo a abril, hasta el mes de hoy si la campaña sigue abierta
+  const meses: ResumenCampana["meses"] = [];
+  for (let i = 0; i < 12; i++) {
+    const y = inicio + (i >= 8 ? 1 : 0);
+    const m = ((4 + i) % 12) + 1;
+    const mes = `${y}-${String(m).padStart(2, "0")}`;
+    if (mes > hasta.slice(0, 7)) break;
+    meses.push({ mes, m3: 0, eur: 0, n: 0 });
+  }
+  const idx = new Map(meses.map((x, i) => [x.mes, i]));
+  for (const r of propios) {
+    const i = idx.get(r.fecha.slice(0, 7));
+    if (i == null) continue;
+    meses[i].m3 += r.volumen_m3;
+    meses[i].eur += r.coste_eur;
+    meses[i].n++;
+  }
+
+  const total = propios.reduce((s, x) => s + x.volumen_m3, 0);
+  const top = [...meses].sort((a, b) => b.m3 - a.m3).slice(0, 2).filter((x) => x.m3 > 0);
+  const fuertes = top.length && total
+    ? {
+        meses: top.map((x) => x.mes).sort(),
+        m3: top.reduce((s, x) => s + x.m3, 0),
+        parte: top.reduce((s, x) => s + x.m3, 0) / total,
+      }
+    : null;
+  const mesHoy = hoy.slice(0, 7);
+  const primerDato = riegos[0]?.fecha.slice(0, 7) ?? mesHoy;
+  const sinPedir = meses.filter((x) => x.n === 0 && x.mes < mesHoy && x.mes >= primerDato).map((x) => x.mes);
+
+  const pag = pagos.filter((p) => p.fecha >= desde && p.fecha <= fin);
+  const anterior = riegos.filter((r) => !r.cesion && r.fecha >= `${inicio - 1}-05-01` && r.fecha < desde);
+  const pa = precioMedio(anterior);
+  const pe = precioMedio(propios);
+
+  return {
+    campana: nombreCampana(inicio),
+    inicio,
+    desde,
+    hasta,
+    cerrada,
+    completa: !!riegos[0] && riegos[0].fecha <= desde,
+    propios: suma(propios),
+    cesion: suma(cesiones),
+    precioMedio: pe,
+    precios,
+    meses,
+    fuertes,
+    sinPedir,
+    embalse: propios.filter((r) => r.volumen_m3 >= M3_EMBALSE).length,
+    raros: propios.filter((r) => r.volumen_m3 < M3_RARO),
+    ingresos: { n: pag.length, eur: pag.reduce((s, p) => s + p.importe_eur, 0) },
+    ahorroPrecio: pa != null && pe != null && Math.abs(pa - pe) >= 0.005 ? (pa - pe) * total : null,
+  };
 }
 
 // ------------------------------------------------------------------
