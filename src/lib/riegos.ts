@@ -233,7 +233,12 @@ export function porArqueta(riegos: Riego[]) {
 
 /** Un pedido de este tamaño o más suele ser para llenar el embalse. */
 export const M3_EMBALSE = 2500;
-/** Un pedido tan pequeño es raro (¿turno que no llegó a regar?). */
+/**
+ * Un pedido tan pequeño es raro. Según Antonio (17/11/2026) suele ser una de dos:
+ * no había saldo en la cuenta de la Comunidad (sirven una cifra irrisoria aunque
+ * se pida mucho) o se pidieron varios días y se cerró la llave porque el pantano
+ * ya no admitía más.
+ */
 export const M3_RARO = 200;
 
 type Suma = { m3: number; eur: number; n: number };

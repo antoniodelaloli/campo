@@ -189,7 +189,7 @@ function ResumenDeCampana({ c, comparacion, hoy }: { c: ResumenCampana; comparac
         {c.raros.length > 0 && (
           <Fila k="Pedidos raros" aviso>
             {c.raros.map((r) => `${fechaCorta(r.fecha, hoy)} (${formatoNumero(r.volumen_m3)} m³)`).join(", ")}. Menos de{" "}
-            {M3_RARO} m³: ¿un turno que no llegó a regar? Preguntar a Pencho.
+            {M3_RARO} m³: o no había saldo en la Comunidad, o se cerró la llave porque el pantano ya estaba lleno.
           </Fila>
         )}
       </dl>
