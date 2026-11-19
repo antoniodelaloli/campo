@@ -94,11 +94,18 @@ export async function cargarTitulares(supabase: SupabaseClient) {
   };
 }
 
-/** Enlaces temporales (1 hora) para ver los archivos de las facturas. */
+/**
+ * Enlaces para ver los archivos de las facturas: temporales (1 hora) para los
+ * subidos al cajón «facturas»; los que ya son un enlace (p. ej. un PDF de Drive)
+ * se usan tal cual.
+ */
 export async function enlacesArchivos(supabase: SupabaseClient, rutas: string[]) {
   const mapa = new Map<string, string>();
-  if (rutas.length === 0) return mapa;
-  const { data } = await supabase.storage.from("facturas").createSignedUrls(rutas, 3600);
+  const enlaces = rutas.filter((r) => /^https:\/\//i.test(r));
+  for (const r of enlaces) mapa.set(r, r);
+  const delCajon = rutas.filter((r) => !/^https:\/\//i.test(r));
+  if (delCajon.length === 0) return mapa;
+  const { data } = await supabase.storage.from("facturas").createSignedUrls(delCajon, 3600);
   for (const d of data ?? []) if (d.path && d.signedUrl) mapa.set(d.path, d.signedUrl);
   return mapa;
 }
