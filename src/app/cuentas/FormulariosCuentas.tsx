@@ -95,6 +95,15 @@ function FormFactura({
   return (
     <form key={estado.guardadoEn ?? 0} action={enviar} className="flex flex-col gap-2.5">
       <input type="hidden" name="tipo" value={tipo} />
+      <p
+        className={`border-2 px-3 py-2 text-sm font-bold ${
+          venta ? "border-hoja-oscura bg-[#eaf5dc] text-hoja-oscura" : "border-madera-oscura bg-[#f6e6cf] text-madera-oscura"
+        }`}
+      >
+        {venta
+          ? "📤 Estás apuntando una VENTA: una factura que cobramos nosotros."
+          : "📥 Estás apuntando una COMPRA o GASTO: una factura que nos cobran a nosotros."}
+      </p>
       <div className="grid grid-cols-2 gap-2">
         <label className="flex flex-col gap-1 text-sm font-bold">
           {venta ? "A nombre de" : "Lo paga"}
@@ -218,7 +227,28 @@ function FormFactura({
   );
 }
 
-/** Formulario con dos pestañas: venta o gasto. */
+const TIPOS = [
+  {
+    tipo: "gasto",
+    icono: "📥",
+    titulo: "Compra / gasto",
+    ayuda: "Nos la cobran: abonos, productos, luz, gasoil, gestoría…",
+    elegido: "border-madera-oscura bg-[#f6e6cf]",
+  },
+  {
+    tipo: "venta",
+    icono: "📤",
+    titulo: "Venta",
+    ayuda: "La cobramos nosotros: el limón a Citrisol u otro comprador.",
+    elegido: "border-hoja-oscura bg-[#eaf5dc]",
+  },
+] as const;
+
+/**
+ * Primero se elige qué factura es (compra/gasto o venta) y luego sale su
+ * formulario. No viene ninguna elegida, para no apuntar una compra como venta
+ * sin darse cuenta. La elección se mantiene para meter varias seguidas.
+ */
 export function ApuntarFactura(props: {
   titulares: Opcion[];
   fincas: Opcion[];
@@ -226,29 +256,35 @@ export function ApuntarFactura(props: {
   conArchivos: boolean;
   conGastos: boolean;
 }) {
-  const [tipo, setTipo] = useState<"venta" | "gasto">("venta");
+  const [tipo, setTipo] = useState<"venta" | "gasto" | null>(null);
   return (
     <div className="flex flex-col gap-3">
-      <div role="tablist" aria-label="Tipo de factura" className="flex gap-1.5">
-        {(
-          [
-            ["venta", "Venta (ingreso)"],
-            ["gasto", "Gasto"],
-          ] as const
-        ).map(([k, v]) => (
-          <button
-            key={k}
-            type="button"
-            role="tab"
-            aria-selected={tipo === k}
-            onClick={() => setTipo(k)}
-            className="pestana aria-selected:bg-sol"
-          >
-            {v}
-          </button>
-        ))}
+      <p className="text-sm font-bold">¿Qué factura vas a apuntar?</p>
+      <div role="radiogroup" aria-label="Tipo de factura" className="grid grid-cols-2 gap-2">
+        {TIPOS.map((t) => {
+          const marcado = tipo === t.tipo;
+          return (
+            <button
+              key={t.tipo}
+              type="button"
+              role="radio"
+              aria-checked={marcado}
+              onClick={() => setTipo(t.tipo)}
+              className={`flex flex-col items-start gap-1 border-[3px] px-3 py-2.5 text-left ${
+                marcado ? t.elegido : "border-marco bg-white opacity-80 hover:opacity-100"
+              }`}
+            >
+              <span className="text-base font-bold">
+                {t.icono} {t.titulo} {marcado && "✓"}
+              </span>
+              <span className="text-xs text-tinta-suave">{t.ayuda}</span>
+            </button>
+          );
+        })}
       </div>
-      {tipo === "gasto" && !props.conGastos ? (
+      {tipo === null ? (
+        <p className="text-sm text-tinta-suave">Elige arriba si es una compra o una venta y te sale el formulario.</p>
+      ) : tipo === "gasto" && !props.conGastos ? (
         <p className="ficha-pendiente p-3 text-sm">Para apuntar gastos hay que ejecutar la migración 0015 en Supabase.</p>
       ) : (
         <FormFactura key={tipo} tipo={tipo} {...props} />
