@@ -134,10 +134,8 @@ async function Cuentas({ searchParams }: { searchParams: PageProps<"/cuentas">["
 
       <p className="ficha-pendiente px-3 py-2 text-[13px] leading-snug">
         <b>Límite de los módulos: 250.000 € de ventas al año por titular</b> (año natural, enero a diciembre; cuenta la
-        base sin IVA ni compensación). <b>Por confirmar con el asesor:</b> si a cada socio se le suman todas las ventas de
-        JHSYO (de Maite, Chelo y Juan Carlos a partes iguales). Por si acaso, la barra las suma; debajo sale también la
-        cuenta sin sumarlas. Chelo no sale: no está en módulos ni factura a su nombre, solo es socia de JHSYO. Mis Partos, C.B. (Lobosillo) tampoco: es una comunidad de bienes, no va por módulos y sus ventas no suman al límite de sus comuneros.
-        {cuentas.falta0021 && " Falta ejecutar la migración 0021 (socios de JHSYO) para que se sumen."}
+        base sin IVA ni compensación). Cada titular cuenta <b>solo lo facturado a su nombre</b>: las ventas de JHSYO no
+        suman al límite de Maite ni de Juan Carlos. Chelo no sale: no está en módulos ni factura a su nombre, solo es socia de JHSYO. Mis Partos, C.B. (Lobosillo) tampoco: es una comunidad de bienes, no va por módulos y sus ventas no suman al límite de sus comuneros.
         {cuentas.falta0023 && " (Falta la migración 0023; mientras tanto, Chelo se deja fuera por su nombre.)"}
       </p>
 

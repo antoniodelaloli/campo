@@ -42,14 +42,14 @@ export type EstadoLimite = "bien" | "aviso" | "tope" | "pasado";
 export type Socio = { sociedad_id: string; socio_id: string; participacion: number };
 
 export type SituacionTitular = Titular & {
-  /** ventas emitidas que cuentan para el límite (base, sin impuestos): las suyas + las de sus sociedades */
+  /** ventas emitidas que cuentan para el límite (base, sin impuestos): solo las facturadas a su nombre */
   facturado: number;
-  /** ventas previstas (cortes que faltan), también con las de sus sociedades */
+  /** ventas previstas (cortes que faltan) a su nombre */
   previsto: number;
   /** solo lo facturado a su nombre */
   facturadoPropio: number;
   previstoPropio: number;
-  /** sociedades de las que es socio: sus ventas cuentan enteras para su límite */
+  /** ya no se usa: las ventas de las sociedades no suman al límite de sus socios (24/11/2026) */
   sociedades: { id: string; nombre: string; participacion: number; facturado: number; previsto: number }[];
   /** ids de las sociedades (incluida ella misma si es una) a las que afecta una factura a su nombre */
   socios: string[];
@@ -77,14 +77,14 @@ export function enModulosPorDefecto(t: { nombre: string; tipo: string }) {
 export const facturaPorDefecto = enModulosPorDefecto;
 
 /**
- * Cómo va cada titular frente al límite. A cada socio se le suman las ventas
- * enteras de las sociedades de las que es socio (Antonio, 5/11/2026: «suma la
- * sociedad + el personal»). Los que no están en módulos (Chelo) no salen: no
- * tienen límite, aunque sigan siendo socios para el reparto. Las sociedades que
- * no están en módulos (Mis Partos, C.B., Antonio 13/11/2026) no suman a sus socios.
+ * Cómo va cada titular frente al límite: solo cuenta lo facturado a su nombre.
+ * Las ventas de una sociedad (JHSYO) NO suman al límite de módulos de sus socios
+ * (Antonio, 24/11/2026: «las ventas de la sociedad no suman a las de los módulos
+ * individuales»). La lista de socios se sigue recibiendo para el reparto, pero
+ * aquí no se usa. Los que no están en módulos (Chelo, Mis Partos) no salen.
  */
-export function situacion(titulares: Titular[], facturas: Factura[], socios: Socio[] = []): SituacionTitular[] {
-  const enModulos = new Set(titulares.filter((t) => t.en_modulos).map((t) => t.id));
+export function situacion(titulares: Titular[], facturas: Factura[], _socios: Socio[] = []): SituacionTitular[] {
+  void _socios;
   const propio = (id: string) => {
     const ventas = facturas.filter((f) => f.titular_id === id && f.tipo === "venta" && f.cuenta_limite);
     return {
@@ -94,27 +94,18 @@ export function situacion(titulares: Titular[], facturas: Factura[], socios: Soc
   };
   return titulares.filter((t) => t.en_modulos).map((t) => {
     const mio = propio(t.id);
-    const sociedades = socios
-      .filter((x) => x.socio_id === t.id && enModulos.has(x.sociedad_id))
-      .map((x) => {
-        const soc = titulares.find((y) => y.id === x.sociedad_id);
-        return { id: x.sociedad_id, nombre: soc?.nombre ?? "—", participacion: x.participacion, ...propio(x.sociedad_id) };
-      });
-    const facturado = mio.facturado + sociedades.reduce((s, x) => s + x.facturado, 0);
-    const previsto = mio.previsto + sociedades.reduce((s, x) => s + x.previsto, 0);
     return {
       ...t,
-      facturado,
-      previsto,
+      facturado: mio.facturado,
+      previsto: mio.previsto,
       facturadoPropio: mio.facturado,
       previstoPropio: mio.previsto,
-      sociedades,
-      // una factura a nombre de una sociedad sube también a todos sus socios
-      // (solo los que están en módulos)
-      socios: socios.filter((x) => x.sociedad_id === t.id && enModulos.has(x.socio_id)).map((x) => x.socio_id),
-      margenTope: t.tope_seguridad_eur - facturado - previsto,
-      estado: estadoDe(t, facturado),
-      estadoConPrevistas: estadoDe(t, facturado + previsto),
+      // las ventas de las sociedades no suman a sus socios
+      sociedades: [],
+      socios: [],
+      margenTope: t.tope_seguridad_eur - mio.facturado - mio.previsto,
+      estado: estadoDe(t, mio.facturado),
+      estadoConPrevistas: estadoDe(t, mio.facturado + mio.previsto),
     };
   });
 }

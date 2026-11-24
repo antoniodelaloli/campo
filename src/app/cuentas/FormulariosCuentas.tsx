@@ -324,7 +324,7 @@ export function Simulador({
         <>
           <p className="text-sm">
             Factura de <b>{eur(importe)}</b> (base). Así quedaría cada uno este año, contando lo ya facturado y lo previsto
-            (una factura de una sociedad sube también a todos sus socios):
+            a su nombre:
           </p>
           <ul className="flex flex-col gap-2">
             {titulares.map((t) => {
