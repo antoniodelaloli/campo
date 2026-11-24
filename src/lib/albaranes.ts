@@ -271,6 +271,8 @@ export type Albaran = FilaAlbaran & {
   titular_id: string | null;
   corte: number | null;
   hoja: string | null;
+  /** enlace (Drive) a la foto del papel; migración 0027 */
+  foto_url?: string | null;
 };
 
 export type GrupoAlbaranes = {

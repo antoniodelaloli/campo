@@ -18,7 +18,8 @@ const kg = (n: number) => new Intl.NumberFormat("es-ES", { maximumFractionDigits
  * Una línea para apuntar un albarán, con las mismas columnas que el Excel de
  * Juan Carlos. Los kilos se calculan solos con la pesada (bruto − tara del
  * camión − 2,5 kg por caja); si el albarán no trae pesada, se escriben a mano.
- * Al guardar, se queda la fecha y el precio, y se vacía lo demás.
+ * Al guardar, se queda la fecha y el precio, y se vacía lo demás. Si la foto
+ * del papel ya está en Drive, se pega su enlace y la fila la abre.
  */
 export function FilaNueva({
   campana,
@@ -55,12 +56,13 @@ export function FilaNueva({
   const [kgBuenos, setKgBuenos] = useState("");
   const [kgCitrica, setKgCitrica] = useState("");
   const [notas, setNotas] = useState("");
+  const [foto, setFoto] = useState("");
   const primero = useRef<HTMLInputElement>(null);
 
   const [estado, accion, enviando] = useActionState(async (prev: EstadoApuntar, fd: FormData) => {
     const r = await apuntarAlbaran(prev, fd);
     if (r.ok) {
-      for (const f of [setAlbaran, setCajas, setBruto, setTaraCamion, setTaraCajas, setKgBuenos, setKgCitrica, setNotas]) f("");
+      for (const f of [setAlbaran, setCajas, setBruto, setTaraCamion, setTaraCajas, setKgBuenos, setKgCitrica, setNotas, setFoto]) f("");
       primero.current?.focus();
     }
     return r;
@@ -180,6 +182,15 @@ export function FilaNueva({
           value={notas}
           onChange={(e) => setNotas(e.target.value)}
           placeholder="Nota (opcional)"
+          className="campo min-w-40 flex-1 px-2 py-1 text-sm"
+        />
+        <input
+          name="foto"
+          type="url"
+          value={foto}
+          onChange={(e) => setFoto(e.target.value)}
+          placeholder="📷 Enlace de la foto en Drive (opcional)"
+          aria-label="Enlace de la foto del albarán en Drive"
           className="campo min-w-40 flex-1 px-2 py-1 text-sm"
         />
         <button type="submit" disabled={enviando} className="boton">

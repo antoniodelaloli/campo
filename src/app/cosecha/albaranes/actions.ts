@@ -95,6 +95,9 @@ export async function corregirHoja(formData: FormData) {
 
 // ---------------------------------------------------------------- albarán a albarán
 
+/** Enlace a la foto del albarán (Drive u otro sitio), solo https. */
+const enlaceValido = (url: string) => /^https:\/\/\S+$/.test(url) && url.length <= 500;
+
 export type EstadoApuntar = { ok: boolean; mensaje: string | null; guardadoEn?: number };
 
 const numeroForm = (v: FormDataEntryValue | null) => {
@@ -131,7 +134,9 @@ export async function apuntarAlbaran(_prev: EstadoApuntar, formData: FormData): 
   const kgCitrica = numeroForm(formData.get("kg_citrica")) ?? 0;
   const precio = numeroForm(formData.get("precio"));
   const notas = String(formData.get("notas") ?? "").trim().slice(0, 500) || null;
+  const foto = String(formData.get("foto") ?? "").trim();
 
+  if (foto && !enlaceValido(foto)) return { ok: false, mensaje: "La foto tiene que ser un enlace que empiece por https:// (el de Drive)." };
   if (!/^\d{4}\/\d{2}$/.test(campana) || !hoja) return { ok: false, mensaje: "Falta la hoja o la campaña." };
   if (!albaran) return { ok: false, mensaje: "Pon el nº de albarán (o «s/n» si no tiene)." };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return { ok: false, mensaje: "Pon la fecha del albarán." };
@@ -166,8 +171,14 @@ export async function apuntarAlbaran(_prev: EstadoApuntar, formData: FormData): 
     importe_eur: precio != null && (kgBuenos ?? 0) > 0 ? Math.round((kgBuenos ?? 0) * precio * 100) / 100 : null,
     notas,
     origen: "app",
+    // la columna de la foto es de la migración 0027: solo se manda si hay foto
+    ...(foto ? { foto_url: foto } : {}),
   });
-  if (error) return { ok: false, mensaje: `No se pudo guardar: ${error.message}` };
+  if (error) {
+    if (foto && /foto_url/.test(error.message))
+      return { ok: false, mensaje: "Para guardar la foto falta ejecutar la migración 0027 en Supabase. Quita el enlace y apúntalo sin foto." };
+    return { ok: false, mensaje: `No se pudo guardar: ${error.message}` };
+  }
   refresh();
   return {
     ok: true,
@@ -183,5 +194,16 @@ export async function quitarAlbaran(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   await supabase.from("albaranes").update({ anulado: true }).eq("id", id);
+  refresh();
+}
+
+/** Pone (o cambia) el enlace a la foto de un albarán ya apuntado. Vacío la quita. */
+export async function ponerFoto(formData: FormData) {
+  const { supabase, puedeAdministrar } = await contextoEscritura();
+  if (!puedeAdministrar) return;
+  const id = String(formData.get("id") ?? "");
+  const foto = String(formData.get("foto") ?? "").trim();
+  if (!id || (foto && !enlaceValido(foto))) return;
+  await supabase.from("albaranes").update({ foto_url: foto || null }).eq("id", id);
   refresh();
 }

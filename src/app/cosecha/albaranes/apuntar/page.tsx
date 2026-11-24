@@ -9,7 +9,7 @@ import { cargarTitulares } from "@/lib/cuentas";
 import { nombreCampana } from "@/lib/albaranes";
 import { formatoNumero, hoyISO } from "@/lib/texto";
 import { FilaNueva } from "./FilaNueva";
-import { quitarAlbaran } from "../actions";
+import { ponerFoto, quitarAlbaran } from "../actions";
 
 // Apuntar albaranes uno a uno (una línea por camión), en paralelo al Excel de
 // Juan Carlos, para comparar después las dos hojas.
@@ -166,6 +166,7 @@ async function Apuntar({ searchParams }: { searchParams: Busqueda }) {
     importe: filas.reduce((s, a) => s + (a.importe_eur ?? 0), 0),
   };
   const otras = hojas.filter((h) => h !== hoja);
+  const conFoto = filas.filter((a) => a.foto_url).length;
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5">
@@ -238,7 +239,43 @@ async function Apuntar({ searchParams }: { searchParams: Busqueda }) {
           <tbody>
             {filas.map((a) => (
               <tr key={a.id} className="border-t border-dotted border-borde-papel">
-                <td className="py-1 font-bold">{a.albaran}</td>
+                <td className="py-1 font-bold whitespace-nowrap">
+                  {a.albaran}
+                  {a.foto_url ? (
+                    <a
+                      href={a.foto_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-1.5 font-normal no-underline"
+                      title={`Ver la foto del albarán ${a.albaran}`}
+                      aria-label={`Ver la foto del albarán ${a.albaran}`}
+                    >
+                      📷
+                    </a>
+                  ) : (
+                    puedeAdministrar && (
+                      <details className="inline-block align-top font-normal">
+                        <summary className="ml-1.5 cursor-pointer list-none text-xs text-tinta-suave" title="Poner la foto del albarán">
+                          + foto
+                        </summary>
+                        <form action={ponerFoto} className="mt-1 flex gap-1">
+                          <input type="hidden" name="id" value={a.id} />
+                          <input
+                            name="foto"
+                            type="url"
+                            required
+                            placeholder="Enlace de Drive"
+                            aria-label={`Enlace de la foto del albarán ${a.albaran}`}
+                            className="campo w-48 px-1.5 py-0.5 text-xs"
+                          />
+                          <button type="submit" className="boton px-2 py-0.5 text-xs">
+                            Poner
+                          </button>
+                        </form>
+                      </details>
+                    )
+                  )}
+                </td>
                 <td className="py-1">{fechaCorta(a.fecha)}</td>
                 <td className="py-1">{a.finca_id ? nombreFinca.get(a.finca_id) : <i className="text-[#7d1a10]">por confirmar</i>}</td>
                 <td className="py-1">{a.titular_id ? nombreTitular.get(a.titular_id) : <i className="text-[#7d1a10]">por confirmar</i>}</td>
@@ -279,6 +316,11 @@ async function Apuntar({ searchParams }: { searchParams: Busqueda }) {
           </tbody>
         </table>
         {filas.length === 0 && <p className="text-sm text-tinta-suave">Todavía no hay albaranes en esta hoja.</p>}
+        {filas.length > 0 && (
+          <p className="mt-2 text-xs text-tinta-suave">
+            📷 {conFoto} de {filas.length} albaranes con foto. La foto abre el papel en Drive (Documentación › 1 Cosechas › Albaranes de báscula).
+          </p>
+        )}
       </div>
 
       {otras.length > 0 && filas.length > 0 && (
