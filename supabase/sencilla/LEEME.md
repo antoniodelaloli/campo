@@ -11,6 +11,7 @@ Cada finca va con **su propio Supabase** (del dueño de la finca) y **su propio 
 1. Cuenta en supabase.com → organización nueva (plan **Free**) → **New project**, región en Europa. La contraseña de la base de datos se la guarda él.
 2. **Team → Invite member**: invitar a Antonio con rol **Administrator**.
 3. **SQL Editor** → pegar `supabase/sencilla/esquema.sql` completo → **Run** (una sola vez, en un proyecto vacío).
+   Después, en otra consulta, `supabase/sencilla/permisos.sql`. **Imprescindible en proyectos nuevos:** Supabase ya no da permisos automáticos sobre las tablas y, sin esto, todos los usuarios se quedan en «pendiente de activación». Si el editor avisa de «tables without RLS», elegir **Run without RLS** (todas las tablas ya llevan sus políticas).
 4. **Authentication → OAuth Server**: activarlo, *Authorization path* `/oauth/consent` y **Allow dynamic client registration** activado (para el conector).
 5. **Authentication → URL Configuration**: *Site URL* = la dirección de su app en Vercel.
 6. **Authentication → Users → Add user**: crear su usuario (correo y contraseña). Después, en el SQL Editor, activarlo:
