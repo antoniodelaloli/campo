@@ -1,4 +1,5 @@
 import { direcciones, EMISOR } from "@/lib/mcp/auth";
+import { NOMBRE_APP, SENCILLA } from "@/lib/edicion";
 
 // Metadatos del recurso protegido (RFC 9728): le dicen a ChatGPT o Claude
 // que el conector /api/mcp se usa con el inicio de sesión de Supabase.
@@ -15,7 +16,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ ruta
       authorization_servers: [EMISOR],
       scopes_supported: ["openid", "email", "profile"],
       bearer_methods_supported: ["header"],
-      resource_name: "Campo · fincas",
+      resource_name: SENCILLA ? NOMBRE_APP : "Campo · fincas",
       resource_documentation: recurso.replace(/\/api\/mcp$/, "/"),
     },
     { headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } },

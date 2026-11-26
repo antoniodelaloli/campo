@@ -1,5 +1,6 @@
 import "server-only";
 import { GEO, type ClaveFinca } from "@/lib/geografia";
+import { puntosTiempoSencilla, SENCILLA, type PuntoTiempoFinca } from "@/lib/edicion";
 import type { AlertaTiempo, VientoDia } from "@/lib/resumen-avisos";
 
 /*
@@ -35,11 +36,18 @@ type Respuesta = {
   hourly?: { time: string[]; wind_speed_10m: (number | null)[]; wind_gusts_10m: (number | null)[] };
 };
 
+/** Dónde se mira el tiempo: las fincas de la familia o, en la versión sencilla, FINCAS_TIEMPO. */
+export function puntosPrevision(): PuntoTiempoFinca[] {
+  if (SENCILLA) return puntosTiempoSencilla();
+  return (Object.keys(GEO) as ClaveFinca[]).map((c) => ({ nombre: NOMBRE[c], lat: GEO[c].lat, lon: GEO[c].lon }));
+}
+
 export async function previsionFincas(): Promise<Prevision> {
-  const claves = Object.keys(GEO) as ClaveFinca[];
+  const puntos = puntosPrevision();
+  if (puntos.length === 0) return { alertas: [], viento: [] };
   const qs = new URLSearchParams({
-    latitude: claves.map((c) => GEO[c].lat.toFixed(4)).join(","),
-    longitude: claves.map((c) => GEO[c].lon.toFixed(4)).join(","),
+    latitude: puntos.map((p) => p.lat.toFixed(4)).join(","),
+    longitude: puntos.map((p) => p.lon.toFixed(4)).join(","),
     daily: "weather_code",
     hourly: "wind_speed_10m,wind_gusts_10m",
     wind_speed_unit: "kmh",
@@ -62,7 +70,7 @@ export async function previsionFincas(): Promise<Prevision> {
     const viento: VientoDia[] = [];
 
     lista.forEach((d, i) => {
-      const finca = NOMBRE[claves[i]];
+      const finca = puntos[i]?.nombre ?? `Punto ${i + 1}`;
 
       const dias = d.daily?.time ?? [];
       const codigos = d.daily?.weather_code ?? [];

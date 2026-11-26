@@ -1,5 +1,6 @@
 import { cacheLife } from "next/cache";
 import { connection } from "next/server";
+import { puntosTiempoSencilla, SENCILLA } from "@/lib/edicion";
 
 /*
  * GET /api/tiempo?lat=37.81,37.77&lon=-1.14,-1.10
@@ -15,7 +16,10 @@ const DIARIO =
 const MAX_PUNTOS = 6;
 
 // Solo coordenadas de la Región de Murcia y alrededores: no es un proxy abierto.
-const dentro = (lat: number, lon: number) => lat > 37 && lat < 39 && lon > -2.6 && lon < -0.5;
+// En la versión sencilla, además, las de sus fincas (FINCAS_TIEMPO) y su entorno (~20 km).
+const dentro = (lat: number, lon: number) =>
+  (lat > 37 && lat < 39 && lon > -2.6 && lon < -0.5) ||
+  (SENCILLA && puntosTiempoSencilla().some((p) => Math.abs(p.lat - lat) < 0.2 && Math.abs(p.lon - lon) < 0.2));
 
 function leerCoordenadas(url: URL): { lat: string; lon: string } | null {
   const lats = (url.searchParams.get("lat") ?? "").split(",").filter(Boolean).map(Number);

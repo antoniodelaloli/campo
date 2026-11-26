@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { contextoEscritura } from "@/lib/sesion";
 import { OPCIONES_AVISO, TIPOS_HITO } from "@/lib/agenda";
 import { esFechaISO, tituloDeTexto } from "@/lib/texto";
+import { ejemplo } from "@/lib/edicion";
 
 export type EstadoFormHito = {
   ok: boolean;
@@ -32,7 +33,7 @@ export async function crearHito(_prev: EstadoFormHito, formData: FormData): Prom
   const aproximada = formData.get("aproximada") === "on";
   const anual = formData.get("anual") === "on";
 
-  if (texto.length < 3) return { ok: false, mensaje: "Escribe qué fecha clave es (p. ej. «primer corte de Corvera»)." };
+  if (texto.length < 3) return { ok: false, mensaje: `Escribe qué fecha clave es (p. ej. «${ejemplo("primer corte de Corvera", "empezar a recoger")}»).` };
   if (texto.length > 200) return { ok: false, mensaje: "Demasiado largo: resúmelo un poco." };
   if (!esFechaISO(fecha) || fecha < "2020-01-01" || fecha > "2100-12-31")
     return { ok: false, mensaje: "Elige el día en «Cuándo»." };

@@ -5,6 +5,7 @@ import { obtenerContexto } from "@/lib/sesion";
 import { fechaCorta, hoyISO } from "@/lib/texto";
 import { nombreMes } from "@/lib/agenda";
 import { cambiarEstadoIdea, convertirIdeaEnTarea } from "./actions";
+import { ejemplo } from "@/lib/edicion";
 
 // Libreta de ideas y reflexiones (migración 0007). Página discreta: no está en el
 // menú; se llega desde un enlace pequeño en Tareas. Casi todo llega por voz desde
@@ -87,8 +88,11 @@ async function Ideas({ searchParams }: { searchParams: PageProps<"/ideas">["sear
 
       {!error && ideas.length === 0 && (
         <p className="ficha-pendiente p-4 text-sm text-tinta-suave">
-          Todavía no hay ideas. Dile a tu asistente algo como: «apunta una idea: habría que probar a soltar bichos contra el
-          cotonet en Valladolises».
+          Todavía no hay ideas. Dile a tu asistente algo como: «apunta una idea:{" "}
+          {ejemplo(
+            "habría que probar a soltar bichos contra el cotonet en Valladolises",
+            "en la parte de arriba probaría a poner riego por goteo nuevo",
+          )}».
         </p>
       )}
 

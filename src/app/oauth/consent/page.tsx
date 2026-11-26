@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { obtenerContexto } from "@/lib/sesion";
 import { Cargando } from "@/components/ui";
 import { permitir, rechazar } from "./actions";
+import { NOMBRE_APP, SENCILLA } from "@/lib/edicion";
 
 // Pantalla que ve quien conecta Campo desde ChatGPT o Claude (una sola vez):
 // entra con su usuario de Campo y pulsa «Permitir». El asistente podrá
@@ -66,20 +67,26 @@ async function Consentimiento({ searchParams }: { searchParams: PageProps<"/oaut
           <rect x="20" y="10" width="3" height="4" fill="#f6d743" stroke="#3b2a1a" strokeWidth="2" />
           <rect x="11" y="2" width="6" height="4" fill="#46a047" stroke="#3b2a1a" strokeWidth="1.5" />
         </svg>
-        <h1 className="titulo-pixel text-2xl leading-tight">Conectar Campo con {asistente}</h1>
+        <h1 className="titulo-pixel text-2xl leading-tight">Conectar {NOMBRE_APP} con {asistente}</h1>
       </div>
 
       <p className="text-sm">
-        Hola, {perfil.nombre ?? data.user.email}. <b>{asistente}</b> quiere usar Campo con tu usuario ({data.user.email}).
+        Hola, {perfil.nombre ?? data.user.email}. <b>{asistente}</b> quiere usar {NOMBRE_APP} con tu usuario ({data.user.email}).
       </p>
 
       <div className="ficha space-y-1.5 p-3 text-sm">
         <p className="font-bold">Podrá:</p>
         <ul className="list-disc space-y-1 pl-5">
-          <li>Consultar las fincas: fechas clave, tareas, agua, tratamientos y avisos.</li>
+          <li>
+            {SENCILLA
+              ? "Consultar la finca: tareas, fechas clave, diario, ideas y avisos."
+              : "Consultar las fincas: fechas clave, tareas, agua, tratamientos y avisos."}
+          </li>
           {puedeEditar ? (
             <li>
-              Apuntar en tu nombre tareas, niveles de pantano, lecturas de contadores, fechas clave, avisos y notas,
+              {SENCILLA
+                ? "Apuntar en tu nombre tareas, fechas clave, avisos, notas del diario e ideas,"
+                : "Apuntar en tu nombre tareas, niveles de pantano, lecturas de contadores, fechas clave, avisos y notas,"}
               <b> siempre preguntándote antes</b>.
             </li>
           ) : (

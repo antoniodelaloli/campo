@@ -1,12 +1,15 @@
 import type { MetadataRoute } from "next";
+import { NOMBRE_APP, SENCILLA } from "@/lib/edicion";
 
 // Permite instalar Campo como app (icono en la pantalla de inicio).
 // En iPhone es imprescindible instalarla para recibir avisos.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Campo · fincas",
-    short_name: "Campo",
-    description: "Gestión interna de las fincas: tareas, agua, tratamientos, cosecha y fechas clave.",
+    name: SENCILLA ? NOMBRE_APP : "Campo · fincas",
+    short_name: NOMBRE_APP,
+    description: SENCILLA
+      ? "Diario de campo, tareas, fechas clave e ideas de la finca."
+      : "Gestión interna de las fincas: tareas, agua, tratamientos, cosecha y fechas clave.",
     lang: "es",
     start_url: "/",
     scope: "/",

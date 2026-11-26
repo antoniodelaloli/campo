@@ -15,6 +15,7 @@ import {
   type Tarea,
 } from "@/lib/datos";
 import { hoyISO, sumarDias } from "@/lib/texto";
+import { ejemplo } from "@/lib/edicion";
 
 export const instant = false;
 
@@ -118,7 +119,7 @@ async function Tareas({ searchParams }: { searchParams: PageProps<"/tareas">["se
           )}
 
           <p className="text-xs text-tinta-suave">
-            Cada tarea guarda también cómo se dijo el sitio («finca 4», «Los Nuevos»), para poder
+            Cada tarea guarda también cómo se dijo el sitio ({ejemplo("«finca 4», «Los Nuevos»", "«la de arriba», «el pozo»")}), para poder
             resolverlo más tarde si aún no es un nombre conocido.
           </p>
           <Link href="/ideas" className="self-start text-xs font-bold text-tinta-suave underline-offset-2 hover:underline">

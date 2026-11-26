@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { GeistPixelSquare } from "geist/font/pixel";
 import "./globals.css";
+import { NOMBRE_APP, SENCILLA } from "@/lib/edicion";
 
 export const metadata: Metadata = {
-  title: "Campo",
-  description: "Gestión interna de fincas",
-  applicationName: "Campo",
+  title: NOMBRE_APP,
+  description: SENCILLA ? "Diario y tareas de la finca" : "Gestión interna de fincas",
+  applicationName: NOMBRE_APP,
   // iPhone: al añadirla a la pantalla de inicio se abre como app (necesario para los avisos)
-  appleWebApp: { capable: true, title: "Campo", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: NOMBRE_APP, statusBarStyle: "default" },
   formatDetection: { telephone: false },
 };
 

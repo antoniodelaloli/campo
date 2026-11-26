@@ -8,6 +8,7 @@ import {
   NOMBRE_TIPO,
   type Lugar,
 } from "@/lib/texto";
+import { ejemplo } from "@/lib/edicion";
 
 type Persona = { id: string; nombre: string };
 export type OpcionFechaClave = { id: string; titulo: string; fecha: string };
@@ -92,7 +93,7 @@ function Formulario({
           setTexto(e.target.value);
           setEleccion("");
         }}
-        placeholder="regar Los Nuevos mañana"
+        placeholder={ejemplo("regar Los Nuevos mañana", "limpiar los filtros del riego mañana")}
         className="campo"
         aria-describedby="lectura"
       />

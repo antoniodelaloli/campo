@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { iniciarSesion, type LoginState } from "./actions";
+import { NOMBRE_APP, SENCILLA } from "@/lib/edicion";
 
 const estadoInicial: LoginState = { error: null };
 
@@ -29,15 +30,15 @@ export default function LoginPage() {
             <rect x="11" y="2" width="6" height="4" fill="#46a047" stroke="#3b2a1a" strokeWidth="1.5" />
           </svg>
           <div>
-            <h1 className="titulo-pixel text-3xl tracking-widest">CAMPO</h1>
-            <p className="text-sm text-tinta-suave">Gestión interna de fincas</p>
+            <h1 className="titulo-pixel text-3xl tracking-widest">{NOMBRE_APP.toUpperCase()}</h1>
+            <p className="text-sm text-tinta-suave">{SENCILLA ? "Diario y tareas de la finca" : "Gestión interna de fincas"}</p>
           </div>
         </div>
 
         <input type="hidden" name="siguiente" value={siguiente} />
         {vieneDeAsistente && (
           <p className="ficha-pendiente p-3 text-sm">
-            Entra con tu usuario de Campo para conectarlo con tu asistente (ChatGPT o Claude).
+            Entra con tu usuario de {NOMBRE_APP} para conectarlo con tu asistente (ChatGPT o Claude).
           </p>
         )}
 

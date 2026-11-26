@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { contextoAgente } from "@/lib/mcp/auth";
 import { INSTRUCCIONES, registrarHerramientas } from "@/lib/mcp/herramientas";
+import { NOMBRE_APP, SENCILLA } from "@/lib/edicion";
 
 // Conector de Campo (MCP) para ChatGPT y Claude.
 // Dirección para añadirlo: https://<la-app>/api/mcp
@@ -26,7 +27,10 @@ async function atender(request: Request) {
   const ctx = await contextoAgente(request);
   if (ctx instanceof Response) return conCors(ctx);
 
-  const server = new McpServer({ name: "campo", title: "Campo · fincas", version: "1.0.0" }, { instructions: INSTRUCCIONES });
+  const server = new McpServer(
+    { name: "campo", title: SENCILLA ? NOMBRE_APP : "Campo · fincas", version: "1.0.0" },
+    { instructions: INSTRUCCIONES },
+  );
   registrarHerramientas(server, ctx);
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,

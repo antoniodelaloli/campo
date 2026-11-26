@@ -15,10 +15,11 @@ import {
   ultimoNivel,
   type Finca,
 } from "@/lib/datos";
-import { previsionFincas, RACHA_MAX_KMH, VIENTO_MAX_KMH } from "@/lib/alertas-tiempo";
+import { previsionFincas, puntosPrevision, RACHA_MAX_KMH, VIENTO_MAX_KMH } from "@/lib/alertas-tiempo";
 import { datoDelDia } from "@/lib/dato-del-dia";
 import { construirAgenda, cuentaAtras, NOMBRE_TIPO_HITO, TIPOS_HITO } from "@/lib/agenda";
 import { esFechaISO, hoyISO, normalizar, sumarDias } from "@/lib/texto";
+import { ejemplo, NOMBRE_APP, SENCILLA } from "@/lib/edicion";
 
 // Herramientas del conector de Campo para ChatGPT y Claude.
 // Todas trabajan con el cliente de Supabase del usuario que inició sesión:
@@ -27,7 +28,7 @@ import { esFechaISO, hoyISO, normalizar, sumarDias } from "@/lib/texto";
 
 const ORIGEN = "conector";
 
-export const INSTRUCCIONES = `Campo es la app interna de las fincas de limoneros de la familia (Valladolises, Corvera y Lobosillo, en Murcia).
+const INSTRUCCIONES_COMPLETA = `Campo es la app interna de las fincas de limoneros de la familia (Valladolises, Corvera y Lobosillo, en Murcia).
 SOLO para las fincas: la familia tiene otro negocio (la confitería y cafeterías Maite y 1968, con su propio conector «Obrador»). Si habla de la confitería, las tiendas, el obrador o las ventas de los locales, NO uses estas herramientas ni guardes nada aquí. «Maite» puede ser la confitería o Maite, la hermana de Juan Carlos y socia de una finca: si no está claro, pregunta.
 Cómo usar estas herramientas:
 - Cuando Carlos dice «Antoñico» o «el programa de Antoñico» se refiere a esta app, Campo (la hace su sobrino Antonio).
@@ -43,6 +44,29 @@ Cómo usar estas herramientas:
 - DIARIO: lo que ya ha pasado («hoy ha venido Diego», «se ha terminado de fumigar») se apunta con «nota_diario». Para ver lo apuntado o comprobar que algo se guardó, usa «ver_diario»; no digas que algo está guardado sin haberlo comprobado.
 - INCIDENCIAS (fugas, goteros rotos, averías, plagas, árboles a revisar): apúntalas con «apuntar_incidencia». Si está junto al sitio, dile una vez que con «Oye Siri, cuaderno» queda apuntada con la ubicación exacta.
 - Si preguntan qué día se puede fumigar, si hace viento o si va a granizar, usa «tiempo_para_fumigar». Con viento no se fumiga: el caldo se lo lleva el aire. Si van a apuntar un tratamiento para un día con viento, avísalo antes de guardarlo.`;
+
+// Versión sencilla (otra finca): lo básico y sin nombres de la familia.
+const INSTRUCCIONES_SENCILLA = `${NOMBRE_APP} es la app de la finca de quien te habla: su diario de campo, sus tareas, sus fechas clave, sus ideas y sus avisos.
+Cómo usar estas herramientas:
+- Cuando hable de «la app», «el programa» o «${NOMBRE_APP}», se refiere a esto.
+- Habla en español, claro y breve: quien pregunta es agricultor, no informático. Usa los nombres de la finca y de sus zonas tal como los dice él.
+- Para saber qué pasa hoy, empieza por «resumen_del_dia».
+- ANTES de apuntar nada (tareas, fechas clave, avisos, notas del diario), repite en una frase lo que vas a guardar y espera a que diga que sí. Las únicas excepciones son las ideas y las respuestas a las preguntas para completar la finca (ver abajo).
+- Si no sabes a qué sitio se refiere, usa «buscar_lugar» o pregunta.
+- Las fechas van en formato AAAA-MM-DD y en hora de España. «Hoy» es la fecha que devuelve resumen_del_dia.
+- No inventes datos: si algo no está en ${NOMBRE_APP}, dilo («eso no está apuntado»).
+- Nada se borra: si algo está mal, se marca como anulado o se corrige apuntándolo de nuevo.
+- RECORDATORIOS («recuérdame…»): si es algo importante del año (recoger, tratar, un plazo, pagar), apúntalo como fecha clave; si es del día a día, como tarea con la fecha de ese día. La app se lo recuerda en el móvil esa mañana.
+- DIARIO: lo que ya ha pasado («hoy ha venido el técnico», «se ha terminado de podar») se apunta con «nota_diario». Para ver lo apuntado o comprobar que algo se guardó, usa «ver_diario»; no digas que algo está guardado sin haberlo comprobado.
+- AVISOS (fugas, averías, plagas, árboles a revisar): apúntalos con «apuntar_incidencia».
+- IDEAS: está atento a lo que cuenta aunque divague. Si suelta una idea, reflexión, duda, plan o algo aprendido sobre la finca que merezca la pena recordar (sin fecha ni trabajo concreto), guárdala tú con «apuntar_idea» SIN preguntar y con detectada=true; al final de tu respuesta dile en una línea «📝 Apuntado en la libreta de ideas: …». No guardes saludos, quejas sueltas ni cosas que ya estén apuntadas (si dudas, mira «buscar_ideas»). Si es una tarea o una fecha, eso sí pregúntalo antes. Solo lo de la finca: nada personal ni familiar.
+- PREGUNTAS PARA COMPLETAR LA FINCA (códigos como FIN-01, RIE-02): antes de empezar mira «preguntas_contestadas» para no repetir. Hazlas de una en una y, en cuanto conteste cada una, guárdala con «guardar_respuesta» SIN pedir permiso y di solo «✅ Guardada». Si dice «no lo sé», guárdala igual con seguridad «no_sabe».
+- Si pregunta qué día se puede fumigar o tratar, si hace viento o si va a granizar, usa «tiempo_para_fumigar». Con viento no se fumiga: el caldo se lo lleva el aire.`;
+
+export const INSTRUCCIONES = SENCILLA ? INSTRUCCIONES_SENCILLA : INSTRUCCIONES_COMPLETA;
+
+/** Herramientas que la versión sencilla no tiene (agua y tratamientos). */
+const SOLO_COMPLETA = new Set(["agua", "tratamientos", "apuntar_nivel_pantano", "apuntar_lectura_contador"]);
 
 type Resultado = { content: { type: "text"; text: string }[]; isError?: boolean };
 
@@ -86,15 +110,24 @@ async function resolverLugar(supabase: SupabaseClient, texto: string) {
 function sinPermiso(ctx: ContextoAgente): Resultado | null {
   return ctx.puedeEditar
     ? null
-    : fallo("Tu usuario de Campo solo puede consultar, no apuntar. Pide a Antonio que te dé permiso de editor.");
+    : fallo(
+        `Tu usuario de ${NOMBRE_APP} solo puede consultar, no apuntar. Pide ${ejemplo("a Antonio", "a quien te montó la app")} que te dé permiso de editor.`,
+      );
 }
 
 function porcentaje(nivel: number | null, tope: number | null) {
   return nivel != null && tope ? Math.round((nivel / tope) * 100) : null;
 }
 
-export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
+export function registrarHerramientas(servidor: McpServer, ctx: ContextoAgente) {
   const { supabase } = ctx;
+  // En la versión sencilla no se registran las herramientas de agua y tratamientos.
+  const server = {
+    registerTool: ((nombre: string, ...resto: unknown[]) =>
+      SENCILLA && SOLO_COMPLETA.has(nombre)
+        ? undefined
+        : (servidor.registerTool as (...a: unknown[]) => unknown)(nombre, ...resto)) as McpServer["registerTool"],
+  };
 
   // ------------------------------------------------------------------
   // Consultas
@@ -104,7 +137,11 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
     {
       title: "Resumen del día",
       description:
-        "Lo que hay hoy en las fincas: fecha de hoy, fechas clave próximas y atrasadas, tareas abiertas, nivel de los pantanos, avisos abiertos y tratamientos en curso. Úsala primero para cualquier pregunta general («¿qué tengo hoy?», «¿cómo va todo?»).",
+        ejemplo(
+          "Lo que hay hoy en las fincas: fecha de hoy, fechas clave próximas y atrasadas, tareas abiertas, nivel de los pantanos, avisos abiertos y tratamientos en curso.",
+          "Lo que hay hoy en la finca: fecha de hoy, fechas clave próximas y atrasadas, tareas abiertas y avisos abiertos.",
+        ) +
+        " Úsala primero para cualquier pregunta general («¿qué tengo hoy?», «¿cómo va todo?»).",
       annotations: LECTURA,
     },
     async () => {
@@ -117,7 +154,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
         cargarTratamientos(supabase),
       ]);
       const agenda = construirAgenda({ hitos, tratamientos, hoy, hasta: sumarDias(hoy, 14) });
-      const dato = await datoDelDia(supabase, hoy);
+      const dato = SENCILLA ? null : await datoDelDia(supabase, hoy);
       const fecha = (e: { fecha: string | null; aproximada: boolean }) =>
         e.fecha ? `${e.fecha} (${cuentaAtras(e.fecha, hoy, e.aproximada).texto})` : "sin fecha";
       return ok({
@@ -141,7 +178,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
           donde: lugarDeTarea(t),
           quien: t.tareas_personas.map((p) => p.personas?.nombre).filter(Boolean),
         })),
-        pantanos: fincas.flatMap((f) =>
+        pantanos: SENCILLA ? undefined : fincas.flatMap((f) =>
           f.pantanos.map((p) => {
             const n = ultimoNivel(p);
             const tope = Number(p.capacidad_util_m3 ?? p.capacidad_m3 ?? 0) || null;
@@ -155,7 +192,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
           }),
         ),
         avisos_abiertos: incidencias.map((i) => ({ finca: i.fincas?.nombre, titulo: i.titulo, tipo: i.tipo, desde: i.fecha })),
-        tratamientos_en_curso: tratamientos
+        tratamientos_en_curso: SENCILLA ? undefined : tratamientos
           .filter((t) => t.estado === "en_curso")
           .map((t) => ({ finca: t.fincas?.nombre, desde: t.fecha, objetivo: t.objetivo })),
       });
@@ -316,6 +353,8 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
       annotations: { ...LECTURA, openWorldHint: true },
     },
     async () => {
+      if (puntosPrevision().length === 0)
+        return fallo("Todavía no está puesta la ubicación de la finca para mirar el tiempo. Avisa a quien te montó la app.");
       const { viento, alertas } = await previsionFincas();
       if (viento.length === 0 && alertas.length === 0) return fallo("No se ha podido cargar la previsión del tiempo. Prueba más tarde.");
       return ok({
@@ -338,7 +377,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
     {
       title: "Buscar un sitio",
       description:
-        "Encuentra a qué finca, zona o sector se refiere un nombre («Los Nuevos», «la del panadero», «sector 2 de Corvera»). Devuelve las coincidencias; si hay varias, pregunta cuál.",
+        `Encuentra a qué finca, zona o sector se refiere un nombre (${ejemplo("«Los Nuevos», «la del panadero», «sector 2 de Corvera»", "«la de arriba», «el bancal del pozo», «sector 2»")}). Devuelve las coincidencias; si hay varias, pregunta cuál.`,
       inputSchema: { texto: z.string().min(2).max(80) },
       annotations: LECTURA,
     },
@@ -360,7 +399,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
     {
       title: "Apuntar una tarea",
       description:
-        "Apunta una tarea del día a día. «lugar» puede ser una finca, zona o sector («Corvera», «Los Olivos», «sector 1 de Valladolises»). Si lleva fecha, Campo la recuerda en el aviso al móvil de esa mañana: úsala también para «recuérdame…». Confirma antes con el usuario.",
+        `Apunta una tarea del día a día. «lugar» puede ser una finca, zona o sector (${ejemplo("«Corvera», «Los Olivos», «sector 1 de Valladolises»", "«la de arriba», «el bancal del pozo», «sector 1»")}). Si lleva fecha, ${NOMBRE_APP} la recuerda en el aviso al móvil de esa mañana: úsala también para «recuérdame…». Confirma antes con el usuario.`,
       inputSchema: {
         titulo: z.string().min(3).max(200).describe("Qué hay que hacer, corto"),
         lugar: z.string().max(80).optional(),
@@ -562,7 +601,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
     {
       title: "Apuntar una fecha clave",
       description:
-        "Apunta una fecha importante de la campaña (corte, tratamiento, plazo de papeles, agua, revisión, compra…). Campo avisará al móvil una semana antes, el día antes y el mismo día. No es para tareas del día a día.",
+        `Apunta una fecha importante de la campaña (corte, tratamiento, plazo de papeles, agua, revisión, compra…). ${NOMBRE_APP} avisará al móvil una semana antes, el día antes y el mismo día. No es para tareas del día a día.`,
       inputSchema: {
         titulo: z.string().min(3).max(200),
         fecha: fechaSchema,
@@ -608,7 +647,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
     {
       title: "Marcar una fecha clave como hecha o anulada",
       description:
-        "Cierra una fecha clave pendiente: «hecho» o «anulado» (nada se borra). Si se repite cada año, Campo crea sola la del año siguiente. Usa el id de «fechas_clave».",
+        `Cierra una fecha clave pendiente: «hecho» o «anulado» (nada se borra). Si se repite cada año, ${NOMBRE_APP} crea sola la del año siguiente. Usa el id de «fechas_clave».`,
       inputSchema: { fecha_clave_id: z.string().uuid(), estado: z.enum(["hecho", "anulado"]) },
       annotations: ESCRITURA,
     },
@@ -705,7 +744,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
     {
       title: "Nota en el diario",
       description:
-        "Apunta una nota libre en el diario de la finca: lo que se ha hecho o visto hoy («ha venido Diego, dice que hay algo de cotonet»).",
+        `Apunta una nota libre en el diario de la finca: lo que se ha hecho o visto hoy (${ejemplo("«ha venido Diego, dice que hay algo de cotonet»", "«ha venido el técnico, dice que hay algo de pulgón»")}).`,
       inputSchema: {
         texto: z.string().min(3).max(2000),
         finca: z.string().optional(),
@@ -736,7 +775,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
     {
       title: "Ver el diario",
       description:
-        "Lee las notas del diario de las fincas (lo apuntado con «nota_diario»): fecha, finca, texto y quién lo apuntó. Úsala para «¿qué apunté ayer?», «¿qué hay en el diario de Corvera?» o para comprobar que una nota se ha guardado.",
+        "Lee las notas del diario de las fincas (lo apuntado con «nota_diario»): fecha, finca, texto y quién lo apuntó. Úsala para «¿qué apunté ayer?», «¿qué hay en el diario de la finca?» o para comprobar que una nota se ha guardado.",
       inputSchema: {
         finca: z.string().optional().describe("Nombre de la finca (opcional)"),
         dias: z.number().int().min(1).max(365).default(14).describe("Cuántos días hacia atrás (14 por defecto)"),
@@ -838,7 +877,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
     {
       title: "Guardar una respuesta del banco de preguntas",
       description:
-        "Guarda en Campo la respuesta a UNA pregunta del banco de preguntas de Antonio, en cuanto la contesta (sin pedir permiso: está contestando para que quede guardado). «codigo» es el de la pregunta (LOB-01, AGU-03…); «respuesta», lo que dijo completo y con sus palabras. Si corrige o completa una anterior, se guarda otra con el mismo código (vale la última).",
+        `Guarda en ${NOMBRE_APP} la respuesta a UNA pregunta del banco de preguntas${ejemplo(" de Antonio", " para completar la finca")}, en cuanto la contesta (sin pedir permiso: está contestando para que quede guardado). «codigo» es el de la pregunta (${ejemplo("LOB-01, AGU-03…", "FIN-01, RIE-02…")}); «respuesta», lo que dijo completo y con sus palabras. Si corrige o completa una anterior, se guarda otra con el mismo código (vale la última).`,
       inputSchema: {
         codigo: z
           .string()
@@ -870,7 +909,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
       });
       if (error) {
         if (/respuestas/.test(error.message) && /exist|schema cache/i.test(error.message))
-          return fallo("Las respuestas aún no se pueden guardar en Campo (falta la migración 0008). Apúntalas en el chat y avisa a Antonio.");
+          return fallo(`Las respuestas aún no se pueden guardar en ${NOMBRE_APP} (falta la migración 0008). Apúntalas en el chat y avisa ${ejemplo("a Antonio", "a quien te montó la app")}.`);
         return fallo(`No se pudo guardar: ${error.message}`);
       }
       return ok({ guardado: true, mensaje: `✅ Guardada la respuesta de ${cod}.` });
@@ -925,7 +964,7 @@ export function registrarHerramientas(server: McpServer, ctx: ContextoAgente) {
     {
       title: "Buscar ideas y reflexiones",
       description:
-        "Busca en las ideas y reflexiones guardadas («¿qué pensaba yo del riego de Los Olivos?», «ideas sobre Lobosillo»). Sin texto, devuelve las últimas.",
+        `Busca en las ideas y reflexiones guardadas (${ejemplo("«¿qué pensaba yo del riego de Los Olivos?», «ideas sobre Lobosillo»", "«¿qué pensaba yo del riego?», «ideas sobre la poda»")}). Sin texto, devuelve las últimas.`,
       inputSchema: {
         texto: z.string().max(80).optional().describe("Palabra o tema a buscar"),
         finca: z.string().optional(),
