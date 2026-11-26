@@ -17,6 +17,7 @@
 import type { Hito, Tarea, Tratamiento } from "@/lib/datos";
 import { construirAgenda, type ElementoAgenda } from "@/lib/agenda";
 import { diasEntre, normalizar, sumarDias } from "@/lib/texto";
+import { NOMBRE_APP, SENCILLA } from "@/lib/edicion";
 
 export type ResumenAviso = {
   tipo: "diario" | "semanal";
@@ -107,6 +108,8 @@ const RECORDATORIOS: { desde: string; cada: number; texto: string; url: string }
 ];
 
 function recordatoriosDeHoy(hoy: string) {
+  // Los recordatorios de arriba son de los cítricos de la familia: no van en la versión sencilla
+  if (SENCILLA) return [];
   return RECORDATORIOS.filter((r) => {
     const d = diasEntre(r.desde, hoy);
     return r.cada === 0 ? d === 0 : d >= 0 && d % r.cada === 0;
@@ -230,23 +233,24 @@ export function resumenDelDia({
 
   const claveHoy = lista.find((e) => e.fecha === hoy);
   const tareasHoy = tareasAviso.filter((t) => t.fecha_prevista === hoy);
+  const APP = NOMBRE_APP;
   const titulo = granizo.length
-    ? `⚠️ Campo · posible GRANIZO ${cuandoAlerta(granizo[0].fecha, hoy).toLowerCase()}`
+    ? `⚠️ ${APP} · posible GRANIZO ${cuandoAlerta(granizo[0].fecha, hoy).toLowerCase()}`
     : avisosViento.length
-    ? "Campo · viento: no es día de fumigar"
+    ? `${APP} · viento: no es día de fumigar`
     : esLunes
-    ? "Campo · la semana"
+    ? `${APP} · la semana`
     : claveHoy
-      ? `Campo · hoy: ${claveHoy.titulo}`
+      ? `${APP} · hoy: ${claveHoy.titulo}`
       : tareasHoy.length === 1
-        ? `Campo · hoy: ${tareasHoy[0].titulo}`
+        ? `${APP} · hoy: ${tareasHoy[0].titulo}`
         : tareasHoy.length > 1
-          ? `Campo · hoy: ${tareasHoy.length} tareas`
+          ? `${APP} · hoy: ${tareasHoy.length} tareas`
           : soloRecordatorio
-            ? "Campo · revisar alertas de plagas"
+            ? `${APP} · revisar alertas de plagas`
             : soloDato
-            ? "Campo · buenos días"
-            : "Campo · lo que viene";
+            ? `${APP} · buenos días`
+            : `${APP} · lo que viene`;
 
   // Adónde lleva el aviso: a esa fecha clave si es la única, a Tareas si solo hay tareas
   const url = soloDato

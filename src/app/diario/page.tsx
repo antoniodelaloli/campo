@@ -1,9 +1,12 @@
 import { Suspense } from "react";
 import { Marco } from "@/components/Marco";
-import { CabeceraSeccion, Cargando, ChipFinca } from "@/components/ui";
+import { CabeceraSeccion, Cargando, ChipFinca, Panel } from "@/components/ui";
 import { obtenerContexto } from "@/lib/sesion";
 import { fechaCorta, hoyISO } from "@/lib/texto";
 import { nombreMes } from "@/lib/agenda";
+import { ejemplo, SENCILLA } from "@/lib/edicion";
+import { cargarFincas } from "@/lib/datos";
+import { ApuntarDiario } from "./ApuntarDiario";
 
 // Diario de las fincas: lo que ya ha pasado («ha venido Diego», «se ha terminado de
 // fumigar»). Casi todo llega por voz desde ChatGPT o Claude (herramienta «nota_diario»).
@@ -32,8 +35,10 @@ export default function DiarioPage({ searchParams }: PageProps<"/diario">) {
 }
 
 async function Diario({ searchParams }: { searchParams: PageProps<"/diario">["searchParams"] }) {
-  const { supabase } = await obtenerContexto();
+  const { supabase, puedeEditar } = await obtenerContexto();
   const sp = await searchParams;
+  // En la versión sencilla también se apunta desde aquí (en la completa, por voz)
+  const fincasDiario = SENCILLA && puedeEditar ? (await cargarFincas(supabase)).fincas : [];
   const fincaId = typeof sp.finca === "string" ? sp.finca : null;
   const hoy = hoyISO();
 
@@ -57,10 +62,16 @@ async function Diario({ searchParams }: { searchParams: PageProps<"/diario">["se
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-5 px-4 py-5">
       <CabeceraSeccion
-        titulo={nombreFinca ? `Diario · ${nombreFinca}` : "Diario de las fincas"}
+        titulo={nombreFinca ? `Diario · ${nombreFinca}` : SENCILLA ? "Diario de campo" : "Diario de las fincas"}
         subtitulo="Lo que ya ha pasado en el campo, día a día. Llega sobre todo por voz desde ChatGPT o Claude."
-        volver={fincaId ? `/fincas/${fincaId}` : "/calendario"}
+        volver={SENCILLA ? "/" : fincaId ? `/fincas/${fincaId}` : "/calendario"}
       />
+
+      {SENCILLA && puedeEditar && (
+        <Panel titulo="Apuntar">
+          <ApuntarDiario fincas={fincasDiario.map((f) => ({ id: f.id, nombre: f.nombre }))} />
+        </Panel>
+      )}
 
       {error && (
         <p role="alert" className="border-2 border-aviso bg-papel p-3 text-sm">
@@ -70,8 +81,8 @@ async function Diario({ searchParams }: { searchParams: PageProps<"/diario">["se
 
       {!error && notas.length === 0 && (
         <p className="ficha-pendiente p-4 text-sm text-tinta-suave">
-          Todavía no hay nada en el diario. Dile a tu asistente algo como: «apunta en el diario que hoy ha venido Diego a
-          ver los limoneros de Corvera».
+          Todavía no hay nada en el diario. Dile a tu asistente algo como: «apunta en el diario que{" "}
+          {ejemplo("hoy ha venido Diego a ver los limoneros de Corvera", "hoy ha venido el técnico a ver los árboles")}».
         </p>
       )}
 

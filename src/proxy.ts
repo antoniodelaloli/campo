@@ -1,7 +1,12 @@
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
+import { rutaDisponible } from "@/lib/edicion";
 
 export async function proxy(request: NextRequest) {
+  // Versión sencilla: las secciones que no tiene (agua, cosecha…) llevan al inicio
+  if (!rutaDisponible(request.nextUrl.pathname)) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
   return updateSession(request);
 }
 

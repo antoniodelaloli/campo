@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { crearHito, type EstadoFormHito } from "./actions";
 import { NOMBRE_TIPO_HITO, OPCIONES_AVISO, TIPOS_HITO, tipoHitoDeTexto } from "@/lib/agenda";
 import { fechaLarga, interpretarTarea, type Lugar } from "@/lib/texto";
+import { ejemplo } from "@/lib/edicion";
 
 const inicial: EstadoFormHito = { ok: false, mensaje: null };
 
@@ -61,7 +62,7 @@ function Formulario({
         maxLength={200}
         value={texto}
         onChange={(e) => setTexto(e.target.value)}
-        placeholder="primer corte de Corvera el 15 de diciembre"
+        placeholder={ejemplo("primer corte de Corvera el 15 de diciembre", "empezar a recoger el 15 de diciembre")}
         className="campo"
         aria-describedby="ayuda-hito"
       />

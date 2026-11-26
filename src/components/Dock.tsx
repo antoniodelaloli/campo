@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SENCILLA } from "@/lib/edicion";
 
-const SECCIONES = [
+const SECCIONES_COMPLETA = [
   { href: "/", label: "Mapa", icono: "M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z M9 4v14 M15 6v14" },
   { href: "/tareas", label: "Tareas", icono: "M5 4h14v17H5z M9 3h6v3H9z M8.5 13l2.5 2.5L15.5 11" },
   { href: "/calendario", label: "Agenda", icono: "M4 6h16v15H4z M4 10h16 M8 3v5 M16 3v5 M8 14h2 M14 14h2 M8 17h2" },
@@ -12,9 +13,20 @@ const SECCIONES = [
   { href: "/cosecha", label: "Cosecha", icono: "M4 12c0-4 4-7 8-7s8 3 8 7-4 7-8 7-8-3-8-7z M2 12h2 M20 12h2" },
 ];
 
+// Versión sencilla: lo básico (sin mapa, agua, tratamientos ni cosecha)
+const SECCIONES_SENCILLA = [
+  { href: "/", label: "Hoy", icono: "M3 11l9-7 9 7 M5 10v10h14V10 M10 20v-5h4v5" },
+  { href: "/tareas", label: "Tareas", icono: SECCIONES_COMPLETA[1].icono },
+  { href: "/calendario", label: "Agenda", icono: SECCIONES_COMPLETA[2].icono },
+  { href: "/diario", label: "Diario", icono: "M5 3h11l3 3v15H5z M8 8h8 M8 12h8 M8 16h5" },
+  { href: "/ideas", label: "Ideas", icono: "M9 18h6 M10 21h4 M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z" },
+];
+
+const SECCIONES = SENCILLA ? SECCIONES_SENCILLA : SECCIONES_COMPLETA;
+
 function activa(ruta: string | null, href: string) {
   if (!ruta) return false;
-  if (href === "/") return ruta === "/" || ruta.startsWith("/fincas");
+  if (href === "/") return ruta === "/" || (!SENCILLA && ruta.startsWith("/fincas"));
   return ruta === href || ruta.startsWith(`${href}/`);
 }
 

@@ -6,6 +6,7 @@ import { obtenerContexto } from "@/lib/sesion";
 import { cargarCampanaActual } from "@/lib/datos";
 import { fechaLarga, hoyISO } from "@/lib/texto";
 import { Dock, DockVista } from "@/components/Dock";
+import { NOMBRE_APP, SENCILLA } from "@/lib/edicion";
 
 /** Estructura común: barra superior + contenido + barra inferior. */
 export function Marco({ children }: { children: ReactNode }) {
@@ -65,10 +66,10 @@ function Barra({
 }) {
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b-4 border-madera-oscura bg-madera px-3 shadow-[inset_0_4px_0_#b07a40] sm:px-5">
-      <Link href="/" className="flex items-center gap-2" aria-label="Campo, ir al mapa">
+      <Link href="/" className="flex items-center gap-2" aria-label={`${NOMBRE_APP}, ir ${SENCILLA ? "al inicio" : "al mapa"}`}>
         <Logo />
         <span className="font-pixel text-2xl font-bold tracking-widest text-pergamino [text-shadow:0_2px_0_#3b2a1a]">
-          CAMPO
+          {NOMBRE_APP.toUpperCase()}
         </span>
       </Link>
 

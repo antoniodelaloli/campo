@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { NOMBRE_APP } from "@/lib/edicion";
 
 // Comprobación del token que manda ChatGPT o Claude al conector de Campo.
 // El token lo emite el servidor OAuth de Supabase al iniciar sesión el usuario:
@@ -51,7 +52,7 @@ export function noAutorizado(request: Request, motivo: string) {
 export async function contextoAgente(request: Request): Promise<ContextoAgente | Response> {
   const cabecera = request.headers.get("authorization") ?? "";
   const token = cabecera.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
-  if (!token) return noAutorizado(request, "Falta iniciar sesión en Campo.");
+  if (!token) return noAutorizado(request, `Falta iniciar sesión en ${NOMBRE_APP}.`);
 
   const supabase = createClient(URL_SUPABASE, CLAVE_PUBLICA, {
     global: { headers: { Authorization: `Bearer ${token}` } },
@@ -74,7 +75,7 @@ export async function contextoAgente(request: Request): Promise<ContextoAgente |
     .maybeSingle<{ id: string; nombre: string | null; rol: string; activo: boolean }>();
   if (!perfil?.activo) {
     return Response.json(
-      { error: "forbidden", error_description: "Tu usuario de Campo aún no está activado." },
+      { error: "forbidden", error_description: `Tu usuario de ${NOMBRE_APP} aún no está activado.` },
       { status: 403 },
     );
   }

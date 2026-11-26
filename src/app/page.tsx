@@ -10,11 +10,18 @@ import { obtenerContexto } from "@/lib/sesion";
 import {
   cargarAvisos,
   cargarFincas,
+  cargarHitos,
   cargarIncidenciasAbiertas,
   cargarTareasAbiertas,
   cargarTratamientos,
 } from "@/lib/datos";
-import { hoyISO, momentoDelDia } from "@/lib/texto";
+import { fechaLarga, hoyISO, momentoDelDia, sumarDias } from "@/lib/texto";
+import { SENCILLA } from "@/lib/edicion";
+import { construirAgenda } from "@/lib/agenda";
+import { FilaAgenda } from "@/components/LoQueViene";
+import { PrevisionFumigar } from "@/app/tratamientos/PrevisionFumigar";
+import { puntosPrevision } from "@/lib/alertas-tiempo";
+import { ApuntarDiario } from "@/app/diario/ApuntarDiario";
 
 // Página privada: se genera en cada petición (depende de la sesión).
 export const instant = false;
@@ -22,9 +29,15 @@ export const instant = false;
 export default function InicioPage() {
   return (
     <Marco>
-      <Suspense fallback={<Cargando texto="Preparando el mapa…" />}>
-        <Inicio />
-      </Suspense>
+      {SENCILLA ? (
+        <Suspense fallback={<Cargando texto="Preparando el día…" />}>
+          <InicioSencillo />
+        </Suspense>
+      ) : (
+        <Suspense fallback={<Cargando texto="Preparando el mapa…" />}>
+          <Inicio />
+        </Suspense>
+      )}
     </Marco>
   );
 }
@@ -145,5 +158,125 @@ async function Inicio() {
         </div>
       </div>
     </div>
+  );
+}
+
+/** Saludo según la hora de España. */
+function saludo() {
+  const hora = Number(
+    new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Madrid", hour: "2-digit", hourCycle: "h23" }).format(new Date()),
+  );
+  if (hora >= 6 && hora < 14) return "Buenos días";
+  if (hora >= 14 && hora < 21) return "Buenas tardes";
+  return "Buenas noches";
+}
+
+/*
+ * Inicio de la versión sencilla (otra finca, sin mapa dibujado): lo de hoy en una
+ * pantalla. Tareas, fechas clave de las dos próximas semanas, avisos, el tiempo para
+ * fumigar (si hay puntos en FINCAS_TIEMPO) y apuntar en el diario.
+ */
+async function InicioSencillo() {
+  const { supabase, puedeEditar, perfil } = await obtenerContexto();
+  const hoy = hoyISO();
+  const hasta = sumarDias(hoy, 14);
+
+  const [{ fincas }, { tareas }, incidencias, avisos, { tratamientos }, { hitos }] = await Promise.all([
+    cargarFincas(supabase),
+    cargarTareasAbiertas(supabase),
+    cargarIncidenciasAbiertas(supabase),
+    cargarAvisos(supabase),
+    cargarTratamientos(supabase),
+    cargarHitos(supabase, hasta),
+  ]);
+
+  const agenda = construirAgenda({ hitos, tratamientos, hoy, hasta });
+  const fechas = [...agenda.atrasados, ...agenda.proximos];
+  const tareasHoy = tareas.filter((t) => !t.fecha_prevista || t.fecha_prevista <= hoy);
+  const lista = (tareasHoy.length ? tareasHoy : tareas).slice(0, 8);
+  const totalAvisos = avisos.length + incidencias.length;
+  const conTiempo = puntosPrevision().length > 0;
+  const nombre = perfil.nombre?.split(" ")[0] ?? null;
+
+  return (
+    <main className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 py-5">
+      <header className="flex flex-col gap-1">
+        <h1 className="titulo-pixel text-3xl">
+          {saludo()}
+          {nombre ? `, ${nombre}` : ""}
+        </h1>
+        <p className="text-tinta-suave first-letter:uppercase">{fechaLarga(hoy)}</p>
+      </header>
+
+      {fincas.length === 0 && (
+        <p className="ficha-pendiente p-3 text-sm">
+          Aún no hay ninguna finca dada de alta. Pide a quien te montó la app que meta los datos de tu finca.
+        </p>
+      )}
+
+      <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+        <div className="flex flex-col gap-5">
+          <Panel
+            titulo={tareasHoy.length ? "Tareas de hoy" : "Próximas tareas"}
+            extra={`${tareas.length} abierta${tareas.length === 1 ? "" : "s"}`}
+          >
+            {lista.length === 0 ? (
+              <p className="ficha-pendiente p-3 text-sm text-tinta-suave">
+                No hay tareas apuntadas. Escribe la primera como lo dirías: «limpiar los filtros del riego mañana».
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {lista.map((t) => (
+                  <li key={t.id}>
+                    <FilaTarea tarea={t} hoy={hoy} puedeEditar={puedeEditar} compacta />
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Link href="/tareas" className="boton">
+              {puedeEditar ? "+ Nueva tarea" : "Ver tareas"}
+            </Link>
+          </Panel>
+
+          {puedeEditar && (
+            <Panel titulo="Apuntar en el diario">
+              <ApuntarDiario fincas={fincas.map((f) => ({ id: f.id, nombre: f.nombre }))} />
+              <Link href="/diario" className="text-sm font-bold text-hoja-oscura underline underline-offset-2">
+                Ver el diario
+              </Link>
+            </Panel>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-5">
+          <Panel titulo="Lo que viene" extra="próximos 14 días">
+            {fechas.length === 0 ? (
+              <p className="text-sm text-tinta-suave">Nada apuntado para estas dos semanas.</p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {fechas.slice(0, 6).map((e) => (
+                  <li key={e.clave}>
+                    <FilaAgenda e={e} hoy={hoy} puedeEditar={puedeEditar} compacta />
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Link href="/calendario" className="text-sm font-bold text-hoja-oscura underline underline-offset-2">
+              Ver la agenda
+            </Link>
+          </Panel>
+
+          <Panel titulo="Avisos" extra={totalAvisos || undefined}>
+            <ListaAvisos avisos={avisos} incidencias={incidencias} hoy={hoy} puedeEditar={puedeEditar} compacta />
+          </Panel>
+
+          {conTiempo && (
+            <Suspense fallback={<Panel titulo="¿Se puede fumigar?"><p className="text-sm text-tinta-suave">Mirando el viento…</p></Panel>}>
+              <PrevisionFumigar hoy={hoy} />
+            </Suspense>
+          )}
+        </div>
+      </div>
+    </main>
   );
 }

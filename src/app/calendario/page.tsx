@@ -18,6 +18,7 @@ import {
 } from "@/lib/datos";
 import { campanaDe, construirAgenda, elementoDeHito, nombreMes, type ElementoAgenda } from "@/lib/agenda";
 import { hoyISO, sumarDias } from "@/lib/texto";
+import { SENCILLA } from "@/lib/edicion";
 
 export const instant = false;
 
@@ -110,6 +111,7 @@ async function FechasClave() {
           <Panel titulo="Avisos en este móvil">
             <AvisosMovil />
           </Panel>
+          {!SENCILLA && (
           <Link
             href="/atajos"
             className="ficha flex items-center justify-between gap-2 px-3 py-2.5 text-sm font-bold hover:bg-[#f6e7c1]"
@@ -119,6 +121,8 @@ async function FechasClave() {
             </span>
             <span aria-hidden="true">→</span>
           </Link>
+          )}
+          {!SENCILLA && (
           <a
             href={URL_ALERTAS_CARM}
             target="_blank"
@@ -130,12 +134,13 @@ async function FechasClave() {
             </span>
             <span aria-hidden="true">↗</span>
           </a>
+          )}
           <Link
             href="/diario"
             className="ficha flex items-center justify-between gap-2 px-3 py-2.5 text-sm font-bold hover:bg-[#f6e7c1]"
           >
             <span>
-              Diario: <span className="font-normal">lo que ya se ha hecho en las fincas</span>
+              Diario: <span className="font-normal">lo que ya se ha hecho {SENCILLA ? "en la finca" : "en las fincas"}</span>
             </span>
             <span aria-hidden="true">→</span>
           </Link>
